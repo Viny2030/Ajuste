@@ -2,12 +2,13 @@ name: Daily Budget Monitor
 
 on:
   schedule:
-    - cron: '0 11 * * *'
+    - cron: '0 11 * * *'  # 08:00 ART
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -21,21 +22,34 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ghostscript libtcl8.6 libtk8.6 python3-tk
+          sudo apt-get install -y ghostscript
 
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pip install playwright 
+          pip install -r requirements.txt
 
-      - name: Install Playwright Browsers
+      - name: Seed base 2023 si no existe DB
         run: |
-          python -m playwright install chromium --with-deps
-
-      - name: Run Scraper
-        run: python -m app.core.daily_sync
+          if [ ! -f sql_app.db ]; then
+            python -m scripts.seed_2023
+          else
+            echo "DB ya existe, salteando seed."
+          fi
         env:
-          DATABASE_URL: \${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PYTHONPATH: .
-EOF
+
+      - name: Sincronizar modificaciones 2024/2025
+        run: python -m scripts.sync_modificaciones
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PYTHONPATH: .
+
+      - name: Commit DB actualizada
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sql_app.db data/ || true
+          git diff --staged --quiet || git commit -m "chore: sync presupuesto $(date +'%Y-%m-%d')"
+          git push || true
