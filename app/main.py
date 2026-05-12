@@ -16,6 +16,9 @@ Endpoints completos:
 import asyncio
 import uvicorn
 from datetime import datetime
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 from typing import List, Optional
 
 from fastapi import FastAPI, Depends, HTTPException, Query, BackgroundTasks
@@ -40,6 +43,17 @@ app = FastAPI(
     version="2.0.0",
 )
 
+
+# Servir archivos estáticos (dashboard)
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+@app.get("/dashboard", tags=["Home"], include_in_schema=False)
+async def dashboard():
+    """Dashboard visual del ajuste presupuestario."""
+    path = os.path.join(os.path.dirname(__file__), "static", "dashboard.html")
+    return FileResponse(path)
 
 # ── Dependencia DB ──────────────────────────────────────────────
 

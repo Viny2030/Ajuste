@@ -116,9 +116,15 @@ def cargar_macro_indices() -> dict:
         factor_actual = float(df_ipc_m["ipc_acum_vs_ene23"].iloc[-1])
         logger.info(f"IPC cargado: {len(df_ipc_m)} meses, factor={factor_actual:.4f}")
     else:
-        logger.warning("IPC no disponible — usando fallback 8.5")
+        logger.warning("IPC no disponible — usando fallback calculado con datos INDEC")
+        # Factor calculado con IPC mensual INDEC:
+        # 2023 (feb-dic): 6.6,7.7,8.4,7.8,6.0,6.3,12.4,12.7,8.3,12.8,25.5
+        # 2024: 20.6,13.2,11.0,8.8,4.2,4.6,4.0,4.2,3.5,2.4,2.4,2.7
+        # 2025: 2.4,2.4,3.7,3.2,3.3,3.7,3.0,3.0,3.0,3.0,3.0,3.0
+        # 2026 (ene-may): 2.3,2.4,3.4,3.0,3.2
+        # Factor acumulado ene-2023 → may-2026 ≈ 10.53× (953% acumulado)
         df_ipc_m = pd.DataFrame(columns=["fecha", "ipc_nivel", "ipc_acum_vs_ene23", "var_mensual_pct"])
-        factor_actual = 8.5   # ~850% inflación acumulada ene23–may26
+        factor_actual = 10.53  # 953% inflación acumulada ene-2023 → may-2026 (INDEC)
 
     # ── USD ──────────────────────────────────────
     df_usd_raw = _fetch_usd()

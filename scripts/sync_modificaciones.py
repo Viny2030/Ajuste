@@ -1,10 +1,12 @@
 # scripts/sync_modificaciones.py
 """
-Estrategia alternativa al scraping del BORA:
-Descarga los CSVs de crédito anual de Hacienda para 2024 y 2025,
-los cruza con la base 2023, y calcula las reducciones reales por partida.
-
-Fuente: dgsiaf-repo.mecon.gob.ar (datos.gob.ar / Subsecretaría de Presupuesto)
+Estrategia corregida:
+- Base: credito_original_2023  (monto_original en presupuesto_base)
+- Vigente: credito_vigente del año más reciente disponible (2025 > 2024)
+- La ModificacionPresupuestaria guarda la diferencia NETA entre vigente más
+  reciente y el monto_vigente de 2023, de modo que:
+    monto_vigente_efectivo = presupuesto_base.monto_vigente + sum(mod.monto_neto)
+  sea igual al credito_vigente del año más reciente.
 
 Ejecución:
   python -m scripts.sync_modificaciones
@@ -23,7 +25,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.database.session import SessionLocal, engine
 from app.database import models
 
-# ── URLs de crédito anual por ejercicio ──────────────────
 URLS = {
     2024: "https://dgsiaf-repo.mecon.gob.ar/repository/pa/datasets/2024/credito-anual-2024.zip",
     2025: "https://dgsiaf-repo.mecon.gob.ar/repository/pa/datasets/2025/credito-anual-2025.zip",
@@ -31,15 +32,18 @@ URLS = {
 
 MAPA = {
     "jurisdiccion_id": "jurisdiccion_id",
+    "jurisdiccion_desc": "jurisdiccion_desc",
     "servicio_id": "entidad_id",
+    "servicio_desc": "entidad_desc",
     "programa_id": "programa_id",
+    "programa_desc": "programa_desc",
     "inciso_id": "inciso_id",
+    "inciso_desc": "inciso_desc",
     "principal_id": "principal_id",
     "parcial_id": "parcial_id",
     "fuente_id": "fuente_financiamiento_id",
     "credito_presupuestado": "monto_original",
     "credito_vigente": "monto_vigente",
-    # fallbacks
     "jur_id": "jurisdiccion_id",
     "prg_id": "programa_id",
     "inc_id": "inciso_id",
@@ -77,7 +81,6 @@ def _descargar_df(anio: int) -> pd.DataFrame | None:
     df.columns = [c.strip().lower() for c in df.columns]
     df = df.rename(columns=MAPA)
 
-    # Filtrar el año correcto
     for col in ("ejercicio_presupuestario", "impacto_presupuestario_anio", "ejercicio"):
         if col in df.columns:
             df = df[df[col].astype(str).str.strip() == str(anio)]
@@ -97,89 +100,130 @@ def _descargar_df(anio: int) -> pd.DataFrame | None:
 
 def calcular_y_cargar_modificaciones():
     """
-    Cruza crédito 2023 (base) vs crédito 2024/2025 (vigente)
-    y persiste las diferencias como ModificacionPresupuestaria.
+    Lógica corregida:
+    1. Descarga vigente 2024 y 2025
+    2. Para cada partida, toma el vigente más reciente disponible
+    3. La modificación = vigente_reciente - monto_vigente_2023
+       (así calcular_variacion_real suma correctamente)
     """
     models.Base.metadata.create_all(bind=engine)
     db: Session = SessionLocal()
 
-    # Cargar base 2023 desde la DB
     print("📖 Leyendo base 2023 desde la DB...")
     base_rows = db.query(models.PresupuestoBase).all()
+    # key: (programa_id, inciso_id, ff_id) -> row
     base_map = {}
     for r in base_rows:
         key = (r.programa_id, r.inciso_id, r.fuente_financiamiento_id)
         base_map[key] = r
+    print(f"   {len(base_map):,} partidas base 2023")
 
-    print(f"   {len(base_map):,} partidas base cargadas")
-
-    total_insertadas = 0
-
-    for anio, norma_id_prefix in [(2024, "CREDITO-VIGENTE-2024"), (2025, "CREDITO-VIGENTE-2025")]:
+    # Descargar ambos años
+    dfs = {}
+    for anio in [2024, 2025]:
         df = _descargar_df(anio)
-        if df is None or df.empty:
-            continue
+        if df is not None and not df.empty:
+            dfs[anio] = df
 
-        # Dedup: borrar modificaciones previas de este año
-        db.query(models.ModificacionPresupuestaria).filter(
-            models.ModificacionPresupuestaria.norma_id.like(f"{norma_id_prefix}%")
-        ).delete(synchronize_session=False)
-        db.commit()
+    if not dfs:
+        print("❌ No se pudo descargar ningún CSV")
+        db.close()
+        return
 
-        # Agrupar por partida y sumar crédito vigente
+    # Construir mapa de vigente más reciente por partida
+    # key: (programa_id, inciso_id, ff_id) -> {vigente, anio, jurisdiccion_desc, programa_desc}
+    vigente_map = {}
+
+    for anio in sorted(dfs.keys()):  # 2024 primero, 2025 pisa
+        df = dfs[anio]
         group_cols = [c for c in ["programa_id", "inciso_id", "fuente_financiamiento_id"] if c in df.columns]
         if not group_cols:
             continue
 
-        df_agg = df.groupby(group_cols, as_index=False)["monto_vigente"].sum()
-        insertadas = 0
+        # Agrupar sumando monto_vigente por clave de partida
+        agg = {"monto_vigente": "sum"}
+        # También traer desc si existe
+        for desc_col in ["jurisdiccion_desc", "programa_desc"]:
+            if desc_col in df.columns:
+                agg[desc_col] = "first"
+
+        df_agg = df.groupby(group_cols, as_index=False).agg(agg)
 
         for _, row in df_agg.iterrows():
             prog_id = str(row.get("programa_id", "")).strip()
             inciso_id = str(row.get("inciso_id", "")).strip()
             ff_id = str(row.get("fuente_financiamiento_id", "")).strip()
-            monto_vigente_nuevo = float(row.get("monto_vigente", 0) or 0)
-
             if not prog_id:
                 continue
-
             key = (prog_id, inciso_id, ff_id)
-            base = base_map.get(key)
-            monto_base = base.monto_vigente if base else 0.0
+            vigente_map[key] = {
+                "vigente": float(row.get("monto_vigente", 0) or 0),
+                "anio": anio,
+                "jurisdiccion_desc": str(row.get("jurisdiccion_desc", "")),
+                "programa_desc": str(row.get("programa_desc", "")),
+            }
 
-            # La "modificación" es la diferencia entre el crédito vigente del año nuevo
-            # y el crédito vigente de la base 2023
-            diferencia = monto_vigente_nuevo - monto_base
-            if diferencia == 0:
-                continue
+    print(f"   {len(vigente_map):,} partidas con vigente reciente (2024/2025)")
 
-            aumento = max(0, diferencia)
-            reduccion = max(0, -diferencia)
+    # Borrar todas las modificaciones anteriores calculadas por este script
+    db.query(models.ModificacionPresupuestaria).filter(
+        models.ModificacionPresupuestaria.norma_id.like("CREDITO-VIGENTE-%")
+    ).delete(synchronize_session=False)
+    db.commit()
 
-            mod = models.ModificacionPresupuestaria(
-                norma_id=f"{norma_id_prefix}-{prog_id}-{inciso_id}",
-                fecha_boletin=None,
-                programa_id=prog_id,
-                inciso_id=inciso_id if inciso_id != "nan" else None,
-                principal_id=None,
-                aumento=aumento,
-                reduccion=reduccion,
-                monto_neto=diferencia,
-            )
-            db.add(mod)
-            insertadas += 1
+    insertadas = 0
+    total_reduccion = 0.0
+    total_aumento = 0.0
 
-            if insertadas % 5000 == 0:
-                db.commit()
-                print(f"   ... {insertadas:,} modificaciones")
+    for key, v in vigente_map.items():
+        prog_id, inciso_id, ff_id = key
+        base = base_map.get(key)
 
-        db.commit()
-        total_insertadas += insertadas
-        print(f"✅ {anio}: {insertadas:,} modificaciones de partida calculadas")
+        # monto_vigente_2023: si existe en base usamos ese, sino 0
+        vigente_2023 = base.monto_vigente if base else 0.0
+        vigente_reciente = v["vigente"]
 
+        # La modificación neta = diferencia entre vigente reciente y vigente 2023
+        # Esto hace que: base.monto_vigente + mod.monto_neto = vigente_reciente
+        diferencia = vigente_reciente - vigente_2023
+
+        # Solo registrar si hay diferencia significativa
+        if abs(diferencia) < 0.01:
+            continue
+
+        aumento = max(0.0, diferencia)
+        reduccion = max(0.0, -diferencia)
+
+        mod = models.ModificacionPresupuestaria(
+            norma_id=f"CREDITO-VIGENTE-{v['anio']}-{prog_id}-{inciso_id}",
+            fecha_boletin=None,
+            programa_id=prog_id,
+            inciso_id=inciso_id if inciso_id not in ("", "nan") else None,
+            principal_id=None,
+            aumento=aumento,
+            reduccion=reduccion,
+            monto_neto=diferencia,
+        )
+        db.add(mod)
+        insertadas += 1
+        total_reduccion += reduccion
+        total_aumento += aumento
+
+        if insertadas % 5000 == 0:
+            db.commit()
+            print(f"   ... {insertadas:,}")
+
+    db.commit()
     db.close()
-    print(f"\n🎯 Total: {total_insertadas:,} modificaciones cargadas")
-    print("Ahora /api/v1/analisis/ranking mostrará ajustes reales vs base 2023")
+
+    print(f"\n✅ {insertadas:,} modificaciones calculadas")
+    print(f"   Reducciones totales: ${total_reduccion:,.0f}")
+    print(f"   Aumentos totales:    ${total_aumento:,.0f}")
+    print(f"\n⚠️  Recordá que calcular_variacion_real usa:")
+    print(f"   monto_vigente_efectivo = base.monto_vigente + sum(mod.monto_neto)")
+    print(f"   = vigente_2023 + (vigente_reciente - vigente_2023)")
+    print(f"   = vigente_reciente  ✓")
+    print(f"\nAhora /api/v1/analisis/ranking mostrará el ajuste real correcto.")
 
 
 if __name__ == "__main__":
