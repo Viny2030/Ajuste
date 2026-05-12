@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+playwright
+camelot-py[cv]
+opencv-python
+pandas
+requests
+sqlalchemy
+python-dotenv
