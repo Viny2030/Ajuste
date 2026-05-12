@@ -1,0 +1,19 @@
+# .gitignore
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+*.db
+*.sqlite3
+
+# Carpeta de datos (Subiremos la estructura, pero no los archivos pesados)
+data/raw_pdfs/*
+data/*.csv
+!data/.gitkeep
+
+# Playwright
+test-results/
+pw_screenshots/
