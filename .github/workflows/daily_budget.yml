@@ -2,22 +2,21 @@ name: Daily Budget Monitor
 
 on:
   schedule:
-    - cron: '0 11 * * *' # Ejecuta a las 11:00 UTC (08:00 AM ART)
-  workflow_dispatch: # Permite ejecución manual
+    - cron: '0 11 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4 # Actualizado a v4 (más reciente)
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5 # Actualizado a v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip' # Cachear dependencias para que sea más rápido
+          cache: 'pip'
 
       - name: Install System Dependencies
         run: |
@@ -28,16 +27,15 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          # Aseguramos que playwright esté instalado aunque no esté en requirements.txt
           pip install playwright 
 
       - name: Install Playwright Browsers
         run: |
-          # Instalamos solo chromium para ahorrar tiempo y espacio
           python -m playwright install chromium --with-deps
 
       - name: Run Scraper
         run: python -m app.core.daily_sync
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: \${{ secrets.DATABASE_URL }}
           PYTHONPATH: .
+EOF
