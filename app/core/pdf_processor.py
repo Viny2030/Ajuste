@@ -1,19 +1,33 @@
 # app/core/pdf_processor.py
 """
-Extractor de tablas de modificaciones presupuestarias desde PDFs de Infoleg/BORA.
+Extractor de modificaciones presupuestarias desde PDFs de DAs del JGM (BORA/Infoleg).
 
-Las Planillas Anexas de las DAs del JGM tienen formato tabular con columnas:
-    Jurisdicción | SAF | Programa | SubP | Proyecto | Act | Obra |
-    Fuente Financiamiento | Inciso | Principal | Parcial | Aumento | Disminución
+Los Anexos de las DAs tienen DOS formatos según el artículo al que pertenecen:
 
-Estrategia de extracción (en orden de preferencia):
-  1. pdfplumber  — mejor para PDFs nativos con texto embebido (mayoría 2023-2026)
-  2. camelot     — fallback para tablas con bordes explícitos
-  3. regex       — fallback de último recurso sobre texto plano
+  FORMATO A — Artículo 1° (modificación de créditos):
+    Layout jerárquico por página. Encabezado contiene Jurisdicción / Entidad / Programa.
+    La columna IMPORTE EN $ al final de cada línea puede ser positiva (aumento)
+    o negativa (disminución). El importe relevante es el de la línea "TOTAL PROGRAMA"
+    (o "TOTAL ENTIDAD" / "TOTAL GASTOS CORRIENTES Y DE CAPITAL").
+
+    Ejemplo de encabezado:
+      Jurisdicción : 30 Ministerio del Interior
+      Entidad      : 325 Ministerio del Interior        ← solo si es ente descentralizado
+      Programa     : 19 Relaciones con las Provincias
+      Sub-Programa : 0
+      Proyecto     : 0
+
+  FORMATO B — Artículo 2° (reprogramación de ejecución):
+    Layout similar pero la clave útil es "TOTAL SERVICIO" al final de cada página,
+    con Jurisdicción y Servicio (SAF) en el encabezado.
+
+Estrategia:
+  1. pdfplumber sobre texto plano (funciona bien en ambos formatos, es el estándar)
+  2. regex de fallback sobre el mismo texto (sin tablas)
 
 Compatibilidad con daily_sync.py:
-  - extraer_modificaciones_pdf(pdf_path) → list[dict]  (función principal)
-  - extraer_tabla_presupuesto(pdf_path)  → alias que retorna DataFrame
+  - extraer_modificaciones_pdf(pdf_path) → list[dict]
+  - extraer_tabla_presupuesto(pdf_path)  → DataFrame | None
 """
 
 from __future__ import annotations
@@ -25,123 +39,175 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# ── Columnas esperadas en las planillas anexas ────────────────────────────────
-
-_COL_ALIASES: dict[str, list[str]] = {
-    "jurisdiccion":  ["jurisdicción", "jurisdiccion", "jur", "cod.jur", "cod jur"],
-    "saf":           ["saf", "s.a.f.", "entidad", "ent", "cod.ent"],
-    "programa":      ["programa", "prog", "prog.", "cod.prog"],
-    "subprograma":   ["subprograma", "subp", "sub-p", "subp."],
-    "proyecto":      ["proyecto", "proy", "proy."],
-    "actividad":     ["actividad", "act", "act."],
-    "obra":          ["obra"],
-    "fuente":        ["fuente", "ff", "f.f.", "fuente de financiamiento", "fte"],
-    "inciso":        ["inciso", "inc", "inc."],
-    "principal":     ["principal", "p.p.", "pp", "p. principal", "pppal"],
-    "parcial":       ["parcial", "parc", "parc.", "p. parcial"],
-    "aumento":       ["aumento", "aum", "ampliación", "ampliacion", "incremento",
-                      "credito a aumentar", "aumentos", "a aumentar"],
-    "disminucion":   ["disminución", "disminucion", "dis", "reducción", "reduccion",
-                      "credito a reducir", "disminuciones", "a reducir", "reducir"],
-}
+# ── Constantes ────────────────────────────────────────────────────────────────
 
 _MONTO_MINIMO = 1_000.0
+
+# Líneas de total que capturamos por página (tomamos la primera que aparezca)
+_TOTALES = [
+    "TOTAL PROGRAMA",
+    "TOTAL ENTIDAD",
+    "TOTAL GASTOS CORRIENTES Y DE CAPITAL",
+    "TOTAL SERVICIO",           # formato art. 2°
+    "TOTAL APLICACIONES FINANCIERAS",
+    "TOTAL CONTRIBUCIONES FIGURATIVAS",
+    "TOTAL RECURSOS CORRIENTES Y DE CAPITAL",
+    "TOTAL GASTOS FIGURATIVOS",
+    "TOTAL FUENTES FINANCIERAS",
+]
+
+# Tipos de página que NO queremos (no son modificaciones de gastos reales)
+_SKIP_TIPOS = [
+    "APLICACIONES FINANCIERAS",
+    "CONTRIBUCIONES FIGURATIVAS",
+    "RECURSOS CORRIENTES",
+    "FUENTES FINANCIERAS",
+    "GASTOS FIGURATIVOS",
+    "REPROGRAMACION",           # art. 2° — cuotas, no créditos
+]
+
+# Regex para extraer número + nombre de una línea de encabezado
+# Ej: "Jurisdicción : 30Ministerio del Interior" o "Jurisdicción : 30 Ministerio..."
+_RE_HEADER = re.compile(
+    r"(?P<tipo>Jurisdicci[oó]n|Sub-Jurisdicci[oó]n|Entidad|"
+    r"Programa|Sub-Programa|Proyecto|"
+    r"JURISDICCI[OÓ]N|SERVICIO)\s*[:\s]+(\d+)\s*(.*)",
+    re.IGNORECASE,
+)
+
+_RE_MONTO = re.compile(r"([-]?[\d.,]+(?:\.\d{3})*(?:,\d+)?)\s*$")
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def _normalizar_texto(s: str) -> str:
-    return re.sub(r"[\s\.\-]+", " ", s.lower()).strip()
-
-
-def _normalizar_col(nombre: str) -> Optional[str]:
-    """
-    Devuelve el nombre canónico de la columna.
-    Usa matching exacto o de prefijo/sufijo para aliases largos (≥4 chars).
-    Para aliases cortos (≤3 chars) exige matching exacto para evitar falsos positivos.
-    """
-    n = _normalizar_texto(nombre)
-    for canon, aliases in _COL_ALIASES.items():
-        for alias in aliases:
-            a = _normalizar_texto(alias)
-            if len(a) <= 3:
-                # Alias corto (ej: "ent", "saf", "ff") → solo matching exacto
-                if n == a:
-                    return canon
-            else:
-                # Alias largo → matching por contenido (más flexible)
-                if a == n or a in n or n in a:
-                    return canon
-    return None
-
-
 def _limpiar_monto(s: str) -> float:
-    if not s:
+    """Convierte '10.000.000.000' o '-10.000.000.000' o '1.234,56' → float."""
+    s = s.strip().replace(" ", "").replace("\xa0", "").replace("$", "")
+    if not s or s in ("-", "—", "–"):
         return 0.0
-    s = str(s).strip().replace(" ", "").replace("\xa0", "").replace("$", "")
-    if s in ("-", "—", "–", "0", ""):
-        return 0.0
-    # Formato argentino: punto miles + coma decimal → '1.234.567,89'
+    negativo = s.startswith("-")
+    s = s.lstrip("-")
+    # Formato argentino: punto de miles + coma decimal → '1.234.567,89'
     if re.search(r"\d\.\d{3}", s) and "," in s:
         s = s.replace(".", "").replace(",", ".")
     elif "," in s and "." not in s:
         s = s.replace(",", ".")
-    elif re.search(r"\d\.\d{3}$", s):
+    elif re.search(r"\d\.\d{3}", s):
         s = s.replace(".", "")
     try:
-        return abs(float(s))
+        val = float(s)
+        return -val if negativo else val
     except ValueError:
         return 0.0
 
 
-def _detectar_mapa_columnas(fila: list[str]) -> dict[str, int]:
-    mapa: dict[str, int] = {}
-    for i, celda in enumerate(fila):
-        if not celda:
+def _extraer_monto_linea(linea: str) -> Optional[float]:
+    """Extrae el último número de una línea (el importe)."""
+    # Buscar un número al final de la línea (con o sin signo)
+    m = re.search(r"(-?[\d.]+(?:,\d+)?)\s*$", linea.strip())
+    if m:
+        val = _limpiar_monto(m.group(1))
+        if abs(val) >= _MONTO_MINIMO:
+            return val
+    return None
+
+
+def _es_pagina_skip(texto: str) -> bool:
+    """True si la página es de aplicaciones financieras, cuotas, etc. (no nos interesa)."""
+    primeras = texto[:400].upper()
+    return any(skip in primeras for skip in _SKIP_TIPOS)
+
+
+def _zpad(val: str, n: int) -> Optional[str]:
+    v = val.strip()
+    return v.zfill(n) if re.match(r"^\d+$", v) else (v or None)
+
+
+# ── Parser principal por página ───────────────────────────────────────────────
+
+def _parsear_pagina(texto: str) -> Optional[dict]:
+    """
+    Parsea una página del PDF y devuelve un dict con la modificación,
+    o None si la página no contiene datos relevantes.
+    """
+    if not texto or not texto.strip():
+        return None
+
+    if _es_pagina_skip(texto):
+        return None
+
+    lineas = texto.splitlines()
+
+    # ── Extraer metadatos del encabezado ─────────────────────────────────────
+    jur_id: Optional[str] = None
+    saf_id: Optional[str] = None
+    prog_id: Optional[str] = None
+    subprog_id: Optional[str] = None
+    proy_id: Optional[str] = None
+
+    for linea in lineas[:30]:
+        linea_s = linea.strip()
+        m = _RE_HEADER.match(linea_s)
+        if not m:
             continue
-        canon = _normalizar_col(str(celda))
-        if canon and canon not in mapa:
-            mapa[canon] = i
-    return mapa
+        tipo   = m.group("tipo").upper()
+        codigo = m.group(2).strip()
+        if "JURISDICCI" in tipo and "SUB" not in tipo:
+            jur_id = codigo
+        elif "SUB-JURISDICCI" in tipo or "SUBJURISDICCI" in tipo:
+            pass  # ignorar
+        elif "ENTIDAD" in tipo or "SERVICIO" in tipo:
+            saf_id = codigo
+        elif "SUB-PROGRAMA" in tipo or "SUBPROGRAMA" in tipo:
+            subprog_id = codigo if codigo != "0" else None
+        elif "PROYECTO" in tipo:
+            proy_id = codigo if codigo != "0" else None
+        elif "PROGRAMA" in tipo:
+            prog_id = codigo
 
-
-def _parsear_fila(fila: list[str], mapa_cols: dict[str, int]) -> Optional[dict]:
-    def get(canon: str) -> str:
-        idx = mapa_cols.get(canon)
-        if idx is None or idx >= len(fila):
-            return ""
-        return str(fila[idx]).strip()
-
-    jur = get("jurisdiccion").lstrip("0") or get("jurisdiccion")
-    if not jur or not re.match(r"^\d{1,3}$", jur.strip()):
+    if not jur_id:
         return None
 
-    aumento = _limpiar_monto(get("aumento"))
-    disminucion = _limpiar_monto(get("disminucion"))
+    # ── Extraer el importe de la línea TOTAL relevante ────────────────────────
+    monto: Optional[float] = None
+    total_label_usado: Optional[str] = None
 
-    if aumento + disminucion < _MONTO_MINIMO:
+    for linea in lineas:
+        linea_up = linea.upper().strip()
+        for label in _TOTALES:
+            if linea_up.startswith(label):
+                val = _extraer_monto_linea(linea)
+                if val is not None and abs(val) >= _MONTO_MINIMO:
+                    monto = val
+                    total_label_usado = label
+                    break
+        if monto is not None:
+            break
+
+    if monto is None:
         return None
 
-    def zpad(val: str, n: int) -> Optional[str]:
-        v = val.strip()
-        return v.zfill(n) if re.match(r"^\d+$", v) else (v or None)
+    # ── Determinar aumento / disminución ──────────────────────────────────────
+    aumento    = monto if monto > 0 else 0.0
+    disminucion = abs(monto) if monto < 0 else 0.0
 
     return {
-        "jurisdiccion_id": zpad(jur, 2),
-        "saf_id":          zpad(get("saf"), 3),
-        "programa_id":     zpad(get("programa"), 2),
-        "subprograma_id":  zpad(get("subprograma"), 2) if get("subprograma") else None,
-        "proyecto_id":     zpad(get("proyecto"), 2) if get("proyecto") else None,
-        "actividad_id":    zpad(get("actividad"), 2) if get("actividad") else None,
-        "obra_id":         zpad(get("obra"), 2) if get("obra") else None,
-        "fuente_id":       zpad(get("fuente"), 2),
-        "inciso_id":       get("inciso").strip() or None,
-        "principal_id":    get("principal").strip() or None,
-        "parcial_id":      get("parcial").strip() or None,
-        "aumento":         aumento,
-        "reduccion":       disminucion,   # alias para compatibilidad con daily_sync
-        "disminucion":     disminucion,
-        "monto_neto":      aumento - disminucion,
+        "jurisdiccion_id": _zpad(jur_id, 2),
+        "saf_id":          _zpad(saf_id, 3) if saf_id else None,
+        "programa_id":     _zpad(prog_id, 2) if prog_id else None,
+        "subprograma_id":  _zpad(subprog_id, 2) if subprog_id else None,
+        "proyecto_id":     _zpad(proy_id, 2) if proy_id else None,
+        "actividad_id":    None,
+        "obra_id":         None,
+        "fuente_id":       None,
+        "inciso_id":       None,
+        "principal_id":    None,
+        "parcial_id":      None,
+        "aumento":         round(aumento, 2),
+        "reduccion":       round(disminucion, 2),
+        "disminucion":     round(disminucion, 2),
+        "monto_neto":      round(monto, 2),
+        "total_label":     total_label_usado,
     }
 
 
@@ -154,168 +220,94 @@ def _extraer_con_pdfplumber(pdf_path: str) -> list[dict]:
         logger.warning("pdfplumber no instalado: pip install pdfplumber")
         return []
 
-    filas_extraidas: list[dict] = []
-    configs = [
-        {"vertical_strategy": "lines_strict", "horizontal_strategy": "lines_strict",
-         "snap_tolerance": 5, "join_tolerance": 3, "edge_min_length": 20},
-        {"vertical_strategy": "lines", "horizontal_strategy": "lines",
-         "snap_tolerance": 5, "join_tolerance": 3},
-        {"vertical_strategy": "text", "horizontal_strategy": "text",
-         "snap_tolerance": 6, "join_tolerance": 4},
-    ]
-
+    resultados: list[dict] = []
     try:
         with pdfplumber.open(pdf_path) as pdf:
             for pagina in pdf.pages:
-                for config in configs:
-                    tablas = pagina.extract_tables(config)
-                    if not tablas:
-                        continue
-                    for tabla in tablas:
-                        if not tabla or len(tabla) < 2:
-                            continue
-                        mapa_cols: dict[str, int] = {}
-                        inicio_datos = 0
-                        for i, fila in enumerate(tabla[:6]):
-                            mapa = _detectar_mapa_columnas([c or "" for c in fila])
-                            if "jurisdiccion" in mapa and (
-                                "aumento" in mapa or "disminucion" in mapa
-                            ):
-                                mapa_cols = mapa
-                                inicio_datos = i + 1
-                                break
-                        if not mapa_cols:
-                            continue
-                        for fila in tabla[inicio_datos:]:
-                            if fila is None:
-                                continue
-                            resultado = _parsear_fila([c or "" for c in fila], mapa_cols)
-                            if resultado:
-                                filas_extraidas.append(resultado)
-                    if filas_extraidas:
-                        break
+                texto = pagina.extract_text() or ""
+                fila = _parsear_pagina(texto)
+                if fila:
+                    resultados.append(fila)
     except Exception as e:
         logger.warning("pdfplumber error en %s: %s", pdf_path, e)
         return []
 
-    logger.info("pdfplumber: %d filas de %s", len(filas_extraidas), pdf_path)
-    return filas_extraidas
+    logger.info("pdfplumber: %d filas de %s", len(resultados), pdf_path)
+    return resultados
 
 
-# ── Estrategia 2: camelot ─────────────────────────────────────────────────────
-
-def _extraer_con_camelot(pdf_path: str) -> list[dict]:
-    try:
-        import camelot
-    except ImportError:
-        logger.warning("camelot no instalado: pip install camelot-py[cv]")
-        return []
-
-    filas_extraidas: list[dict] = []
-
-    for flavor in ("lattice", "stream"):
-        try:
-            tablas = camelot.read_pdf(pdf_path, pages="all", flavor=flavor)
-            if not tablas:
-                continue
-            for tabla in tablas:
-                df = tabla.df
-                if df.empty or len(df) < 2:
-                    continue
-                mapa_cols: dict[str, int] = {}
-                inicio_datos = 0
-                for i in range(min(6, len(df))):
-                    mapa = _detectar_mapa_columnas(list(df.iloc[i].fillna("")))
-                    if "jurisdiccion" in mapa and (
-                        "aumento" in mapa or "disminucion" in mapa
-                    ):
-                        mapa_cols = mapa
-                        inicio_datos = i + 1
-                        break
-                if not mapa_cols:
-                    continue
-                for _, row in df.iloc[inicio_datos:].iterrows():
-                    resultado = _parsear_fila(
-                        [str(v) for v in row.fillna("")], mapa_cols
-                    )
-                    if resultado:
-                        filas_extraidas.append(resultado)
-            if filas_extraidas:
-                logger.info("camelot (%s): %d filas de %s", flavor, len(filas_extraidas), pdf_path)
-                return filas_extraidas
-        except Exception as e:
-            logger.debug("camelot %s falló en %s: %s", flavor, pdf_path, e)
-
-    return filas_extraidas
-
-
-# ── Estrategia 3: regex sobre texto plano ─────────────────────────────────────
-
-_RE_FILA_PRESUP = re.compile(
-    r"^\s*"
-    r"(?P<jur>\d{2,3})\s+"
-    r"(?P<saf>\d{3,5})\s+"
-    r"(?P<prog>\d{1,3})\s+"
-    r"(?P<subp>\d{1,3})\s+"
-    r"(?P<proy>\d{1,3})\s+"
-    r"(?P<act>\d{1,3})\s+"
-    r"(?P<obra>\d{1,3})\s+"
-    r"(?P<ff>\d{2})\s+"
-    r"(?P<inc>\d{1})\s+"
-    r"(?P<ppal>\d{1,3})\s+"
-    r"(?P<parc>\d{0,3})\s*"
-    r"(?P<aum>[\d.,]+)\s+"
-    r"(?P<dis>[\d.,]+)"
-    r"\s*$",
-    re.MULTILINE,
-)
-
+# ── Estrategia 2: regex sobre texto plano (fallback) ─────────────────────────
 
 def _extraer_con_regex(pdf_path: str) -> list[dict]:
+    """
+    Extrae texto con pypdf/PyPDF2 y aplica el mismo parser por 'página'.
+    Útil si pdfplumber falla en PDFs escaneados o raros.
+    """
     texto_completo = ""
     for modulo in ("pypdf", "PyPDF2"):
         try:
             lib = __import__(modulo)
             with open(pdf_path, "rb") as f:
                 reader = lib.PdfReader(f)
-                for pagina in reader.pages:
-                    texto_completo += (pagina.extract_text() or "") + "\n"
-            break
+                paginas = []
+                for pag in reader.pages:
+                    paginas.append(pag.extract_text() or "")
+            # Procesar página por página
+            resultados = []
+            for texto in paginas:
+                fila = _parsear_pagina(texto)
+                if fila:
+                    resultados.append(fila)
+            if resultados:
+                logger.info("regex/pypdf: %d filas de %s", len(resultados), pdf_path)
+                return resultados
         except ImportError:
             continue
         except Exception as e:
             logger.debug("Error con %s en %s: %s", modulo, pdf_path, e)
 
-    if not texto_completo.strip():
-        logger.warning("No se pudo extraer texto de %s", pdf_path)
-        return []
+    return []
 
-    filas: list[dict] = []
-    for m in _RE_FILA_PRESUP.finditer(texto_completo):
-        aumento = _limpiar_monto(m.group("aum"))
-        disminucion = _limpiar_monto(m.group("dis"))
-        if aumento + disminucion < _MONTO_MINIMO:
-            continue
-        filas.append({
-            "jurisdiccion_id": m.group("jur").zfill(2),
-            "saf_id":          m.group("saf"),
-            "programa_id":     m.group("prog").zfill(2),
-            "subprograma_id":  m.group("subp") or None,
-            "proyecto_id":     m.group("proy") or None,
-            "actividad_id":    m.group("act") or None,
-            "obra_id":         m.group("obra") or None,
-            "fuente_id":       m.group("ff"),
-            "inciso_id":       m.group("inc"),
-            "principal_id":    m.group("ppal") or None,
-            "parcial_id":      m.group("parc") or None,
-            "aumento":         aumento,
-            "reduccion":       disminucion,
-            "disminucion":     disminucion,
-            "monto_neto":      aumento - disminucion,
-        })
 
-    logger.info("regex: %d filas de %s", len(filas), pdf_path)
-    return filas
+# ── Deduplicación y consolidación ─────────────────────────────────────────────
+
+def _consolidar(filas: list[dict]) -> list[dict]:
+    """
+    Consolida filas con la misma clave (jur + prog + subprog).
+    Cuando una DA tiene múltiples páginas para el mismo programa
+    (ej: una por FF 11, otra por FF 13), suma los montos.
+    """
+    acum: dict[tuple, dict] = {}
+    for f in filas:
+        key = (
+            f.get("jurisdiccion_id"),
+            f.get("saf_id"),
+            f.get("programa_id"),
+            f.get("subprograma_id"),
+        )
+        if key not in acum:
+            acum[key] = dict(f)
+        else:
+            acum[key]["aumento"]    += f["aumento"]
+            acum[key]["reduccion"]  += f["reduccion"]
+            acum[key]["disminucion"] += f["disminucion"]
+            acum[key]["monto_neto"] += f["monto_neto"]
+
+    # Redondear
+    resultado = []
+    for f in acum.values():
+        f["aumento"]    = round(f["aumento"], 2)
+        f["reduccion"]  = round(f["reduccion"], 2)
+        f["disminucion"] = round(f["disminucion"], 2)
+        f["monto_neto"] = round(f["monto_neto"], 2)
+        if abs(f["monto_neto"]) >= _MONTO_MINIMO:
+            resultado.append(f)
+
+    return sorted(resultado, key=lambda x: (
+        x.get("jurisdiccion_id") or "",
+        x.get("saf_id") or "",
+        x.get("programa_id") or "",
+    ))
 
 
 # ── API pública ───────────────────────────────────────────────────────────────
@@ -323,7 +315,7 @@ def _extraer_con_regex(pdf_path: str) -> list[dict]:
 def extraer_modificaciones_pdf(pdf_path: str) -> list[dict]:
     """
     Extrae filas de modificaciones presupuestarias de un PDF de DA.
-    Prueba: pdfplumber → camelot → regex.
+    Prueba: pdfplumber → regex/pypdf.
     Retorna lista de dicts compatibles con ModificacionPresupuestaria.
     """
     path = Path(pdf_path)
@@ -331,25 +323,20 @@ def extraer_modificaciones_pdf(pdf_path: str) -> list[dict]:
         logger.error("PDF no encontrado: %s", pdf_path)
         return []
     if path.stat().st_size < 500:
-        logger.warning("PDF sospechosamente pequeño (%d bytes): %s", path.stat().st_size, pdf_path)
+        logger.warning("PDF sospechosamente pequeño (%d bytes): %s",
+                       path.stat().st_size, pdf_path)
         return []
 
     filas = _extraer_con_pdfplumber(pdf_path)
-    if filas:
-        return filas
+    if not filas:
+        logger.info("pdfplumber sin resultados — probando regex...")
+        filas = _extraer_con_regex(pdf_path)
 
-    logger.info("pdfplumber sin resultados — probando camelot...")
-    filas = _extraer_con_camelot(pdf_path)
-    if filas:
-        return filas
+    if not filas:
+        logger.warning("Ninguna estrategia extrajo datos de %s", pdf_path)
+        return []
 
-    logger.info("camelot sin resultados — probando regex...")
-    filas = _extraer_con_regex(pdf_path)
-    if filas:
-        return filas
-
-    logger.warning("Ninguna estrategia extrajo datos de %s", pdf_path)
-    return []
+    return _consolidar(filas)
 
 
 def extraer_tabla_presupuesto(pdf_path: str):
@@ -376,36 +363,54 @@ def diagnosticar_pdf(pdf_path: str) -> None:
     Uso: python -m app.core.pdf_processor diagnosticar <ruta>
     """
     path = Path(pdf_path)
-    print(f"\n{'='*60}")
+    print(f"\n{'='*70}")
     print(f"PDF: {path.name}  ({path.stat().st_size:,} bytes)")
-    print(f"{'='*60}")
+    print(f"{'='*70}")
+
     try:
         import pdfplumber
         with pdfplumber.open(pdf_path) as pdf:
             print(f"Páginas: {len(pdf.pages)}")
+            print(f"\n--- Muestra páginas 1-3 (texto crudo) ---")
             for i, pag in enumerate(pdf.pages[:3], 1):
-                tablas = pag.extract_tables()
-                print(f"\n  Página {i}: {len(tablas)} tabla(s)")
-                for j, tabla in enumerate(tablas[:2], 1):
-                    if tabla:
-                        print(f"    Tabla {j}: {len(tabla)} filas × {len(tabla[0])} cols")
-                        print(f"    Encabezado: {tabla[0][:8]}")
-                        if len(tabla) > 1:
-                            print(f"    Fila[1]:    {tabla[1][:8]}")
+                texto = pag.extract_text() or ""
+                print(f"\n  [Pág {i}] {len(texto)} chars")
+                # Mostrar solo encabezado y líneas TOTAL
+                for linea in texto.splitlines():
+                    if any(kw in linea.upper() for kw in
+                           ["JURISDICCI", "ENTIDAD", "PROGRAMA", "SERVICIO",
+                            "TOTAL", "ARTICULO"]):
+                        print(f"    {linea.strip()}")
     except ImportError:
-        print("pdfplumber no disponible")
+        print("pdfplumber no disponible — usando pypdf")
 
-    print("\n--- Extracción automática ---")
+    print(f"\n--- Extracción automática ---")
     filas = extraer_modificaciones_pdf(pdf_path)
     print(f"Resultado: {len(filas)} filas extraídas")
+
     if filas:
-        print(f"Primera fila: {filas[0]}")
+        print(f"\n{'JUR':>4} {'SAF':>5} {'PROG':>5} {'SUBP':>5}  "
+              f"{'AUMENTO':>20}  {'DISMINUCIÓN':>20}  {'NETO':>20}")
+        print("-" * 85)
+        for f in filas[:20]:
+            print(
+                f"  {f.get('jurisdiccion_id','?'):>4}"
+                f"  {f.get('saf_id') or '':>5}"
+                f"  {f.get('programa_id') or '':>5}"
+                f"  {f.get('subprograma_id') or '':>5}"
+                f"  {f['aumento']:>20,.0f}"
+                f"  {f['disminucion']:>20,.0f}"
+                f"  {f['monto_neto']:>20,.0f}"
+            )
+        if len(filas) > 20:
+            print(f"  ... ({len(filas) - 20} filas más)")
+
         total_aum = sum(f["aumento"] for f in filas)
         total_dis = sum(f["disminucion"] for f in filas)
-        print(f"Total aumentos:      ${total_aum:>20,.2f}")
-        print(f"Total disminuciones: ${total_dis:>20,.2f}")
-        print(f"Neto:                ${total_aum - total_dis:>20,.2f}")
-    print(f"{'='*60}\n")
+        print(f"\n{'─'*85}")
+        print(f"  {'TOTAL':>17}  {total_aum:>20,.0f}  {total_dis:>20,.0f}  "
+              f"{total_aum - total_dis:>20,.0f}")
+    print(f"{'='*70}\n")
 
 
 if __name__ == "__main__":
@@ -420,5 +425,5 @@ if __name__ == "__main__":
     else:
         filas = extraer_modificaciones_pdf(sys.argv[1])
         print(f"\n{len(filas)} filas extraídas")
-        for f in filas[:10]:
+        for f in filas[:15]:
             print(f)
