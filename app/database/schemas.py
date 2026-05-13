@@ -84,7 +84,10 @@ class CruceNormaInflacion(BaseModel):
     fecha: Optional[str]
     programa_id: str
     monto_neto: float
-    ipc_mensual_en_fecha_norma: Optional[float]
+    monto_neto_usd: Optional[float] = None
+    tc_en_fecha_norma: Optional[float] = None
+    ipc_mensual_en_fecha_norma: Optional[float] = None
+    nota: Optional[str] = None
 
 
 # ── Filtros / Query params ────────────────────────────────────────

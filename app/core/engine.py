@@ -167,23 +167,79 @@ class AnalizadorPresupuestario:
         self.df_usd = macro["df_usd"]
         self.usd_actual = macro["usd_actual"]
 
-    def calcular_variacion_real(self, base, modificaciones):
-        total_mod = sum(m.monto_neto for m in modificaciones) if modificaciones else 0.0
-        vigente_actual = (base.monto_vigente or 0) + total_mod
-        monto_original = base.monto_original if base.monto_original and base.monto_original != 0 else None
+        # Precalcular índice USD por año-mes para lookup O(1)
+        self._usd_idx: dict = {}
+        if not self.df_usd.empty and "usd_oficial" in self.df_usd.columns:
+            for _, row in self.df_usd.iterrows():
+                ym = row["fecha"].strftime("%Y-%m")
+                self._usd_idx[ym] = float(row["usd_oficial"])
 
+        # USD de enero 2023 (base) — primer registro disponible
+        self.usd_base_2023: float | None = (
+            self._usd_idx.get("2023-01")
+            or (float(self.df_usd["usd_oficial"].iloc[0]) if not self.df_usd.empty else None)
+        )
+
+    def usd_en_fecha(self, fecha) -> float | None:
+        """Devuelve el tipo de cambio USD oficial vigente en el mes de `fecha`.
+
+        Estrategia: lookup exacto por YYYY-MM → fallback al mes anterior más
+        cercano → fallback a usd_actual.  Nunca usa el USD de hoy para una
+        modificación del pasado.
+        """
+        if not fecha:
+            return self.usd_actual
+        ym = fecha.strftime("%Y-%m") if hasattr(fecha, "strftime") else str(fecha)[:7]
+        if ym in self._usd_idx:
+            return self._usd_idx[ym]
+        # buscar el mes previo más reciente disponible
+        candidatos = [k for k in self._usd_idx if k <= ym]
+        if candidatos:
+            return self._usd_idx[max(candidatos)]
+        return self.usd_actual
+
+    def calcular_variacion_real(self, base, modificaciones):
+        monto_original = base.monto_original if base.monto_original and base.monto_original != 0 else None
         if not monto_original:
             return None  # saltar partidas sin crédito original
+
+        # ── Conversión USD del original (al tipo de cambio de enero 2023) ──
+        usd_base = self.usd_base_2023 or self.usd_actual
+        original_usd = round(monto_original / usd_base, 2) if usd_base else None
+
+        # ── Acumular modificaciones dolarizando cada una a su propio TC ──
+        total_mod_nominal = 0.0
+        total_mod_usd = 0.0
+        for m in (modificaciones or []):
+            tc = self.usd_en_fecha(m.fecha_boletin) or usd_base
+            total_mod_nominal += m.monto_neto
+            total_mod_usd += m.monto_neto / tc
+
+        vigente_actual = (base.monto_vigente or monto_original) + total_mod_nominal
+        vigente_usd = (original_usd or 0) + total_mod_usd if original_usd is not None else None
+
+        # ── Valor real deflactado por IPC ──
         valor_real = vigente_actual / self.ipc_acumulado
         var_nominal = ((vigente_actual / monto_original) - 1) * 100
         var_real = ((valor_real / monto_original) - 1) * 100
         licuacion = var_nominal - var_real
 
+        # ── Variación en USD (histórica) ──
+        var_usd = None
+        if original_usd and vigente_usd is not None and original_usd != 0:
+            var_usd = round(((vigente_usd / original_usd) - 1) * 100, 2)
+
         equivalente_usd = None
-        if self.usd_actual:
+        if original_usd is not None:
             equivalente_usd = {
-                "monto_original_usd": round(monto_original / self.usd_actual, 2),
-                "monto_vigente_usd": round(vigente_actual / self.usd_actual, 2),
+                # Original: al TC de enero 2023
+                "monto_original_usd": original_usd,
+                "tc_original": round(usd_base, 2),
+                "fecha_tc_original": "2023-01",
+                # Vigente: suma de modificaciones cada una a su TC histórico
+                "monto_vigente_usd": round(vigente_usd, 2) if vigente_usd is not None else None,
+                "variacion_usd_pct": var_usd,
+                "metodologia": "cada modificación dolarizada al TC del mes de su DA/Decreto",
             }
 
         return {
@@ -249,10 +305,18 @@ class AnalizadorPresupuestario:
             if not row.empty:
                 ipc_mes = row.iloc[0]["var_mensual_pct"]
 
+        # TC del mes exacto de la DA/Decreto — no el USD de hoy
+        tc_norma = self.usd_en_fecha(fecha_norma)
+        monto_neto = modificacion.monto_neto
+        monto_neto_usd = round(monto_neto / tc_norma, 2) if tc_norma else None
+
         return {
             "norma_id": modificacion.norma_id,
             "fecha": fecha_norma.isoformat() if fecha_norma else None,
             "programa_id": modificacion.programa_id,
-            "monto_neto": modificacion.monto_neto,
+            "monto_neto": monto_neto,
+            "monto_neto_usd": monto_neto_usd,
+            "tc_en_fecha_norma": round(tc_norma, 2) if tc_norma else None,
             "ipc_mensual_en_fecha_norma": round(float(ipc_mes), 2) if ipc_mes is not None else None,
+            "nota": "USD dolarizado al TC oficial del mes de publicación en BORA",
         }

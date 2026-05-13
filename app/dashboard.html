@@ -6,656 +6,217 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #faf9f6; color: #3a1f5c; font-size: 14px; }
-
-.header { background: #5b2d8e; color: white; padding: 16px 28px; display: flex; align-items: center; gap: 12px; border-bottom: 3px solid #c4a8e8; }
-.header h1 { font-size: 19px; font-weight: 500; letter-spacing: -0.3px; }
-.badge { background: rgba(255,255,255,0.18); padding: 2px 10px; border-radius: 4px; font-size: 11px; }
-.header-sub { font-size: 12px; opacity: 0.65; margin-top: 2px; }
-
-.main { padding: 22px 28px; max-width: 1400px; margin: 0 auto; }
-
-.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 22px; }
-.kpi { background: white; border-radius: 8px; padding: 16px 18px; border: 1px solid #e8e0d0; }
-.kpi-label { font-size: 11px; color: #9a8c7a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-.kpi-value { font-size: 27px; font-weight: 500; line-height: 1; color: #3a1f5c; }
-.kpi-sub { font-size: 11px; color: #bbb0a0; margin-top: 4px; }
-
-.tabs { display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 1px solid #e8e0d0; padding-bottom: 0; }
-.tab { padding: 8px 18px; border-radius: 6px 6px 0 0; cursor: pointer; border: 1px solid transparent; background: transparent; font-size: 13px; color: #9a8c7a; margin-bottom: -1px; }
-.tab.active { background: white; color: #5b2d8e; border-color: #e8e0d0; border-bottom-color: white; font-weight: 500; }
-.tab:hover:not(.active) { background: #f5f0e8; color: #3a1f5c; }
-
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; font-size: 14px; }
+.header { background: #5b2d8e; color: white; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+.header h1 { font-size: 18px; font-weight: 500; }
+.badge-version { background: rgba(255,255,255,0.15); padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+.main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.kpi { background: white; border-radius: 8px; padding: 16px; border: 1px solid #e8e8e4; }
+.kpi-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.kpi-value { font-size: 28px; font-weight: 500; line-height: 1; }
+.kpi-sub { font-size: 11px; color: #aaa; margin-top: 4px; }
+.red { color: #c0392b; } .green { color: #27ae60; } .amber { color: #b46414; }
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+.tab { padding: 7px 16px; border-radius: 6px; cursor: pointer; border: 1px solid #e0e0da; background: white; font-size: 13px; color: #666; }
+.tab.active { background: #5b2d8e; color: white; border-color: #5b2d8e; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.card { background: white; border-radius: 8px; border: 1px solid #e8e8e4; padding: 16px; }
+.card-title { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
+.filters { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-radius: 6px; font-size: 13px; background: white; }
+.th { display: grid; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f0f0ea; font-size: 11px; color: #aaa; text-transform: uppercase; }
+.tr { display: grid; gap: 8px; padding: 9px 0; border-bottom: 1px solid #f8f8f4; align-items: center; font-size: 13px; }
+.tr:hover { background: #fafaf7; }
+.prog-name { line-height: 1.3; }
+.prog-jur { font-size: 11px; color: #aaa; }
+.pill { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; }
+.pill-red { background: #fdecea; color: #7b1515; }
+.pill-green { background: #eaf7ee; color: #145a22; }
+.nr { text-align: right; }
 .panel { display: none; }
 .panel.active { display: block; }
-
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-
-.card { background: white; border-radius: 8px; border: 1px solid #e8e0d0; padding: 18px; margin-bottom: 16px; }
-.card-title { font-size: 11px; color: #9a8c7a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; font-weight: 500; }
-.card-subtitle { font-size: 12px; color: #bbb0a0; margin-bottom: 14px; margin-top: -10px; }
-
-.filters { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
-select, input[type=text] { padding: 6px 10px; border: 1px solid #e0d8cc; border-radius: 6px; font-size: 13px; background: #faf9f6; color: #3a1f5c; }
-select:focus, input:focus { outline: none; border-color: #a89880; }
-
-.poder-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 16px; }
-.poder-card { background: white; border-radius: 8px; border: 1px solid #e8e0d0; padding: 18px; }
-.poder-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-.poder-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-.poder-sub { font-size: 11px; color: #9a8c7a; margin-bottom: 14px; }
-.poder-kpi { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-.pk { background: #faf9f6; border-radius: 6px; padding: 10px 12px; border: 1px solid #f0e8dc; }
-.pk-label { font-size: 10px; color: #bbb0a0; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
-.pk-value { font-size: 18px; font-weight: 500; }
-
-.camara-row { padding: 8px 0; border-bottom: 1px solid #f5f0e8; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
-.camara-row:last-child { border-bottom: none; }
-.camara-name { color: #4a4440; }
-.camara-pct { font-weight: 500; font-size: 14px; }
-
-.th { display: grid; gap: 8px; padding: 6px 0; border-bottom: 1px solid #ede8e0; font-size: 10px; color: #bbb0a0; text-transform: uppercase; letter-spacing: 0.05em; }
-.tr { display: grid; gap: 8px; padding: 9px 0; border-bottom: 1px solid #f5f0e8; align-items: center; font-size: 13px; }
-.tr:hover { background: #faf7f2; border-radius: 4px; }
-.prog-name { line-height: 1.3; color: #3a1f5c; }
-.prog-jur { font-size: 11px; color: #bbb0a0; margin-top: 2px; }
-
-.pill { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 4px; }
-.pill-red { background: #fdecea; color: #8b1a1a; }
-.pill-green { background: #eaf5ee; color: #1a5c2a; }
-.pill-amber { background: #fef5e4; color: #7a4f10; }
-
-.red { color: #c0392b; } .green { color: #27ae60; } .amber { color: #c07820; }
-.nr { text-align: right; }
-
-.bar-bg { height: 5px; background: #f0ece4; border-radius: 3px; overflow: hidden; margin-top: 4px; }
-.bar-fill { height: 100%; border-radius: 3px; }
-
-.legend { display: flex; gap: 16px; font-size: 12px; color: #9a8c7a; margin-bottom: 10px; }
-.ld { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
-
-.min-card { background: #faf9f6; border: 1px solid #ede8e0; border-radius: 6px; padding: 12px 14px; margin-bottom: 8px; }
-.min-name { font-size: 13px; font-weight: 500; color: #3a1f5c; margin-bottom: 6px; }
-.min-stats { display: flex; gap: 16px; font-size: 12px; }
-.min-stat { color: #9a8c7a; }
-.min-stat span { font-weight: 500; color: #3a1f5c; }
-
-.prog-detail-card { border: 1px solid #ede8e0; border-radius: 6px; padding: 12px 14px; margin-bottom: 6px; cursor: pointer; transition: border-color 0.15s; }
-.prog-detail-card:hover { border-color: #a89880; background: #faf7f2; }
-.prog-detail-header { display: flex; justify-content: space-between; align-items: flex-start; }
-.prog-detail-bar { margin-top: 8px; }
+.legend { display: flex; gap: 16px; font-size: 12px; color: #888; margin-bottom: 10px; }
+.legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }
 </style>
 </head>
 <body>
-
 <div class="header">
   <div>
     <div style="display:flex;align-items:center;gap:10px;">
       <h1>Monitor de Ajuste Presupuestario</h1>
-      <span class="badge">MAP v2.0</span>
+      <span class="badge-version">MAP v2.0</span>
     </div>
-    <div class="header-sub">Argentina · Presupuesto 2023 → 2025 · Deflactado por IPC acumulado (factor 8.5×)</div>
+    <span style="font-size:12px;opacity:0.6;">Presupuesto 2023 → 2025 · Deflactado por IPC</span>
   </div>
-  <div style="margin-left:auto;font-size:12px;opacity:0.55;" id="last-update"></div>
+  <div style="margin-left:auto;font-size:12px;opacity:0.6;" id="last-update"></div>
 </div>
-
 <div class="main">
-
   <div class="kpi-grid">
-    <div class="kpi">
-      <div class="kpi-label">programas analizados</div>
-      <div class="kpi-value" id="kpi-total">—</div>
-      <div class="kpi-sub">base presupuesto 2023</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">reducción real promedio</div>
-      <div class="kpi-value red" id="kpi-avg">—</div>
-      <div class="kpi-sub">deflactado por IPC acumulado</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">factor IPC acumulado</div>
-      <div class="kpi-value amber" id="kpi-ipc">8.5×</div>
-      <div class="kpi-sub">enero 2023 → mayo 2026</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">programas &gt;50% reducción real</div>
-      <div class="kpi-value red" id="kpi-cut50">—</div>
-      <div class="kpi-sub">de los programas con datos</div>
-    </div>
+    <div class="kpi"><div class="kpi-label">programas analizados</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">base 2023</div></div>
+    <div class="kpi"><div class="kpi-label">reducción real promedio</div><div class="kpi-value red" id="kpi-avg">—</div><div class="kpi-sub">deflactado por IPC acumulado</div></div>
+    <div class="kpi"><div class="kpi-label">factor IPC acumulado</div><div class="kpi-value" id="kpi-ipc">8.5×</div><div class="kpi-sub">ene 2023 → may 2026</div></div>
+    <div class="kpi"><div class="kpi-label">programas &gt;50% reducción real</div><div class="kpi-value red" id="kpi-cut50">—</div><div class="kpi-sub">de los programas con datos</div></div>
   </div>
-
   <div class="tabs">
-    <button class="tab active" onclick="sw('poderes',this)">tres poderes</button>
-    <button class="tab" onclick="sw('ministerios',this)">por ministerio</button>
-    <button class="tab" onclick="sw('ranking',this)">ranking programas</button>
-    <button class="tab" onclick="sw('inciso',this)">por tipo de gasto</button>
+    <button class="tab active" onclick="sw('ranking',this)">ranking</button>
+    <button class="tab" onclick="sw('inciso',this)">por inciso</button>
     <button class="tab" onclick="sw('scatter',this)">nominal vs real</button>
+    <button class="tab" onclick="sw('detalle',this)">detalle de partidas</button>
   </div>
 
-  <!-- TAB: TRES PODERES -->
-  <div class="panel active" id="tab-poderes">
-    <div class="poder-grid" id="poderes-grid"></div>
-
-    <div class="grid2">
-      <div class="card">
-        <div class="card-title">variación real por poder del estado</div>
-        <div style="position:relative;height:260px;">
-          <canvas id="cPoderes" role="img" aria-label="Variación real por poder del estado"></canvas>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">comparativa nominal vs real por poder</div>
-        <div style="position:relative;height:260px;">
-          <canvas id="cPoderesComp" role="img" aria-label="Nominal vs real por poder"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">poder legislativo — detalle por cámara</div>
-      <div id="legislativo-detalle"></div>
-    </div>
-  </div>
-
-  <!-- TAB: MINISTERIOS -->
-  <div class="panel" id="tab-ministerios">
-    <div class="filters">
-      <select id="mpoder" onchange="renderMinisterios()">
-        <option value="">todos los poderes</option>
-        <option value="jgm">jefatura de gabinete</option>
-        <option value="presidencia">secretaría gral. presidencia</option>
-        <option value="side">inteligencia (ex SIDE/AFI)</option>
-        <option value="ejecutivo">resto poder ejecutivo</option>
-        <option value="legislativo">poder legislativo</option>
-        <option value="judicial">poder judicial</option>
-      </select>
-      <select id="mestado" onchange="renderMinisterios()">
-        <option value="">todos</option>
-        <option value="REDUCCIÓN">solo reducciones</option>
-        <option value="INCREMENTO">solo incrementos</option>
-      </select>
-    </div>
-    <div class="card" style="margin-bottom:0;">
-      <div class="card-title">ajuste real por jurisdicción/ministerio</div>
-      <div style="position:relative;height:400px;">
-        <canvas id="cMinisterios" role="img" aria-label="Ajuste por ministerio"></canvas>
-      </div>
-    </div>
-    <div style="margin-top:16px;" id="ministerios-lista"></div>
-  </div>
-
-  <!-- TAB: RANKING -->
-  <div class="panel" id="tab-ranking">
+  <!-- RANKING -->
+  <div class="panel active" id="tab-ranking">
     <div class="card">
       <div class="card-title">programas con mayor reducción real</div>
       <div class="filters">
         <select id="rjur" onchange="renderRanking()"><option value="">todas las jurisdicciones</option></select>
-        <select id="rn" onchange="renderRanking()">
-          <option value="10">top 10</option>
-          <option value="20" selected>top 20</option>
-          <option value="50">top 50</option>
-        </select>
+        <select id="rn" onchange="renderRanking()"><option value="10">top 10</option><option value="20" selected>top 20</option><option value="50">top 50</option></select>
       </div>
       <div class="legend">
-        <span><span class="ld" style="background:#6a8fba;"></span>nominal</span>
-        <span><span class="ld" style="background:#c0392b;"></span>real (reducción)</span>
-        <span><span class="ld" style="background:#27ae60;"></span>real (incremento)</span>
+        <span><span class="legend-dot" style="background:#3478C8"></span>nominal</span>
+        <span><span class="legend-dot" style="background:#c0392b"></span>real deflactado (reducción)</span>
+        <span><span class="legend-dot" style="background:#27ae60"></span>real deflactado (incremento)</span>
       </div>
-      <div style="position:relative;width:100%;" id="rwrap">
-        <canvas id="cR" role="img" aria-label="Ranking programas mayor reducción real"></canvas>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">detalle por programa</div>
-      <div class="filters">
-        <select id="djur" onchange="renderDetalle()"><option value="">todas las jurisdicciones</option></select>
-        <select id="dest" onchange="renderDetalle()">
-          <option value="">todos</option>
-          <option value="REDUCCIÓN">solo reducciones</option>
-          <option value="INCREMENTO">solo incrementos</option>
-        </select>
-        <input type="text" id="dsrch" placeholder="buscar programa..." oninput="renderDetalle()" style="width:200px;">
-      </div>
-      <div class="th" style="grid-template-columns:2fr 80px 80px 90px 80px;">
-        <span>programa</span><span class="nr">nominal</span><span class="nr">real</span><span class="nr">licuación</span><span class="nr">estado</span>
-      </div>
-      <div id="tbl-detalle"></div>
+      <div style="position:relative;width:100%;" id="rwrap"><canvas id="cR" role="img" aria-label="Ranking programas mayor reducción real"></canvas></div>
     </div>
   </div>
 
-  <!-- TAB: INCISO -->
+  <!-- INCISO -->
   <div class="panel" id="tab-inciso">
     <div class="grid2">
       <div class="card">
-        <div class="card-title">variación real por tipo de gasto (inciso)</div>
-        <div style="position:relative;height:290px;">
-          <canvas id="cI" role="img" aria-label="Variación real por inciso"></canvas>
-        </div>
+        <div class="card-title">variación real por tipo de gasto</div>
+        <div style="position:relative;height:280px;"><canvas id="cI" role="img" aria-label="Variación real por inciso"></canvas></div>
       </div>
       <div class="card">
         <div class="card-title">licuación inflacionaria por inciso</div>
-        <div style="position:relative;height:290px;">
-          <canvas id="cL" role="img" aria-label="Licuación por inciso"></canvas>
-        </div>
+        <div style="position:relative;height:280px;"><canvas id="cL" role="img" aria-label="Licuación por inciso"></canvas></div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title">tabla resumen por inciso</div>
+    <div class="card" style="margin-top:16px;">
+      <div class="card-title">tabla por inciso</div>
       <div class="th" style="grid-template-columns:2fr 1fr 1fr 1fr 80px;">
-        <span>inciso</span><span class="nr">original</span><span class="nr">vigente</span><span class="nr">real (m.2023)</span><span class="nr">var. real</span>
+        <span>inciso</span><span class="nr">original</span><span class="nr">vigente</span><span class="nr">real (m. 2023)</span><span class="nr">var. real</span>
       </div>
       <div id="tbl-inciso"></div>
     </div>
   </div>
 
-  <!-- TAB: SCATTER -->
+  <!-- SCATTER -->
   <div class="panel" id="tab-scatter">
     <div class="card">
       <div class="card-title">variación nominal vs real — cada punto es un programa</div>
-      <div class="card-subtitle">Puntos bajo la diagonal: licuados por inflación. Sobre la diagonal: ganaron poder de compra real.</div>
-      <div style="position:relative;height:420px;">
-        <canvas id="cS" role="img" aria-label="Dispersión nominal vs real"></canvas>
-      </div>
+      <p style="font-size:12px;color:#aaa;margin-bottom:12px;">Puntos bajo la diagonal: licuados por inflación. Sobre la diagonal: ganaron poder de compra real.</p>
+      <div style="position:relative;height:420px;"><canvas id="cS" role="img" aria-label="Dispersión nominal vs real por programa"></canvas></div>
     </div>
   </div>
 
+  <!-- DETALLE -->
+  <div class="panel" id="tab-detalle">
+    <div class="card">
+      <div class="card-title">detalle completo de partidas</div>
+      <div class="filters">
+        <select id="djur" onchange="renderDetalle()"><option value="">todas las jurisdicciones</option></select>
+        <select id="dest" onchange="renderDetalle()"><option value="">todos</option><option value="REDUCCIÓN">solo reducciones</option><option value="INCREMENTO">solo incrementos</option></select>
+        <input type="text" id="dsrch" placeholder="buscar programa..." oninput="renderDetalle()" style="width:200px;">
+      </div>
+      <div class="th" style="grid-template-columns:2fr 80px 80px 90px 80px;">
+        <span>programa</span><span class="nr">nominal</span><span class="nr">real</span><span class="nr">licuación</span><span class="nr">USD orig.</span><span class="nr">USD vig.</span><span class="nr">estado</span>
+      </div>
+      <div id="tbl-detalle"></div>
+    </div>
+  </div>
 </div>
 
 <script>
-const API = 'http://localhost:8000/api/v1';
-let D = [], I = [], cRI, cII, cLI, cSI, cPod, cPodC, cMin;
+const API=`${location.origin}/api/v1`;
+let D=[],I=[];
+let cRI,cII,cLI,cSI;
 
-// ── Clasificación de poderes ────────────────────────────────────
-const PODERES = {
-  jgm: {
-    label: 'Jefatura de Gabinete',
-    icon: '🗂️',
-    color: '#5b2d8e',
-  },
-  presidencia: {
-    label: 'Secretaría Gral. Presidencia',
-    icon: '🏠',
-    color: '#7a4fa3',
-  },
-  side: {
-    label: 'Inteligencia (ex SIDE / AFI)',
-    icon: '🔍',
-    color: '#9a6fb0',
-  },
-  ejecutivo: {
-    label: 'Resto Poder Ejecutivo',
-    icon: '🏛️',
-    color: '#5b7fa3',
-  },
-  legislativo: {
-    label: 'Poder Legislativo',
-    icon: '📜',
-    color: '#7a6fa3',
-    camaras: {
-      'Honorable Senado de la Nación Argentina': 'Senado',
-      'Honorable Cámara de Diputados de la Nación': 'Diputados',
-      'Auditoría General de la Nación': 'Auditoría General',
-      'Defensoría del Pueblo de la Nación': 'Defensoría del Pueblo',
-    }
-  },
-  judicial: {
-    label: 'Poder Judicial',
-    icon: '⚖️',
-    color: '#7a9a5b',
-  }
-};
+function fmtM(n){if(!n&&n!==0)return'—';const a=Math.abs(n);if(a>=1e9)return(n/1e9).toFixed(1)+'B';if(a>=1e6)return(n/1e6).toFixed(1)+'M';if(a>=1e3)return(n/1e3).toFixed(1)+'K';return n.toFixed(0);}
+function fmtP(n){return(n>0?'+':'')+n.toFixed(1)+'%';}
+function sw(name,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');}
 
-function clasificarPoder(jur) {
-  const j = (jur||'').toLowerCase();
-  if (['senado','diputados','congreso','legislativo','auditoria general de la nacion','defensoria del pueblo'].some(k => j.includes(k))) return 'legislativo';
-  if (['judicial','corte suprema','ministerio publico','fiscalia','procuración','magistratura','consejo de la magistratura'].some(k => j.includes(k))) return 'judicial';
-  if (['jefatura de gabinete','jgm'].some(k => j.includes(k))) return 'jgm';
-  if (['secretaria general','secretaría general','casa militar','presidencia de la nacion','presidencia de la nación'].some(k => j.includes(k))) return 'presidencia';
-  if (['side','inteligencia','agencia federal de inteligencia','afi'].some(k => j.includes(k))) return 'side';
-  return 'ejecutivo';
-}
-
-function fmtM(n) {
-  if (!n && n !== 0) return '—';
-  const a = Math.abs(n);
-  if (a >= 1e9) return (n/1e9).toFixed(1) + 'B';
-  if (a >= 1e6) return (n/1e6).toFixed(1) + 'M';
-  if (a >= 1e3) return (n/1e3).toFixed(1) + 'K';
-  return n.toFixed(0);
-}
-function fmtP(n) { return (n > 0 ? '+' : '') + n.toFixed(1) + '%'; }
-function clr(v) { return v < 0 ? '#c0392b' : '#27ae60'; }
-
-function sw(name, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  btn.classList.add('active');
-}
-
-async function init() {
-  try {
-    const [root, rank, inc] = await Promise.all([
-      fetch('http://localhost:8000/').then(r => r.json()),
-      fetch(`${API}/analisis/ranking?top_n=100`).then(r => r.json()),
-      fetch(`${API}/analisis/por-inciso`).then(r => r.json()),
+async function init(){
+  try{
+    const[root,rank,inc]=await Promise.all([
+      fetch(`${location.origin}/`).then(r=>r.json()),
+      fetch(`${API}/analisis/ranking?top_n=200`).then(r=>r.json()),
+      fetch(`${API}/analisis/por-inciso`).then(r=>r.json()),
     ]);
-    D = rank; I = inc;
-
-    document.getElementById('kpi-total').textContent = D.length;
-    document.getElementById('kpi-ipc').textContent = (root.factor_ipc_acumulado || 8.5).toFixed(2) + '×';
-    document.getElementById('last-update').textContent = 'Actualizado: ' + new Date(root.servidor_tiempo).toLocaleString('es-AR');
-
-    const reds = D.filter(d => d.variacion_real_pct < 0);
-    const avg = reds.reduce((s, d) => s + d.variacion_real_pct, 0) / (reds.length || 1);
-    document.getElementById('kpi-avg').textContent = avg.toFixed(1) + '%';
-    document.getElementById('kpi-cut50').textContent = D.filter(d => d.variacion_real_pct < -50).length;
-
-    const jurs = [...new Set(D.map(d => d.jurisdiccion))].sort();
-    ['rjur', 'djur'].forEach(id => {
-      const s = document.getElementById(id);
-      jurs.forEach(j => {
-        const o = document.createElement('option');
-        o.value = j; o.textContent = j.length > 50 ? j.slice(0, 50) + '…' : j;
+    D=rank; I=inc;
+    document.getElementById('kpi-total').textContent=D.length;
+    document.getElementById('kpi-ipc').textContent=(root.factor_ipc_acumulado||8.5).toFixed(2)+'×';
+    document.getElementById('last-update').textContent=new Date(root.servidor_tiempo).toLocaleString('es-AR');
+    const reds=D.filter(d=>d.variacion_real_pct<0);
+    const avg=reds.reduce((s,d)=>s+d.variacion_real_pct,0)/(reds.length||1);
+    document.getElementById('kpi-avg').textContent=avg.toFixed(1)+'%';
+    document.getElementById('kpi-cut50').textContent=D.filter(d=>d.variacion_real_pct<-50).length;
+    // Cargar jurisdicciones reales desde la API
+    let JURS=[];
+    try{
+      JURS=await fetch(`${API}/jurisdicciones`).then(r=>r.json());
+    }catch(e){
+      // fallback: extraer del ranking
+      const seen=new Set();
+      D.forEach(d=>{if(!seen.has(d.jurisdiccion)){seen.add(d.jurisdiccion);JURS.push({jurisdiccion_id:'',jurisdiccion_desc:d.jurisdiccion});}});
+    }
+    JURS.sort((a,b)=>a.jurisdiccion_desc.localeCompare(b.jurisdiccion_desc));
+    ['rjur','djur'].forEach(id=>{
+      const s=document.getElementById(id);
+      JURS.forEach(j=>{
+        const o=document.createElement('option');
+        o.value=j.jurisdiccion_id;
+        o.textContent=j.jurisdiccion_desc.length>48?j.jurisdiccion_desc.slice(0,46)+'…':j.jurisdiccion_desc;
         s.appendChild(o);
       });
     });
-
-    renderPoderes();
-    renderMinisterios();
-    renderRanking();
-    renderInciso();
-    renderScatter();
-    renderDetalle();
-
-  } catch (e) {
-    document.querySelector('.main').innerHTML = `<div style="padding:60px;text-align:center;color:#9a8c7a;">⚠️ No se pudo conectar con la API en localhost:8000<br><small style="color:#bbb0a0;">${e.message}</small><br><br>Asegurate de que uvicorn esté corriendo.</div>`;
-  }
+    renderRanking();renderInciso();renderScatter();renderDetalle();
+  }catch(e){document.querySelector('.main').innerHTML=`<div style="padding:40px;text-align:center;color:#aaa;">⚠️ No se pudo conectar con la API del servidor<br><small>${e.message}</small><br><br>Asegurate de que uvicorn esté corriendo.</div>`;}
 }
 
-// ── PODERES ─────────────────────────────────────────────────────
-function renderPoderes() {
-  const grupos = { jgm: [], presidencia: [], side: [], ejecutivo: [], legislativo: [], judicial: [] };
-  D.forEach(d => { grupos[clasificarPoder(d.jurisdiccion)].push(d); });
-
-  const grid = document.getElementById('poderes-grid');
-  grid.innerHTML = '';
-
-  const orden = ['jgm', 'presidencia', 'side', 'ejecutivo', 'legislativo', 'judicial'];
-  const labels = [], dataNom = [], dataReal = [];
-
-  orden.forEach(key => {
-    const cfg = PODERES[key];
-    const items = grupos[key];
-    if (!items.length) return;
-
-    const totOrig = items.reduce((s, d) => s + (d.monto_original_nominal || 0), 0);
-    const totVig = items.reduce((s, d) => s + (d.monto_vigente_nominal || 0), 0);
-    const totReal = items.reduce((s, d) => s + (d.monto_real_en_moneda_2023 || 0), 0);
-    const vNom = totOrig > 0 ? ((totVig / totOrig) - 1) * 100 : 0;
-    const vReal = totOrig > 0 ? ((totReal / totOrig) - 1) * 100 : 0;
-
-    labels.push(cfg.label);
-    dataNom.push(+vNom.toFixed(1));
-    dataReal.push(+vReal.toFixed(1));
-
-    // Camaras (solo legislativo)
-    let camarasHTML = '';
-    if (key === 'legislativo') {
-      const porCamara = {};
-      items.forEach(d => {
-        const cam = PODERES.legislativo.camaras[d.jurisdiccion] || d.jurisdiccion;
-        if (!porCamara[cam]) porCamara[cam] = { orig: 0, vig: 0, real: 0 };
-        porCamara[cam].orig += d.monto_original_nominal || 0;
-        porCamara[cam].vig += d.monto_vigente_nominal || 0;
-        porCamara[cam].real += d.monto_real_en_moneda_2023 || 0;
-      });
-      camarasHTML = Object.entries(porCamara).map(([cam, v]) => {
-        const vr = v.orig > 0 ? ((v.real / v.orig) - 1) * 100 : 0;
-        return `<div class="camara-row"><span class="camara-name">${cam}</span><span class="camara-pct" style="color:${clr(vr)}">${vr.toFixed(1)}%</span></div>`;
-      }).join('');
-    }
-
-    grid.innerHTML += `
-      <div class="poder-card">
-        <div class="poder-title">
-          <span style="font-size:20px;">${cfg.icon}</span>
-          <span>${cfg.label}</span>
-        </div>
-        <div class="poder-sub">${items.length} programas analizados</div>
-        <div class="poder-kpi">
-          <div class="pk">
-            <div class="pk-label">var. nominal</div>
-            <div class="pk-value" style="color:${clr(vNom)}">${vNom.toFixed(1)}%</div>
-          </div>
-          <div class="pk">
-            <div class="pk-label">var. real</div>
-            <div class="pk-value" style="color:${clr(vReal)}">${vReal.toFixed(1)}%</div>
-          </div>
-          <div class="pk">
-            <div class="pk-label">presup. original</div>
-            <div class="pk-value" style="font-size:15px;">${fmtM(totOrig)}</div>
-          </div>
-          <div class="pk">
-            <div class="pk-label">real (m. 2023)</div>
-            <div class="pk-value" style="font-size:15px;">${fmtM(totReal)}</div>
-          </div>
-        </div>
-        ${camarasHTML ? `<div style="border-top:1px solid #f0e8dc;padding-top:10px;font-size:12px;color:#9a8c7a;margin-bottom:6px;">por cámara / organismo</div>${camarasHTML}` : ''}
-      </div>`;
-  });
-
-  // Detalle legislativo ampliado
-  const legItems = grupos.legislativo;
-  const legDiv = document.getElementById('legislativo-detalle');
-  if (legItems.length) {
-    const porOrg = {};
-    legItems.forEach(d => {
-      const k = d.jurisdiccion;
-      if (!porOrg[k]) porOrg[k] = [];
-      porOrg[k].push(d);
-    });
-    legDiv.innerHTML = Object.entries(porOrg).map(([org, progs]) => {
-      const totO = progs.reduce((s,p) => s+(p.monto_original_nominal||0),0);
-      const totR = progs.reduce((s,p) => s+(p.monto_real_en_moneda_2023||0),0);
-      const vr = totO > 0 ? ((totR/totO)-1)*100 : 0;
-      const pct = Math.abs(vr);
-      return `
-        <div class="min-card">
-          <div class="min-name">${org}</div>
-          <div class="min-stats">
-            <span class="min-stat">original: <span>${fmtM(totO)}</span></span>
-            <span class="min-stat">real (m. 2023): <span>${fmtM(totR)}</span></span>
-            <span class="min-stat">var. real: <span style="color:${clr(vr)}">${vr.toFixed(1)}%</span></span>
-            <span class="min-stat">programas: <span>${progs.length}</span></span>
-          </div>
-          <div class="bar-bg" style="margin-top:8px;"><div class="bar-fill" style="width:${Math.min(pct,100)}%;background:${vr<0?'#c0392b':'#27ae60'};"></div></div>
-        </div>`;
-    }).join('');
-  } else {
-    legDiv.innerHTML = '<p style="color:#bbb0a0;font-size:13px;padding:12px 0;">No se encontraron datos del Poder Legislativo en el ranking.</p>';
-  }
-
-  // Gráficos de poderes
-  if (cPod) cPod.destroy();
-  cPod = new Chart(document.getElementById('cPoderes'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'var. real %',
-        data: dataReal,
-        backgroundColor: dataReal.map(v => v < 0 ? 'rgba(192,57,43,0.75)' : 'rgba(39,174,96,0.75)'),
-        borderColor: dataReal.map(v => v < 0 ? '#c0392b' : '#27ae60'),
-        borderWidth: 1.5,
-        borderRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { font: { size: 12 } }, grid: { color: '#f5f0e8' } },
-        y: { ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: '#f5f0e8' } }
-      }
-    }
-  });
-
-  if (cPodC) cPodC.destroy();
-  cPodC = new Chart(document.getElementById('cPoderesComp'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'nominal %', data: dataNom, backgroundColor: 'rgba(106,143,186,0.5)', borderColor: '#6a8fba', borderWidth: 1.5, borderRadius: 4 },
-        { label: 'real %', data: dataReal, backgroundColor: dataReal.map(v => v < 0 ? 'rgba(192,57,43,0.6)' : 'rgba(39,174,96,0.6)'), borderColor: dataReal.map(v => v < 0 ? '#c0392b' : '#27ae60'), borderWidth: 1.5, borderRadius: 4 },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: true, labels: { font: { size: 11 }, boxWidth: 12 } } },
-      scales: {
-        x: { ticks: { font: { size: 12 } }, grid: { color: '#f5f0e8' } },
-        y: { ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: '#f5f0e8' } }
-      }
-    }
-  });
+function renderRanking(){
+  const jur=document.getElementById('rjur').value;
+  const n=parseInt(document.getElementById('rn').value);
+  let d=D.filter(x=>!jur||x.jurisdiccion_id===jur||x.jurisdiccion===jur).sort((a,b)=>a.variacion_real_pct-b.variacion_real_pct).slice(0,n);
+  document.getElementById('rwrap').style.height=(d.length*38+80)+'px';
+  const labs=d.map(x=>{const s=x.programa_desc||x.programa_id;return s.length>55?s.slice(0,55)+'…':s;});
+  if(cRI)cRI.destroy();
+  cRI=new Chart(document.getElementById('cR'),{type:'bar',data:{labels:labs,datasets:[
+    {label:'nominal %',data:d.map(x=>+x.variacion_nominal_pct.toFixed(1)),backgroundColor:'rgba(52,120,200,0.45)',borderColor:'#3478C8',borderWidth:1},
+    {label:'real %',data:d.map(x=>+x.variacion_real_pct.toFixed(1)),backgroundColor:d.map(x=>x.variacion_real_pct<0?'rgba(192,57,43,0.8)':'rgba(39,174,96,0.8)'),borderColor:d.map(x=>x.variacion_real_pct<0?'#c0392b':'#27ae60'),borderWidth:1},
+  ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{afterBody:(items)=>{const x=d[items[0].dataIndex];return[`nominal: ${fmtP(x.variacion_nominal_pct)}`,`real: ${fmtP(x.variacion_real_pct)}`,`licuación: ${x.licuacion_pct.toFixed(1)}%`,`modificaciones: ${x.cantidad_modificaciones}`];}}}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
 }
 
-// ── MINISTERIOS ─────────────────────────────────────────────────
-function renderMinisterios() {
-  const poder = document.getElementById('mpoder').value;
-  const estado = document.getElementById('mestado').value;
-
-  // Agrupar por jurisdiccion
-  const map = {};
-  D.forEach(d => {
-    const p = clasificarPoder(d.jurisdiccion);
-    if (poder && p !== poder) return;
-    if (estado && d.estado_ajuste !== estado) return;
-    if (!map[d.jurisdiccion]) map[d.jurisdiccion] = { orig: 0, vig: 0, real: 0, progs: 0, poder: p };
-    map[d.jurisdiccion].orig += d.monto_original_nominal || 0;
-    map[d.jurisdiccion].vig += d.monto_vigente_nominal || 0;
-    map[d.jurisdiccion].real += d.monto_real_en_moneda_2023 || 0;
-    map[d.jurisdiccion].progs++;
-  });
-
-  const entries = Object.entries(map)
-    .map(([jur, v]) => ({ jur, ...v, vr: v.orig > 0 ? ((v.real / v.orig) - 1) * 100 : 0 }))
-    .sort((a, b) => a.vr - b.vr);
-
-  const labs = entries.map(e => e.jur.length > 40 ? e.jur.slice(0, 40) + '…' : e.jur);
-  const vals = entries.map(e => +e.vr.toFixed(1));
-
-  document.getElementById('ministerios-lista').innerHTML = entries.map(e => `
-    <div class="min-card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div>
-          <div class="min-name">${e.jur}</div>
-          <div style="font-size:11px;color:#bbb0a0;margin-top:2px;">${PODERES[e.poder]?.label||''} · ${e.progs} programa${e.progs>1?'s':''}</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0;margin-left:16px;">
-          <div style="font-size:18px;font-weight:500;color:${clr(e.vr)}">${e.vr.toFixed(1)}%</div>
-          <div style="font-size:11px;color:#bbb0a0;">var. real</div>
-        </div>
-      </div>
-      <div class="min-stats" style="margin-top:8px;">
-        <span class="min-stat">original: <span>${fmtM(e.orig)}</span></span>
-        <span class="min-stat">vigente: <span>${fmtM(e.vig)}</span></span>
-        <span class="min-stat">real (m.2023): <span>${fmtM(e.real)}</span></span>
-        <span class="min-stat">nominal: <span style="color:${clr(e.orig>0?((e.vig/e.orig)-1)*100:0)}">${e.orig>0?fmtP(((e.vig/e.orig)-1)*100):'—'}</span></span>
-      </div>
-      <div class="bar-bg" style="margin-top:10px;"><div class="bar-fill" style="width:${Math.min(Math.abs(e.vr),100)}%;background:${e.vr<0?'#c0392b':'#27ae60'};"></div></div>
-    </div>`).join('');
-
-  const h = Math.max(entries.length * 38 + 80, 300);
-  if (cMin) cMin.destroy();
-  document.getElementById('cMinisterios').parentElement.style.height = h + 'px';
-  cMin = new Chart(document.getElementById('cMinisterios'), {
-    type: 'bar',
-    data: {
-      labels: labs,
-      datasets: [{
-        label: 'var. real %',
-        data: vals,
-        backgroundColor: vals.map(v => v < 0 ? 'rgba(192,57,43,0.7)' : 'rgba(39,174,96,0.7)'),
-        borderColor: vals.map(v => v < 0 ? '#c0392b' : '#27ae60'),
-        borderWidth: 1, borderRadius: 3,
-      }]
-    },
-    options: {
-      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: '#f5f0e8' } },
-        y: { ticks: { font: { size: 10 } }, grid: { display: false } }
-      }
-    }
-  });
+function renderInciso(){
+  const labs=I.map(d=>`${d.inciso_id} – ${(d.inciso_desc||'').slice(0,20)}`);
+  const vr=I.map(d=>+d.variacion_real_pct.toFixed(1));
+  const lic=I.map(d=>+((d.variacion_nominal_pct||0)-(d.variacion_real_pct||0)).toFixed(1));
+  if(cII)cII.destroy();
+  cII=new Chart(document.getElementById('cI'),{type:'bar',data:{labels:labs,datasets:[{label:'var. real %',data:vr,backgroundColor:vr.map(v=>v<0?'rgba(192,57,43,0.7)':'rgba(39,174,96,0.7)'),borderColor:vr.map(v=>v<0?'#c0392b':'#27ae60'),borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}}});
+  if(cLI)cLI.destroy();
+  cLI=new Chart(document.getElementById('cL'),{type:'bar',data:{labels:labs,datasets:[{label:'licuación %',data:lic,backgroundColor:'rgba(180,100,20,0.6)',borderColor:'#b46414',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}}});
+  document.getElementById('tbl-inciso').innerHTML=I.map(d=>`<div class="tr" style="grid-template-columns:2fr 1fr 1fr 1fr 80px;"><span>${d.inciso_id} — ${d.inciso_desc||''}</span><span class="nr">${fmtM(d.total_original)}</span><span class="nr">${fmtM(d.total_vigente)}</span><span class="nr">${fmtM(d.total_real_moneda_2023)}</span><span class="nr ${d.variacion_real_pct<0?'red':'green'}">${d.variacion_real_pct.toFixed(1)}%</span></div>`).join('');
 }
 
-// ── RANKING ──────────────────────────────────────────────────────
-function renderRanking() {
-  const jur = document.getElementById('rjur').value;
-  const n = parseInt(document.getElementById('rn').value);
-  let d = D.filter(x => !jur || x.jurisdiccion === jur).sort((a, b) => a.variacion_real_pct - b.variacion_real_pct).slice(0, n);
-  document.getElementById('rwrap').style.height = (d.length * 38 + 80) + 'px';
-  const labs = d.map(x => { const s = x.programa_desc || x.programa_id; return s.length > 55 ? s.slice(0, 55) + '…' : s; });
-  if (cRI) cRI.destroy();
-  cRI = new Chart(document.getElementById('cR'), {
-    type: 'bar',
-    data: {
-      labels: labs,
-      datasets: [
-        { label: 'nominal %', data: d.map(x => +x.variacion_nominal_pct.toFixed(1)), backgroundColor: 'rgba(106,143,186,0.45)', borderColor: '#6a8fba', borderWidth: 1 },
-        { label: 'real %', data: d.map(x => +x.variacion_real_pct.toFixed(1)), backgroundColor: d.map(x => x.variacion_real_pct < 0 ? 'rgba(192,57,43,0.8)' : 'rgba(39,174,96,0.8)'), borderColor: d.map(x => x.variacion_real_pct < 0 ? '#c0392b' : '#27ae60'), borderWidth: 1 },
-      ]
-    },
-    options: {
-      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { afterBody: (items) => { const x = d[items[0].dataIndex]; return [`nominal: ${fmtP(x.variacion_nominal_pct)}`, `real: ${fmtP(x.variacion_real_pct)}`, `licuación: ${x.licuacion_pct.toFixed(1)}%`]; } } } },
-      scales: { x: { ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: '#f5f0e8' } }, y: { ticks: { font: { size: 10 } }, grid: { display: false } } }
-    }
-  });
+function renderScatter(){
+  const pts=D.map(d=>({x:+d.variacion_nominal_pct.toFixed(1),y:+d.variacion_real_pct.toFixed(1),label:d.programa_desc}));
+  const mn=Math.min(...pts.map(p=>p.x),...pts.map(p=>p.y))-20;
+  const mx=Math.max(...pts.map(p=>p.x),...pts.map(p=>p.y))+20;
+  if(cSI)cSI.destroy();
+  cSI=new Chart(document.getElementById('cS'),{type:'scatter',data:{datasets:[
+    {label:'programas',data:pts,backgroundColor:pts.map(p=>p.y<0?'rgba(192,57,43,0.5)':'rgba(39,174,96,0.5)'),pointRadius:5},
+    {label:'diagonal',data:[{x:mn,y:mn},{x:mx,y:mx}],type:'line',borderColor:'#ccc',borderDash:[4,4],pointRadius:0,fill:false},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>{const p=ctx.raw;return`${(p.label||'').slice(0,40)}: nom ${p.x}%, real ${p.y}%`;}}}},scales:{x:{title:{display:true,text:'variación nominal %',font:{size:12}},ticks:{callback:v=>v+'%'}},y:{title:{display:true,text:'variación real %',font:{size:12}},ticks:{callback:v=>v+'%'}}}}});
 }
 
-// ── DETALLE ──────────────────────────────────────────────────────
-function renderDetalle() {
-  const jur = document.getElementById('djur').value;
-  const est = document.getElementById('dest').value;
-  const q = document.getElementById('dsrch').value.toLowerCase();
-  const data = D.filter(d => (!jur || d.jurisdiccion === jur) && (!est || d.estado_ajuste === est) && (!q || (d.programa_desc || '').toLowerCase().includes(q))).sort((a, b) => a.variacion_real_pct - b.variacion_real_pct);
-  document.getElementById('tbl-detalle').innerHTML = data.map(d => `
-    <div class="tr" style="grid-template-columns:2fr 80px 80px 90px 80px;">
-      <span><div class="prog-name">${d.programa_desc || d.programa_id}</div><div class="prog-jur">${d.jurisdiccion || ''}</div></span>
-      <span class="nr" style="color:${clr(d.variacion_nominal_pct)}">${fmtP(d.variacion_nominal_pct)}</span>
-      <span class="nr" style="color:${clr(d.variacion_real_pct)}">${fmtP(d.variacion_real_pct)}</span>
-      <span class="nr amber">${d.licuacion_pct.toFixed(1)}%</span>
-      <span><span class="pill ${d.estado_ajuste === 'REDUCCIÓN' ? 'pill-red' : 'pill-green'}">${d.estado_ajuste}</span></span>
-    </div>`).join('');
-}
-
-// ── INCISO ───────────────────────────────────────────────────────
-function renderInciso() {
-  const labs = I.map(d => `${d.inciso_id} – ${(d.inciso_desc || '').slice(0, 22)}`);
-  const vr = I.map(d => +d.variacion_real_pct.toFixed(1));
-  const lic = I.map(d => +((d.variacion_nominal_pct || 0) - (d.variacion_real_pct || 0)).toFixed(1));
-  if (cII) cII.destroy();
-  cII = new Chart(document.getElementById('cI'), { type: 'bar', data: { labels: labs, datasets: [{ label: 'var. real %', data: vr, backgroundColor: vr.map(v => v < 0 ? 'rgba(192,57,43,0.7)' : 'rgba(39,174,96,0.7)'), borderColor: vr.map(v => v < 0 ? '#c0392b' : '#27ae60'), borderWidth: 1, borderRadius: 3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 }, maxRotation: 35 } }, y: { ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: '#f5f0e8' } } } } });
-  if (cLI) cLI.destroy();
-  cLI = new Chart(document.getElementById('cL'), { type: 'bar', data: { labels: labs, datasets: [{ label: 'licuación %', data: lic, backgroundColor: 'rgba(192,120,32,0.6)', borderColor: '#c07820', borderWidth: 1, borderRadius: 3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 }, maxRotation: 35 } }, y: { ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: '#f5f0e8' } } } } });
-  document.getElementById('tbl-inciso').innerHTML = I.map(d => `<div class="tr" style="grid-template-columns:2fr 1fr 1fr 1fr 80px;"><span>${d.inciso_id} — ${d.inciso_desc || ''}</span><span class="nr">${fmtM(d.total_original)}</span><span class="nr">${fmtM(d.total_vigente)}</span><span class="nr">${fmtM(d.total_real_moneda_2023)}</span><span class="nr" style="color:${clr(d.variacion_real_pct)}">${d.variacion_real_pct.toFixed(1)}%</span></div>`).join('');
-}
-
-// ── SCATTER ──────────────────────────────────────────────────────
-function renderScatter() {
-  const pts = D.map(d => ({ x: +d.variacion_nominal_pct.toFixed(1), y: +d.variacion_real_pct.toFixed(1), label: d.programa_desc }));
-  const mn = Math.min(...pts.map(p => p.x), ...pts.map(p => p.y)) - 20;
-  const mx = Math.max(...pts.map(p => p.x), ...pts.map(p => p.y)) + 20;
-  if (cSI) cSI.destroy();
-  cSI = new Chart(document.getElementById('cS'), { type: 'scatter', data: { datasets: [{ label: 'programas', data: pts, backgroundColor: pts.map(p => p.y < 0 ? 'rgba(192,57,43,0.5)' : 'rgba(39,174,96,0.5)'), pointRadius: 5 }, { label: 'diagonal', data: [{ x: mn, y: mn }, { x: mx, y: mx }], type: 'line', borderColor: '#e0d8cc', borderDash: [5, 5], pointRadius: 0, fill: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => { const p = ctx.raw; return `${(p.label || '').slice(0, 45)}: nom ${p.x}%, real ${p.y}%`; } } } }, scales: { x: { title: { display: true, text: 'variación nominal %', font: { size: 12 } }, ticks: { callback: v => v + '%' }, grid: { color: '#f5f0e8' } }, y: { title: { display: true, text: 'variación real %', font: { size: 12 } }, ticks: { callback: v => v + '%' }, grid: { color: '#f5f0e8' } } } } });
+function renderDetalle(){
+  const jur=document.getElementById('djur').value;
+  const est=document.getElementById('dest').value;
+  const q=document.getElementById('dsrch').value.toLowerCase();
+  const data=D.filter(d=>(!jur||d.jurisdiccion_id===jur||d.jurisdiccion===jur)&&(!est||d.estado_ajuste===est)&&(!q||(d.programa_desc||'').toLowerCase().includes(q)||(d.jurisdiccion||'').toLowerCase().includes(q))).sort((a,b)=>a.variacion_real_pct-b.variacion_real_pct);
+  document.getElementById('tbl-detalle').innerHTML=data.map(d=>`<div class="tr" style="grid-template-columns:2fr 80px 80px 90px 80px 80px 80px;"><span><div class="prog-name">${d.programa_desc||d.programa_id}</div><div class="prog-jur">${d.jurisdiccion||''}</div></span><span class="nr ${d.variacion_nominal_pct<0?'red':'green'}">${fmtP(d.variacion_nominal_pct)}</span><span class="nr ${d.variacion_real_pct<0?'red':'green'}">${fmtP(d.variacion_real_pct)}</span><span class="nr amber">${d.licuacion_pct.toFixed(1)}%</span><span class="nr">${d.equivalente_usd?'U$S '+fmtM(d.equivalente_usd.monto_original_usd):'—'}</span><span class="nr">${d.equivalente_usd?'U$S '+fmtM(d.equivalente_usd.monto_vigente_usd):'—'}</span><span><span class="pill ${d.estado_ajuste==='REDUCCIÓN'?'pill-red':'pill-green'}">${d.estado_ajuste}</span></span></div>`).join('');
 }
 
 init();

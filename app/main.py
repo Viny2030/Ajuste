@@ -81,6 +81,74 @@ async def root():
     }
 
 
+# ── JURISDICCIONES ──────────────────────────────────────────────
+
+@app.get(
+    "/api/v1/jurisdicciones",
+    tags=["Presupuesto"],
+)
+def listar_jurisdicciones(db: Session = Depends(get_db)):
+    """Lista todas las jurisdicciones con ID, descripcion y totales presupuestados."""
+    rows = (
+        db.query(
+            models.PresupuestoBase.jurisdiccion_id,
+            models.PresupuestoBase.jurisdiccion_desc,
+            func.sum(models.PresupuestoBase.monto_original).label("total_original"),
+            func.sum(models.PresupuestoBase.monto_vigente).label("total_vigente"),
+        )
+        .group_by(
+            models.PresupuestoBase.jurisdiccion_id,
+            models.PresupuestoBase.jurisdiccion_desc,
+        )
+        .order_by(func.sum(models.PresupuestoBase.monto_original).desc())
+        .all()
+    )
+    return [
+        {
+            "jurisdiccion_id": r.jurisdiccion_id,
+            "jurisdiccion_desc": r.jurisdiccion_desc,
+            "total_original": round(r.total_original or 0),
+            "total_vigente": round(r.total_vigente or 0),
+        }
+        for r in rows
+    ]
+
+
+@app.get(
+    "/api/v1/jurisdicciones/{jurisdiccion_id}/programas",
+    tags=["Presupuesto"],
+)
+def programas_por_jurisdiccion(
+    jurisdiccion_id: str,
+    inciso_id: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    """Programas de una jurisdiccion con ajuste real e impacto en USD al TC historico."""
+    jid = jurisdiccion_id.lstrip("0") or "0"
+    q = db.query(models.PresupuestoBase).filter(
+        models.PresupuestoBase.jurisdiccion_id == jid
+    )
+    if inciso_id:
+        q = q.filter(models.PresupuestoBase.inciso_id == inciso_id)
+    programas = q.all()
+    if not programas:
+        raise HTTPException(404, detail=f"Jurisdiccion '{jurisdiccion_id}' no encontrada")
+    all_mods = db.query(models.ModificacionPresupuestaria).all()
+    mods_map: dict = {}
+    for m in all_mods:
+        mods_map.setdefault(m.programa_id, []).append(m)
+    analizador = AnalizadorPresupuestario(db)
+    resultado = []
+    for prog in programas:
+        mods = mods_map.get(prog.programa_id, [])
+        r = analizador.calcular_variacion_real(prog, mods)
+        if r:
+            r["inciso_id"] = prog.inciso_id
+            r["inciso_desc"] = prog.inciso_desc
+            resultado.append(r)
+    return sorted(resultado, key=lambda x: x["variacion_real_pct"])
+
+
 # ── PARTIDAS ────────────────────────────────────────────────────
 
 @app.get(

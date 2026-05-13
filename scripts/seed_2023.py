@@ -134,6 +134,8 @@ def _normalizar(df: pd.DataFrame) -> pd.DataFrame:
             df = df[df[col_anio].astype(str).str.strip() == "2023"]
             break
 
+    # Los montos del CSV de la ONP están en MILLONES de pesos (coma decimal).
+    # Ej: 18585,776825 → $18.585.776.825 pesos → multiplicar por 1_000_000
     for col in ("monto_original", "monto_vigente"):
         if col in df.columns:
             df[col] = (
@@ -142,6 +144,8 @@ def _normalizar(df: pd.DataFrame) -> pd.DataFrame:
                 .str.replace(r"[^\d\.]", "", regex=True)
                 .pipe(pd.to_numeric, errors="coerce")
                 .fillna(0.0)
+                .mul(1_000_000)
+                .round(0)
             )
     return df
 
