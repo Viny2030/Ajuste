@@ -74,17 +74,17 @@ class NormaJGM(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     norma_id = Column(String(80), unique=True, index=True)
-    # Ej: "DA-2024-58-APN-JGM" o "DNU-2023-8"
-    tipo_norma = Column(String(20))      # "DA", "DECRETO", "DNU"
+    jurisdiccion_id = Column(String(3), nullable=True, index=True)
+    tipo_norma = Column(String(20))
     numero = Column(String(20))
     anio = Column(Integer)
     fecha_publicacion = Column(DateTime)
     titulo = Column(Text)
     url_bora = Column(Text)
     pdf_url = Column(Text, nullable=True)
-    pdf_hash = Column(String(64), nullable=True)   # SHA-256 para dedup
-    texto_resumen = Column(Text, nullable=True)    # NLP summary
-    tipo_accion = Column(String(20), nullable=True)  # "REDUCCION", "REASIGNACION", "AMPLIACION"
+    pdf_hash = Column(String(64), nullable=True)
+    texto_resumen = Column(Text, nullable=True)
+    tipo_accion = Column(String(20), nullable=True)
     monto_total_reduccion = Column(Float, nullable=True)
     monto_total_ampliacion = Column(Float, nullable=True)
 
@@ -94,8 +94,9 @@ class NormaJGM(Base):
 
 class ModificacionPresupuestaria(Base):
     """
-    Vinculación granular norma ↔ partida presupuestaria ↔ monto.
-    Una norma puede modificar N partidas.
+    Vinculación granular norma ↔ programa presupuestario ↔ monto.
+    Una norma puede modificar N programas.
+    La granularidad es jurisdiccion + programa (nivel que publican las DAs).
     """
     __tablename__ = "modificaciones"
 
@@ -103,12 +104,15 @@ class ModificacionPresupuestaria(Base):
 
     # FK a norma
     norma_db_id = Column(Integer, ForeignKey("normas_jgm.id"), nullable=True)
-    norma_id = Column(String(80), index=True)    # desnormalizado para queries rápidas
+    norma_id = Column(String(80), index=True)
     fecha_boletin = Column(DateTime, index=True)
 
-    # FK a partida
+    # FK a partida (opcional — solo si se puede resolver a partida granular)
     partida_id = Column(Integer, ForeignKey("presupuesto_base.id"), nullable=True)
-    programa_id = Column(String(5), index=True)  # desnormalizado
+
+    # Clasificación administrativa desnormalizada
+    jurisdiccion_id = Column(String(3), nullable=True, index=True)
+    programa_id = Column(String(5), index=True)
 
     # Detalle de inciso/ppal para análisis por tipo de gasto
     inciso_id = Column(String(2), nullable=True)
@@ -117,7 +121,7 @@ class ModificacionPresupuestaria(Base):
     # Montos
     aumento = Column(Float, default=0.0)
     reduccion = Column(Float, default=0.0)
-    monto_neto = Column(Float)    # aumento - reduccion (positivo=ampliación, negativo=reducción)
+    monto_neto = Column(Float)
 
     # Relaciones
     norma = relationship("NormaJGM", back_populates="modificaciones")
@@ -125,20 +129,19 @@ class ModificacionPresupuestaria(Base):
 
     __table_args__ = (
         Index("ix_mod_programa_fecha", "programa_id", "fecha_boletin"),
+        Index("ix_mod_jur_prog", "jurisdiccion_id", "programa_id"),
     )
 
 
 class MacroIndice(Base):
     """
     Caché local de índices macroeconómicos (IPC y USD) descargados del BCRA.
-    Permite operar sin conexión y reconstruir series históricas.
     """
     __tablename__ = "macro_indices"
 
     id = Column(Integer, primary_key=True)
     fecha = Column(DateTime, index=True)
     indicador = Column(String(30), index=True)
-    # Ej: "IPC_NIVEL", "USD_OFICIAL", "USD_CCL"
     valor = Column(Float)
     fuente = Column(String(50), default="BCRA")
 

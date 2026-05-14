@@ -106,25 +106,131 @@ def _limpiar(s: str) -> str:
     return re.sub(r'\s+', ' ', s).strip()
 
 
-# ── Extracción de fechas habilitadas ─────────────────────────────────────────
+# ── Obtención de fechas habilitadas via API ───────────────────────────────────
 
-def _extraer_fechas_habilitadas(html: str) -> list[str]:
+async def _obtener_fechas_anio(
+    client: httpx.AsyncClient,
+    anio: int,
+    cookies: dict,
+) -> list[str]:
     """
-    Extrae el JSON de fechas habilitadas embebido en el HTML de la portada.
+    Consulta el endpoint real del BORA para obtener las fechas habilitadas de un año.
+    GET /calendario/dias_publicacion/{anio}/primera
     Retorna lista de strings YYYYMMDD.
     """
-    m = re.search(r'"fechas":\[([^\]]+)\]', html)
-    if not m:
+    url = f"{BORA_BASE}/calendario/dias_publicacion/{anio}/primera"
+    headers = {
+        **HEADERS_AJAX,
+        "Referer": f"{BORA_BASE}/seccion/primera/{anio}0102",
+    }
+    try:
+        r = await client.get(url, cookies=cookies, headers=headers, timeout=15)
+        if r.status_code != 200:
+            logger.warning("Fechas BORA %s → HTTP %s", anio, r.status_code)
+            return []
+        raw = r.text.replace("&quot;", '"')
+        parsed = json.loads(raw)
+        if isinstance(parsed, str):
+            parsed = json.loads(parsed)
+        fechas = parsed.get("fechas", []) if isinstance(parsed, dict) else []
+        return [f for f in fechas if isinstance(f, str) and len(f) == 8]
+    except Exception as e:
+        logger.warning("Error obteniendo fechas BORA %s: %s", anio, e)
         return []
-    return [f.strip().strip('"') for f in m.group(1).split(',')]
 
 
-# ── Parser HTML de avisos ─────────────────────────────────────────────────────
+# ── Resolución de número real de DA ──────────────────────────────────────────
 
-def _parsear_html_avisos(html: str, fecha_iso: str) -> list[dict]:
+async def _resolver_numero_da(
+    client: httpx.AsyncClient,
+    id_aviso: str,
+    fecha_str: str,
+    anio_fallback: str,
+) -> tuple[str, str]:
+    """
+    Consulta /detalleAviso/primera/{id}/{fecha} para extraer el número real de la DA.
+    Se usa cuando el listado del BORA muestra solo "PRESUPUESTO" sin número.
+    Retorna (numero, anio).
+    """
+    url = f"{BORA_BASE}/detalleAviso/primera/{id_aviso}/{fecha_str}"
+    try:
+        r = await client.get(url, headers=HEADERS_HTML, timeout=15)
+        if r.status_code != 200:
+            logger.debug("_resolver_numero_da HTTP %s para id_aviso=%s", r.status_code, id_aviso)
+            return id_aviso, anio_fallback
+
+        texto = r.text
+
+        # Patrón 1: "Decisión Administrativa 470/2024" en cualquier parte del HTML
+        m = re.search(
+            r'Decisi[oó]n\s+Administrativa\s+N[°º]?\s*(\d+)[/\-](\d{4})',
+            texto, re.IGNORECASE,
+        )
+        if not m:
+            m = re.search(
+                r'Decisi[oó]n\s+Administrativa\s+(\d+)/(\d{4})',
+                texto, re.IGNORECASE,
+            )
+        if m:
+            logger.info(
+                "DA resuelta (patrón 1): id_aviso=%s → DA-%s/%s",
+                id_aviso, m.group(1), m.group(2),
+            )
+            return m.group(1), m.group(2)
+
+        # Patrón 2: "DA-2024-470-APN-JGM" (GDE)
+        m = re.search(r'\bDA-(\d{4})-(\d+)-', texto, re.IGNORECASE)
+        if m:
+            logger.info(
+                "DA resuelta (patrón 2 GDE): id_aviso=%s → DA-%s/%s",
+                id_aviso, m.group(2), m.group(1),
+            )
+            return m.group(2), m.group(1)
+
+        # Patrón 3: título de página <title>..N/YYYY...
+        m = re.search(r'<title>[^<]*?(\d+)/(\d{4})', texto)
+        if m:
+            logger.info(
+                "DA resuelta (patrón 3 title): id_aviso=%s → DA-%s/%s",
+                id_aviso, m.group(1), m.group(2),
+            )
+            return m.group(1), m.group(2)
+
+        # Patrón 4: cualquier "NNN/YYYY" donde YYYY sea el año esperado
+        # Solo si NO es una Ley de presupuesto (Ley NNNNN)
+        if not re.search(r'\bley\s+\d+', texto[:500], re.IGNORECASE):
+            m = re.search(rf'(\d{{1,4}})/({anio_fallback})', texto)
+            if m:
+                logger.info(
+                    "DA resuelta (patrón 4 genérico): id_aviso=%s → DA-%s/%s",
+                    id_aviso, m.group(1), anio_fallback,
+                )
+                return m.group(1), anio_fallback
+
+        logger.warning(
+            "No se pudo resolver número para id_aviso=%s fecha=%s — se usará id_aviso como fallback",
+            id_aviso, fecha_str,
+        )
+
+    except Exception as e:
+        logger.debug("_resolver_numero_da error id_aviso=%s: %s", id_aviso, e)
+
+    return id_aviso, anio_fallback
+
+
+# ── Parser HTML de avisos (async para poder resolver números) ─────────────────
+
+async def _parsear_html_avisos(
+    client: httpx.AsyncClient,
+    html: str,
+    fecha_iso: str,
+) -> list[dict]:
     """
     Parsea el HTML devuelto por /seccion/actualizar/primera y extrae
     las DAs presupuestarias.
+
+    Cuando el número no puede extraerse del listado, consulta el detalle
+    del aviso para obtener el número real (evita usar id_aviso como número).
 
     Estructura observada:
       <a href="/detalleAviso/primera/{id}/{fecha}?anexos=1">  ← paperclip
@@ -139,19 +245,16 @@ def _parsear_html_avisos(html: str, fecha_iso: str) -> list[dict]:
     anio = fecha_iso[:4]
     resultados = []
 
-    # Dividir el HTML en bloques por aviso (cada <div class="col-md-12"> contiene uno)
     # Buscar todos los ids que tienen ?anexos=1 (tienen PDF adjunto)
     ids_con_anexo = set(re.findall(
         rf'detalleAviso/primera/(\d+)/{fecha_bora_str}\?anexos=1', html
     ))
 
-    # Para cada id con anexo, extraer el bloque del aviso principal
     for id_aviso in ids_con_anexo:
         # Buscar el link principal (sin ?anexos=1)
         patron_link = rf'href="/detalleAviso/primera/{id_aviso}/{fecha_bora_str}"'
         pos = html.find(patron_link)
         if pos == -1:
-            # Intentar sin fecha
             pos = html.find(f'href="/detalleAviso/primera/{id_aviso}/')
         if pos == -1:
             continue
@@ -164,12 +267,12 @@ def _parsear_html_avisos(html: str, fecha_iso: str) -> list[dict]:
         bloque = html[pos_div:pos_fin + 10]
 
         # Extraer campos
-        items = re.findall(r'<p class="item">([^<]+)</p>', bloque)
+        items  = re.findall(r'<p class="item">([^<]+)</p>', bloque)
         smalls = re.findall(r'<small>([^<]+)</small>', bloque)
 
-        titulo   = _limpiar(items[0]) if items else ""
+        titulo    = _limpiar(items[0])  if items          else ""
         norma_str = _limpiar(smalls[0]) if len(smalls) > 0 else ""
-        sumario  = _limpiar(smalls[1]) if len(smalls) > 1 else ""
+        sumario   = _limpiar(smalls[1]) if len(smalls) > 1 else ""
 
         # Filtrar: solo DAs presupuestarias
         texto_completo = (titulo + " " + norma_str + " " + sumario).lower()
@@ -177,30 +280,53 @@ def _parsear_html_avisos(html: str, fecha_iso: str) -> list[dict]:
             continue
         if any(k in texto_completo for k in _DESCARTE):
             continue
-        # Debe ser DA (no Decreto, Resolución, etc.)
         if "decisión administrativa" not in texto_completo and \
            "decision administrativa" not in texto_completo and \
            "da-" not in texto_completo.replace(" ", ""):
-            # Tolerar si el título es PRESUPUESTO y viene en sección DA
             if "presupuest" not in titulo.lower():
                 continue
 
-        # Extraer número de la DA
+        # Excluir leyes de presupuesto (Ley NNNNN) — no son DAs de modificación
+        if re.search(r'\bley\s+\d+', texto_completo, re.IGNORECASE):
+            if "decision administrativa" not in texto_completo and \
+               "decisión administrativa" not in texto_completo and \
+               "da-" not in texto_completo.replace(" ", ""):
+                continue
+
+        # ── Extraer número de la DA ──────────────────────────────────────────
+        numero  = None
+        anio_da = anio
+
+        # Intento 1: "Decisión Administrativa 470/2024" en norma_str
         m_num = re.search(
-            r'(?:Decisi[oó]n\s+Administrativa|D\.A\.)\s+(\d+)/(\d{4})',
+            r'(?:Decisi[oó]n\s+Administrativa|D\.A\.)\s+N[°º]?\s*(\d+)[/\-](\d{4})',
             norma_str, re.IGNORECASE,
         )
         if not m_num:
-            m_num = re.search(r'DA-(\d{4})-(\d+)-', sumario, re.IGNORECASE)
-            if m_num:
-                numero  = m_num.group(2)
-                anio_da = m_num.group(1)
-            else:
-                numero  = id_aviso
-                anio_da = anio
-        else:
+            m_num = re.search(
+                r'(?:Decisi[oó]n\s+Administrativa|D\.A\.)\s+(\d+)/(\d{4})',
+                norma_str, re.IGNORECASE,
+            )
+        if m_num:
             numero  = m_num.group(1)
             anio_da = m_num.group(2)
+
+        # Intento 2: "DA-YYYY-NNN-" en sumario (GDE)
+        if numero is None:
+            m_gde = re.search(r'\bDA-(\d{4})-(\d+)-', sumario, re.IGNORECASE)
+            if m_gde:
+                numero  = m_gde.group(2)
+                anio_da = m_gde.group(1)
+
+        # Intento 3: consultar el detalle del aviso (HTTP extra)
+        if numero is None:
+            logger.debug(
+                "Número no encontrado en listado para id_aviso=%s — consultando detalle",
+                id_aviso,
+            )
+            numero, anio_da = await _resolver_numero_da(
+                client, id_aviso, fecha_bora_str, anio
+            )
 
         norma_id = f"DA-{numero}-{anio_da}"
         url_bora = f"{BORA_BASE}/detalleAviso/primera/{id_aviso}/{fecha_bora_str}"
@@ -238,8 +364,6 @@ async def _scraper_fecha(
 ) -> list[dict]:
     """
     Descarga y parsea todos los avisos de una fecha.
-    El BORA sirve el contenido de la fecha de SESION, no del parametro fecha AJAX.
-    Por eso obtenemos cookies frescas visitando la pagina de esa fecha primero.
     """
     fecha_iso = fecha.strftime("%Y-%m-%d")
     fecha_str = fecha.strftime("%Y%m%d")
@@ -296,7 +420,8 @@ async def _scraper_fecha(
     if not html_total:
         return []
 
-    avisos = _parsear_html_avisos(html_total, fecha_iso)
+    # _parsear_html_avisos es ahora async y recibe el client para resolver números
+    avisos = await _parsear_html_avisos(client, html_total, fecha_iso)
     if avisos:
         logger.info("BORA %s: %d DAs presupuestarias", fecha_iso, len(avisos))
     return avisos
@@ -309,45 +434,31 @@ async def _obtener_sesion(
     anio: int,
 ) -> tuple[dict, list[str]]:
     """
-    Carga la portada del BORA para obtener cookies y fechas habilitadas del año.
+    Obtiene cookies de sesión y fechas habilitadas del año via el endpoint real:
+    GET /calendario/dias_publicacion/{anio}/primera
     Retorna (cookies, fechas_habilitadas_YYYYMMDD).
-
-    Usa el 2 de enero como fecha de referencia (el 1° siempre redirige al home
-    porque no hay edición ese día → devuelve fechas del año actual en lugar del pedido).
     """
-    # Buscar primer día hábil real del año iterando desde el 2 de enero
-    # El BORA no publica el 1/1 (feriado nacional) ni fines de semana.
-    # Probamos hasta 10 días desde el 2/1 hasta encontrar uno con edición.
     from datetime import date as _date, timedelta as _td
-    fechas: list[str] = []
     cookies: dict = {}
 
-    inicio = _date(anio, 1, 2)
-    for delta in range(15):
-        fecha_ref = (inicio + _td(days=delta)).strftime("%Y%m%d")
-        try:
-            r = await client.get(
-                f"{BORA_SECCION}/{fecha_ref}",
-                headers=HEADERS_HTML,
-                timeout=15,
-            )
-            # 302 al home = fecha sin edición
-            url_final = str(r.url).rstrip("/")
-            if url_final == BORA_BASE.rstrip("/"):
-                logger.debug("Fecha %s sin edición (redirige al home)", fecha_ref)
-                continue
-            fechas = _extraer_fechas_habilitadas(r.text)
-            cookies = dict(r.cookies)
-            if fechas:
-                logger.info(
-                    "Sesión BORA año %s: %d fechas habilitadas (ref: %s)",
-                    anio, len(fechas), fecha_ref,
-                )
-                break
-        except Exception as e:
-            logger.warning("Error sesión BORA %s ref %s: %s", anio, fecha_ref, e)
+    # Necesitamos cookies válidas — las obtenemos visitando cualquier fecha del año
+    fecha_ref = f"{anio}0102"
+    try:
+        r = await client.get(
+            f"{BORA_SECCION}/{fecha_ref}",
+            headers=HEADERS_HTML,
+            timeout=15,
+        )
+        cookies = dict(r.cookies)
+    except Exception as e:
+        logger.warning("Error obteniendo cookies BORA %s: %s", anio, e)
 
-    if not fechas:
+    # Consultar endpoint real de fechas habilitadas
+    fechas = await _obtener_fechas_anio(client, anio, cookies)
+
+    if fechas:
+        logger.info("Sesión BORA año %s: %d fechas habilitadas", anio, len(fechas))
+    else:
         logger.warning("No se pudieron obtener fechas habilitadas para %s", anio)
 
     return cookies, fechas
@@ -362,15 +473,6 @@ async def buscar_normas_bora(
     """
     Busca DAs presupuestarias del JGM en el BORA usando el endpoint AJAX real
     del frontend: GET /seccion/actualizar/primera?pag=N&fecha=YYYYMMDD
-
-    Ventajas sobre scraping HTML crudo:
-    - Usa el JSON de fechas habilitadas embebido → no hace requests en feriados
-    - Respeta la paginación real del sitio
-    - Cookies de sesión válidas
-
-    Args:
-        desde: Fecha inicial DD/MM/YYYY
-        hasta: Fecha final DD/MM/YYYY (default: hoy)
     """
     try:
         desde_dt = datetime.strptime(desde, "%d/%m/%Y").date()
@@ -385,7 +487,6 @@ async def buscar_normas_bora(
     resultados: dict[str, dict] = {}
 
     async with httpx.AsyncClient(follow_redirects=True) as client:
-        # Recolectar fechas habilitadas por año (el JSON es anual)
         anios = list(range(desde_dt.year, hasta_dt.year + 1))
         fechas_habilitadas: set[str] = set()
 
@@ -393,7 +494,6 @@ async def buscar_normas_bora(
             _, fechas = await _obtener_sesion(client, anio)
             fechas_habilitadas.update(fechas)
 
-        # Filtrar al rango pedido
         desde_str = desde_dt.strftime("%Y%m%d")
         hasta_str = hasta_dt.strftime("%Y%m%d")
         fechas_a_scraper = sorted([
@@ -409,8 +509,6 @@ async def buscar_normas_bora(
         if not fechas_a_scraper:
             return []
 
-        # Obtener cookies frescas desde la PRIMERA fecha real del rango
-        # Las cookies del BORA están atadas a la sesión de la página visitada
         primera_fecha = fechas_a_scraper[0]
         r_sesion = await client.get(
             f"{BORA_SECCION}/{primera_fecha}",
@@ -446,7 +544,6 @@ async def _obtener_pdf_url(
     try:
         r = await client.get(url_detalle, headers=HEADERS_HTML, timeout=15)
         if r.status_code == 200:
-            # Buscar links a PDF en el HTML
             pdfs = re.findall(
                 r'href="([^"]+\.pdf[^"]*)"', r.text, re.IGNORECASE
             )
@@ -454,7 +551,6 @@ async def _obtener_pdf_url(
                 url = pdfs[0]
                 return url if url.startswith("http") else BORA_BASE + url
 
-            # Buscar llamada descargarPDFAnexo
             anexos = re.findall(
                 r'descargarPDFAnexo\(\s*"primera"\s*,\s*"(\d+)"\s*,\s*"(\d+)"',
                 r.text,
@@ -489,10 +585,6 @@ async def descargar_pdf_bora(
 ) -> Optional[str]:
     """
     Descarga el PDF del Anexo de una DA desde el BORA.
-
-    Args:
-        norma_data: dict con 'id_aviso_bora', 'fecha_bora_str', 'url_bora'
-        destino: ruta local donde guardar el PDF
     """
     destino_path = Path(destino)
     if destino_path.exists() and destino_path.stat().st_size > 500:
@@ -508,7 +600,6 @@ async def descargar_pdf_bora(
             logger.warning("No se encontró PDF para %s", norma_data.get("norma_id"))
             return None
 
-        # Caso base64 directo
         if resultado.startswith("base64:"):
             import base64
             pdf_bytes = base64.b64decode(resultado[7:])
@@ -518,7 +609,6 @@ async def descargar_pdf_bora(
                 logger.info("PDF BORA (base64) OK: %s", destino)
                 return destino
 
-        # Caso URL normal
         try:
             r = await client.get(resultado, headers=HEADERS_HTML, timeout=60)
             ct = r.headers.get("content-type", "")

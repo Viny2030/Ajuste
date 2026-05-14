@@ -50,25 +50,21 @@ def _fusionar_normas(
     """
     fusionadas: dict[str, dict] = {}
 
-    # Primero Infoleg (base)
     for n in normas_infoleg:
         fusionadas[n["norma_id"]] = n
 
-    # Luego BORA (sobreescribe si ya existe, agrega campos extra como id_aviso_bora)
     for n in normas_bora:
         nid = n["norma_id"]
         if nid in fusionadas:
-            # Enriquecer el registro de Infoleg con datos del BORA
             fusionadas[nid].update({
-                "id_aviso_bora": n.get("id_aviso_bora"),
+                "id_aviso_bora":  n.get("id_aviso_bora"),
                 "fecha_bora_str": n.get("fecha_bora_str"),
-                "url_bora": n.get("url_bora") or fusionadas[nid].get("url_bora"),
+                "url_bora":       n.get("url_bora") or fusionadas[nid].get("url_bora"),
             })
         else:
             fusionadas[nid] = n
 
-    resultado = sorted(fusionadas.values(), key=lambda x: x["fecha_boletin"])
-    return resultado
+    return sorted(fusionadas.values(), key=lambda x: x["fecha_boletin"])
 
 
 # ── Descarga de PDFs (multi-fuente) ──────────────────────────────────────────
@@ -77,35 +73,26 @@ async def _descargar_pdf(norma_data: dict, pdf_path: Path) -> Optional[str]:
     """
     Intenta descargar el PDF de la DA probando múltiples fuentes.
     Orden: Infoleg → BORA API → url_bora directo.
-    Retorna la ruta local del PDF si tuvo éxito, None si no.
     """
     if pdf_path.exists() and pdf_path.stat().st_size > 500:
         return str(pdf_path)
 
-    # Extraer fecha_boletin en formato YYYYMMDD (sin guiones) para el fallback BORA
     fecha_fmt = norma_data.get("fecha_boletin", "").replace("-", "")
 
-    # Fuente 1: Infoleg (url_infoleg → busca .pdf o texact.pdf)
     url_infoleg = norma_data.get("url_infoleg", "")
     if url_infoleg:
-        resultado = await descargar_pdf_norma(
-            url_infoleg, str(pdf_path), fecha_boletin=fecha_fmt
-        )
+        resultado = await descargar_pdf_norma(url_infoleg, str(pdf_path), fecha_boletin=fecha_fmt)
         if resultado:
             return resultado
 
-    # Fuente 2: BORA API (usa id_aviso_bora para encontrar el PDF del Anexo)
     if norma_data.get("id_aviso_bora"):
         resultado = await descargar_pdf_bora(norma_data, str(pdf_path))
         if resultado:
             return resultado
 
-    # Fuente 3: url_bora directa como última opción
     url_bora = norma_data.get("url_bora", "")
     if url_bora and url_bora != url_infoleg:
-        resultado = await descargar_pdf_norma(
-            url_bora, str(pdf_path), fecha_boletin=fecha_fmt
-        )
+        resultado = await descargar_pdf_norma(url_bora, str(pdf_path), fecha_boletin=fecha_fmt)
         if resultado:
             return resultado
 
@@ -183,16 +170,18 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
         if not programa_id:
             continue
 
-        reduccion = float(fila.get("reduccion") or fila.get("disminucion") or 0)
-        aumento   = float(fila.get("aumento") or 0)
-        monto_neto = aumento - reduccion
+        reduccion    = float(fila.get("reduccion") or fila.get("disminucion") or 0)
+        aumento      = float(fila.get("aumento") or 0)
+        monto_neto   = aumento - reduccion
 
-        # Buscar partida_id en presupuesto_base si existe
-        partida_id: Optional[int] = None
-        jur_id = str(fila.get("jurisdiccion_id") or "").strip()
-        inciso_id = str(fila.get("inciso_id") or "").strip() or None
+        # Campos desnormalizados del PDF
+        jur_id       = str(fila.get("jurisdiccion_id") or "").strip() or None
+        inciso_id    = str(fila.get("inciso_id") or "").strip() or None
         principal_id = str(fila.get("principal_id") or "").strip() or None
 
+        # Intentar linkear a presupuesto_base por jurisdiccion + programa
+        # (match aproximado — la partida real puede tener múltiples incisos/fuentes)
+        partida_id: Optional[int] = None
         if jur_id and programa_id:
             partida = (
                 db.query(models.PresupuestoBase)
@@ -210,6 +199,7 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
             norma_id=norma_id,
             fecha_boletin=fecha_pub,
             partida_id=partida_id,
+            jurisdiccion_id=jur_id,
             programa_id=programa_id,
             inciso_id=inciso_id,
             principal_id=principal_id,
@@ -278,7 +268,7 @@ async def sincronizar(
     except Exception as e:
         print(f"   ⚠️  BORA API falló: {e}")
 
-    # ── 3. Fusión ──────────────────────────────────────────────────────────────
+    # ── 3. Fusión ─────────────────────────────────────────────────────────────
     normas = _fusionar_normas(normas_infoleg, normas_bora)
     print(f"\n🔀 Total fusionado (dedup): {len(normas)} normas únicas\n")
 
@@ -287,8 +277,8 @@ async def sincronizar(
         db.close()
         return
 
-    # ── 4. Procesar norma por norma ────────────────────────────────────────────
-    print(f"📋 Procesando PDFs y extrayendo partidas...\n")
+    # ── 4. Procesar norma por norma ───────────────────────────────────────────
+    print("📋 Procesando PDFs y extrayendo partidas...\n")
     total_mods = 0
     errores = 0
 
@@ -303,7 +293,6 @@ async def sincronizar(
             db.rollback()
             errores += 1
 
-        # Pausa cada 10 normas para no saturar los servidores
         if i % 10 == 0:
             await asyncio.sleep(1)
 
