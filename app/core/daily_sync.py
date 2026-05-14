@@ -27,6 +27,7 @@ from sqlalchemy.orm import Session
 
 from app.database.session import SessionLocal, engine
 from app.database import models
+from app.database.models import TIPO_DA_GASTO, TIPO_DA_NORMATIVA, TIPO_DA_DESCONOCIDO
 from app.scrapers.bora_discovery import buscar_normas, descargar_pdf_norma
 from app.scrapers.bora_scraper import buscar_normas_bora, descargar_pdf_bora
 from app.core.pdf_processor import extraer_tabla_presupuesto
@@ -108,13 +109,16 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
     """
     norma_id = norma_data["norma_id"]
 
-    # Dedup: si ya está en DB, saltar
+    # Dedup: si ya está en DB, verificar tipo_da antes de saltar
     existente = (
         db.query(models.NormaJGM)
         .filter(models.NormaJGM.norma_id == norma_id)
         .first()
     )
     if existente:
+        # Si ya está marcada como NORMATIVA, no reintentar el PDF
+        if existente.tipo_da == TIPO_DA_NORMATIVA:
+            logger.debug("Salteando %s — tipo_da=NORMATIVA", norma_id)
         return 0
 
     # Parsear fecha
@@ -127,7 +131,7 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
         except ValueError:
             continue
 
-    # Persistir NormaJGM
+    # Persistir NormaJGM — tipo_da arranca como DESCONOCIDO
     norma_obj = models.NormaJGM(
         norma_id=norma_id,
         tipo_norma=norma_data.get("tipo_norma", "DA"),
@@ -139,6 +143,7 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
         pdf_url=norma_data.get("url_infoleg", ""),
         tipo_accion=norma_data.get("tipo_accion"),
         pdf_hash=norma_data.get("pdf_hash"),
+        tipo_da=TIPO_DA_DESCONOCIDO,
     )
     db.add(norma_obj)
     db.flush()
@@ -149,14 +154,18 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
     downloaded = await _descargar_pdf(norma_data, pdf_path)
 
     if not downloaded:
-        print(f"  ⚠️  Sin PDF para {norma_id} — norma guardada sin partidas")
+        # Sin PDF: marcar como NORMATIVA para no reintentar en próximos runs
+        norma_obj.tipo_da = TIPO_DA_NORMATIVA
+        print(f"  ⚠️  Sin PDF para {norma_id} — marcada como NORMATIVA (no se reintentará)")
         db.commit()
         return 0
 
     # Extraer tabla de partidas
     df_partidas = extraer_tabla_presupuesto(downloaded)
     if df_partidas is None or df_partidas.empty:
-        print(f"  ⚠️  Tabla vacía o no extraíble: {norma_id}")
+        # PDF descargado pero sin tabla de gasto: marcar como NORMATIVA
+        norma_obj.tipo_da = TIPO_DA_NORMATIVA
+        print(f"  ⚠️  Tabla vacía en {norma_id} — marcada como NORMATIVA (no se reintentará)")
         db.commit()
         return 0
 
@@ -174,13 +183,10 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
         aumento      = float(fila.get("aumento") or 0)
         monto_neto   = aumento - reduccion
 
-        # Campos desnormalizados del PDF
         jur_id       = str(fila.get("jurisdiccion_id") or "").strip() or None
         inciso_id    = str(fila.get("inciso_id") or "").strip() or None
         principal_id = str(fila.get("principal_id") or "").strip() or None
 
-        # Intentar linkear a presupuesto_base por jurisdiccion + programa
-        # (match aproximado — la partida real puede tener múltiples incisos/fuentes)
         partida_id: Optional[int] = None
         if jur_id and programa_id:
             partida = (
@@ -212,7 +218,8 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
         total_reduccion += reduccion
         total_aumento += aumento
 
-    # Actualizar totales en la norma
+    # Marcar como GASTO y actualizar totales
+    norma_obj.tipo_da = TIPO_DA_GASTO
     norma_obj.monto_total_reduccion = round(total_reduccion, 2)
     norma_obj.monto_total_ampliacion = round(total_aumento, 2)
     db.commit()

@@ -65,6 +65,19 @@ class PresupuestoBase(Base):
     )
 
 
+# Valores posibles de tipo_da
+# "GASTO"      → tiene tabla de modificaciones de crédito → procesar normalmente
+# "DEUDA"      → modifica deuda/recursos, sin tabla de gasto → no reintentar
+# "RECURSOS"   → modifica recursos, sin tabla de gasto → no reintentar
+# "NORMATIVA"  → DA normativa/organizativa sin tabla → no reintentar
+# "DESCONOCIDO"→ todavía no clasificada (default para nuevas inserciones)
+TIPO_DA_GASTO      = "GASTO"
+TIPO_DA_DEUDA      = "DEUDA"
+TIPO_DA_RECURSOS   = "RECURSOS"
+TIPO_DA_NORMATIVA  = "NORMATIVA"
+TIPO_DA_DESCONOCIDO = "DESCONOCIDO"
+
+
 class NormaJGM(Base):
     """
     Decisiones Administrativas del Jefe de Gabinete de Ministros
@@ -87,6 +100,10 @@ class NormaJGM(Base):
     tipo_accion = Column(String(20), nullable=True)
     monto_total_reduccion = Column(Float, nullable=True)
     monto_total_ampliacion = Column(Float, nullable=True)
+
+    # Clasificación del tipo de DA para evitar reintentar PDFs sin tabla de gasto.
+    # Ver constantes TIPO_DA_* arriba.
+    tipo_da = Column(String(20), nullable=True, default=TIPO_DA_DESCONOCIDO)
 
     # Relaciones
     modificaciones = relationship("ModificacionPresupuestaria", back_populates="norma")

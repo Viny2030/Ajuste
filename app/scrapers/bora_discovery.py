@@ -36,7 +36,6 @@ CACHE_PATH = Path("data/processed/infoleg_normativa.csv")
 
 # ── Filtros de clasificación ──────────────────────────────────────────────────
 
-# El titulo_sumario debe contener alguna de estas frases para ser candidata
 _SUMARIO_PRESUP = [
     "presupuesto administracion nacional",
     "presupuesto general",
@@ -49,7 +48,6 @@ _SUMARIO_PRESUP = [
     "distribución del presupuesto",
 ]
 
-# El texto_resumido debe contener alguna de estas frases para confirmar
 _TEXTO_CONFIRMA = [
     "modificase el presupuesto",
     "modifícase el presupuesto",
@@ -63,7 +61,6 @@ _TEXTO_CONFIRMA = [
     "crédito presupuestario",
 ]
 
-# Palabras que descartan la DA aunque pase el filtro anterior
 _DESCARTE = [
     "designacion", "designación",
     "estructura organizativa",
@@ -74,11 +71,10 @@ _DESCARTE = [
     "concurso",
     "regimen de contrataciones",
     "régimen de contrataciones",
-    "transfierese",             # transferencia de agente (personal)
+    "transfierese",
     "trasfierese",
 ]
 
-# Organismos emisores válidos (JGM o Hacienda/Economía que firman junto al JGM)
 _ORGANISMOS_OK = [
     "jefatura de gabinete",
     "ministerio de economia",
@@ -92,6 +88,12 @@ VERBOS_REDUCCION  = ["suprimase","suprímase","reduzcanse","redúzcase","dismin�
 VERBOS_AMPLIACION = ["ampliase","amplíase","incrementese","increméntese","autorizase",
                      "autorízase","ampliacion","ampliación","refuerzo"]
 VERBOS_REASIGN    = ["transfierase","transfiérase","reasignese","reasígnese","redistribúyase"]
+
+# Organismos JGM para validar en el HTML del aviso BORA
+_ORGANISMOS_JGM = [
+    "jefatura de gabinete",
+    "jefatura del gabinete",
+]
 
 
 def _sha256(s: str) -> str:
@@ -107,27 +109,15 @@ def _detectar_tipo_accion(texto: str) -> str:
 
 
 def _es_presupuestaria(row: dict) -> bool:
-    """
-    Determina si una DA es una modificación presupuestaria real.
-
-    Estrategia:
-    1. titulo_sumario debe mencionar presupuesto explícitamente
-    2. texto_resumido debe confirmar que modifica el presupuesto
-    3. Descartar si titulo_resumido o texto hablan de designaciones/contratos/agentes
-    """
     sumario  = row.get("titulo_sumario", "").lower()
     resumido = row.get("titulo_resumido", "").lower()
     texto    = row.get("texto_resumido", "").lower()
 
-    # Paso 1: el sumario debe mencionar presupuesto
     if not any(k in sumario for k in _SUMARIO_PRESUP):
         return False
-
-    # Paso 2: el texto debe confirmar que modifica el presupuesto
     if not any(k in texto for k in _TEXTO_CONFIRMA):
         return False
 
-    # Paso 3: descartar si hay señales de designaciones / transferencia de personal
     texto_completo = resumido + " " + texto
     if any(k in texto_completo for k in _DESCARTE):
         return False
@@ -138,7 +128,6 @@ def _es_presupuestaria(row: dict) -> bool:
 # ── Descarga y caché ──────────────────────────────────────────────────────────
 
 def _descargar_csv() -> str:
-    """Descarga ZIP de Infoleg, guarda CSV en caché, retorna path."""
     logger.info("Descargando Infoleg normativa (%s)...", URL_INFOLEG_ZIP)
     with urllib.request.urlopen(URL_INFOLEG_ZIP, timeout=180) as resp:
         data = resp.read()
@@ -159,10 +148,6 @@ def buscar_normas(
     hasta: str | None = None,
     forzar_descarga: bool = False,
 ) -> list[dict]:
-    """
-    Retorna DAs presupuestarias desde `desde` hasta `hasta`.
-    Usa caché local si existe y forzar_descarga=False.
-    """
     try:
         desde_dt = datetime.strptime(desde, "%d/%m/%Y").date()
     except ValueError:
@@ -262,10 +247,8 @@ async def descargar_pdf_norma(
         )
     }
 
-    # Construir candidatos a PDF a partir de la URL de la norma
     candidates: list[str] = []
     if "infoleg" in url_norma:
-        # Extraer id_norma de la URL si está
         m = re.search(r"id=(\d+)", url_norma)
         if m:
             id_n = m.group(1)
@@ -275,7 +258,6 @@ async def descargar_pdf_norma(
                 f"https://servicios.infoleg.gob.ar/infolegInternet/anexos/{rango}/{id_n}/norma.pdf",
                 f"https://servicios.infoleg.gob.ar/infolegInternet/anexos/{rango}/{id_n}/texact.pdf",
             ]
-    # Si la URL ya termina en .htm, probar variantes PDF
     if url_norma.endswith(".htm"):
         candidates += [
             url_norma.replace(".htm", ".pdf"),
@@ -323,30 +305,25 @@ async def descargar_pdf_norma(
             logger.warning("Fallback HTML Infoleg falló %s: %s", url_norma, e)
 
         # Fallback 2: BORA via POST base64
-        # Busca el aviso presupuestario en la edición del BORA por fecha,
-        # extrae el id_anexo y descarga via POST /pdf/download_anexo → {pdfBase64}
+        # FIX: en vez de iterar IDs consecutivos (que no son secuenciales),
+        # usamos la lista real de avisos de la edición y filtramos por JGM.
         try:
             import base64
-            import json as _json
 
-            # Obtener fecha del boletín desde parámetro, URL, o Infoleg
+            # ── Determinar fecha del boletín ──────────────────────────────
             fecha_bora: str | None = fecha_boletin  # YYYYMMDD preferido
-            m_id = re.search(r"id=(\d+)", url_norma)
 
-            # Intentar extraer fecha desde la URL de la norma si tiene patrón htm
             m_fecha = re.search(r"/(\d{8})/", url_norma)
             if m_fecha:
                 fecha_bora = m_fecha.group(1)
 
-            # Si no, necesitamos la fecha del boletin — se pasa via url_bora en el norma_data
-            # Como no la tenemos acá, intentamos construirla desde el id_norma buscando en Infoleg
+            m_id = re.search(r"id=(\d+)", url_norma)
             if not fecha_bora and m_id:
                 id_n = m_id.group(1)
                 resp_i = await client.get(
                     f"https://servicios.infoleg.gob.ar/infolegInternet/verNorma.do?id={id_n}",
                     timeout=15,
                 )
-                # Buscar fecha en el HTML tipo "20240606" de 8 dígitos
                 fechas = re.findall(r'\b(20\d{6})\b', resp_i.text)
                 if fechas:
                     fecha_bora = fechas[0]
@@ -354,72 +331,128 @@ async def descargar_pdf_norma(
             if not fecha_bora:
                 raise ValueError("No se pudo determinar la fecha del boletín")
 
-            # Obtener primer id_aviso de esa fecha
+            # ── Obtener lista real de avisos de esa edición ───────────────
             resp_sec = await client.get(
                 f"https://www.boletinoficial.gob.ar/seccion/primera/{fecha_bora}",
                 timeout=15,
             )
-            id_avisos = re.findall(
+            resp_sec.raise_for_status()
+
+            # Extraer todos los id_aviso únicos de la página, en orden de aparición
+            avisos_raw = re.findall(
                 rf'detalleAviso/primera/(\d+)/{fecha_bora}',
                 resp_sec.text,
             )
+            id_avisos = list(dict.fromkeys(avisos_raw))  # dedup, preserva orden
+
             if not id_avisos:
-                raise ValueError(f"No se encontraron avisos para fecha {fecha_bora}")
+                raise ValueError(f"No hay avisos para {fecha_bora}")
 
-            primer_id = int(id_avisos[0])
+            logger.debug("BORA %s: %d avisos candidatos", fecha_bora, len(id_avisos))
 
-            # Iterar avisos hasta encontrar el presupuestario (máx 50)
-            for id_av in range(primer_id, primer_id + 50):
-                bora_url = f"https://www.boletinoficial.gob.ar/detalleAviso/primera/{id_av}/{fecha_bora}"
-                resp_b = await client.get(bora_url, timeout=10)
+            # ── Buscar el aviso correcto: DA presupuestaria de la JGM ─────
+            aviso_elegido: tuple[str, str] | None = None
+
+            for id_av in id_avisos:
+                bora_url = (
+                    f"https://www.boletinoficial.gob.ar"
+                    f"/detalleAviso/primera/{id_av}/{fecha_bora}"
+                )
+                try:
+                    resp_b = await client.get(bora_url, timeout=10)
+                except Exception:
+                    continue
+
                 if resp_b.status_code != 200:
                     continue
-                if "descargarPDFAnexo" not in resp_b.text:
-                    continue
-                if "presupuest" not in resp_b.text.lower():
+
+                texto_aviso = resp_b.text.lower()
+
+                # Debe tener anexo descargable
+                if "descargarpdfanexo" not in texto_aviso:
                     continue
 
-                # Extraer nro_anexo e id_anexo
-                # Formato: descargarPDFAnexo("primera","1", "7136144", "20240606", ...)
-                anexo_matches = re.findall(
-                    r'descargarPDFAnexo\(\s*"primera"\s*,\s*"(\d+)"\s*,\s*"(\d+)"',
-                    resp_b.text,
+                # Debe mencionar presupuesto
+                if "presupuest" not in texto_aviso:
+                    continue
+
+                # FILTRO CLAVE: debe ser de la JGM
+                # Esto evita agarrar presupuestos de AGN u otros organismos
+                if not any(org in texto_aviso for org in _ORGANISMOS_JGM):
+                    logger.debug("Aviso %s descartado: no es JGM", id_av)
+                    continue
+
+                # Confirmar que menciona "decisión administrativa"
+                if ("decisión administrativa" not in texto_aviso and
+                        "decision administrativa" not in texto_aviso):
+                    logger.debug("Aviso %s descartado: no menciona DA", id_av)
+                    continue
+
+                aviso_elegido = (id_av, resp_b.text)
+                logger.info("Aviso presupuestario JGM encontrado: id_aviso=%s", id_av)
+                break
+
+            if aviso_elegido is None:
+                raise ValueError(
+                    f"No se encontró aviso presupuestario JGM en {fecha_bora}"
                 )
-                if not anexo_matches:
-                    continue
 
-                # Tomar el primer anexo (Art 1° — el de modificación de créditos)
-                nro_anexo, id_anexo = anexo_matches[0]
+            id_av, html_aviso = aviso_elegido
 
-                bora_headers = {
-                    **headers,
-                    "Referer": bora_url,
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-Requested-With": "XMLHttpRequest",
-                }
-                resp_pdf = await client.post(
-                    "https://www.boletinoficial.gob.ar/pdf/download_anexo",
-                    data={
-                        "seccion": "primera",
-                        "nroAnexo": nro_anexo,
-                        "idAnexo": id_anexo,
-                        "fechaPublicacion": fecha_bora,
-                    },
-                    headers=bora_headers,
-                    timeout=60,
+            # ── Extraer anexos ────────────────────────────────────────────
+            # Formato: descargarPDFAnexo("primera","1","7136144","20240606",...)
+            anexo_matches = re.findall(
+                r'descargarPDFAnexo\(\s*"primera"\s*,\s*"(\d+)"\s*,\s*"(\d+)"',
+                html_aviso,
+            )
+            if not anexo_matches:
+                raise ValueError(f"No se encontraron anexos en aviso {id_av}")
+
+            if len(anexo_matches) > 1:
+                logger.info(
+                    "Aviso %s tiene %d anexos, tomando el primero. Todos: %s",
+                    id_av, len(anexo_matches), anexo_matches,
                 )
-                if resp_pdf.status_code == 200:
-                    data = resp_pdf.json()
-                    pdf_bytes = base64.b64decode(data["pdfBase64"])
-                    if len(pdf_bytes) > 1000:
-                        destino_path.parent.mkdir(parents=True, exist_ok=True)
-                        destino_path.write_bytes(pdf_bytes)
-                        logger.info(
-                            "PDF OK (BORA base64): id_aviso=%s anexo=%s fecha=%s",
-                            id_av, id_anexo, fecha_bora,
-                        )
-                        return destino
-                break  # encontramos el aviso pero falló el POST
+
+            nro_anexo, id_anexo = anexo_matches[0]
+
+            # ── Descargar PDF via POST ────────────────────────────────────
+            bora_referer = (
+                f"https://www.boletinoficial.gob.ar"
+                f"/detalleAviso/primera/{id_av}/{fecha_bora}"
+            )
+            bora_headers = {
+                **headers,
+                "Referer":           bora_referer,
+                "Content-Type":      "application/x-www-form-urlencoded",
+                "X-Requested-With":  "XMLHttpRequest",
+            }
+            resp_pdf = await client.post(
+                "https://www.boletinoficial.gob.ar/pdf/download_anexo",
+                data={
+                    "seccion":          "primera",
+                    "nroAnexo":         nro_anexo,
+                    "idAnexo":          id_anexo,
+                    "fechaPublicacion": fecha_bora,
+                },
+                headers=bora_headers,
+                timeout=60,
+            )
+            resp_pdf.raise_for_status()
+
+            pdf_data  = resp_pdf.json()
+            pdf_bytes = base64.b64decode(pdf_data["pdfBase64"])
+
+            if len(pdf_bytes) < 1000:
+                raise ValueError("PDF descargado demasiado pequeño")
+
+            destino_path.parent.mkdir(parents=True, exist_ok=True)
+            destino_path.write_bytes(pdf_bytes)
+            logger.info(
+                "PDF OK (BORA base64): id_aviso=%s anexo=%s fecha=%s → %s",
+                id_av, id_anexo, fecha_bora, destino,
+            )
+            return destino
 
         except Exception as e:
             logger.debug("Fallback BORA base64 falló: %s", e)
