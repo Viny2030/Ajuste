@@ -82,10 +82,15 @@ async def _descargar_pdf(norma_data: dict, pdf_path: Path) -> Optional[str]:
     if pdf_path.exists() and pdf_path.stat().st_size > 500:
         return str(pdf_path)
 
+    # Extraer fecha_boletin en formato YYYYMMDD (sin guiones) para el fallback BORA
+    fecha_fmt = norma_data.get("fecha_boletin", "").replace("-", "")
+
     # Fuente 1: Infoleg (url_infoleg → busca .pdf o texact.pdf)
     url_infoleg = norma_data.get("url_infoleg", "")
     if url_infoleg:
-        resultado = await descargar_pdf_norma(url_infoleg, str(pdf_path))
+        resultado = await descargar_pdf_norma(
+            url_infoleg, str(pdf_path), fecha_boletin=fecha_fmt
+        )
         if resultado:
             return resultado
 
@@ -98,7 +103,9 @@ async def _descargar_pdf(norma_data: dict, pdf_path: Path) -> Optional[str]:
     # Fuente 3: url_bora directa como última opción
     url_bora = norma_data.get("url_bora", "")
     if url_bora and url_bora != url_infoleg:
-        resultado = await descargar_pdf_norma(url_bora, str(pdf_path))
+        resultado = await descargar_pdf_norma(
+            url_bora, str(pdf_path), fecha_boletin=fecha_fmt
+        )
         if resultado:
             return resultado
 
