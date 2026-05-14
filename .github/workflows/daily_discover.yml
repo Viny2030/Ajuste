@@ -1,0 +1,58 @@
+# .github/workflows/daily_discover.yml
+# Descubre DAs presupuestarias nuevas en el BORA cada día a las 3:00 AM UTC-3
+# (6:00 AM UTC). Guarda resultados en data/nuevas_das.json y los commitea.
+
+name: Daily BORA Discovery
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # 3:00 AM Argentina (UTC-3)
+  workflow_dispatch:       # permite correr manualmente desde GitHub
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # necesario para hacer commit
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install httpx
+
+      - name: Run BORA discovery
+        run: python .github/scripts/discover_bora.py
+        env:
+          DESDE: "14/04/2026"   # fecha desde la que buscar (últimos 30 días aprox)
+
+      - name: Check for new DAs
+        id: check
+        run: |
+          if [ -f data/nuevas_das.json ]; then
+            COUNT=$(python -c "import json; d=json.load(open('data/nuevas_das.json')); print(len(d))")
+            echo "count=$COUNT" >> $GITHUB_OUTPUT
+            echo "Encontradas: $COUNT DAs"
+          else
+            echo "count=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit results
+        if: steps.check.outputs.count != '0'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/nuevas_das.json
+          git commit -m "chore: BORA discovery $(date +'%Y-%m-%d') — ${{ steps.check.outputs.count }} DAs encontradas"
+          git push
+
+      - name: No new DAs
+        if: steps.check.outputs.count == '0'
+        run: echo "Sin DAs nuevas hoy."
