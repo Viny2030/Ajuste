@@ -13,6 +13,7 @@ Uso:
   python -m app.core.daily_sync
   python -m app.core.daily_sync --desde 10/12/2023
   python -m app.core.daily_sync --solo-recientes   # solo BORA últimos 30 días
+  python -m app.core.daily_sync --re-linkear       # re-linkea partida_id en mods existentes
 """
 
 from __future__ import annotations
@@ -37,6 +38,40 @@ logger = logging.getLogger(__name__)
 
 RAW_PDF_DIR = Path("data/raw_pdfs")
 RAW_PDF_DIR.mkdir(parents=True, exist_ok=True)
+
+
+# ── Lookup de partida ─────────────────────────────────────────────────────────
+
+def _buscar_partida(
+    db: Session,
+    jur_id: str,
+    programa_id: str,
+    ejercicio_da: int,
+) -> Optional[int]:
+    """
+    Busca la partida en presupuesto_base para la jurisdicción y programa dados.
+
+    Estrategia:
+      1. Buscar en el ejercicio exacto de la DA
+      2. Si no hay, buscar en el ejercicio anterior (DA puede modificar ppto prorrogado)
+      3. Si tampoco, None
+
+    Esto evita el bug anterior donde .first() agarraba el ejercicio 2023
+    para DAs de 2024/2025/2026.
+    """
+    for ejercicio in (ejercicio_da, ejercicio_da - 1):
+        partida = (
+            db.query(models.PresupuestoBase)
+            .filter(
+                models.PresupuestoBase.jurisdiccion_id == jur_id,
+                models.PresupuestoBase.programa_id == programa_id,
+                models.PresupuestoBase.ejercicio == ejercicio,
+            )
+            .first()
+        )
+        if partida:
+            return partida.id
+    return None
 
 
 # ── Fusión de fuentes ─────────────────────────────────────────────────────────
@@ -116,12 +151,11 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
         .first()
     )
     if existente:
-        # Si ya está marcada como NORMATIVA, no reintentar el PDF
         if existente.tipo_da == TIPO_DA_NORMATIVA:
             logger.debug("Salteando %s — tipo_da=NORMATIVA", norma_id)
         return 0
 
-    # Parsear fecha
+    # Parsear fecha y determinar ejercicio
     fecha_str = norma_data.get("fecha_boletin", "")
     fecha_pub: Optional[datetime] = None
     for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%Y%m%d"):
@@ -130,6 +164,8 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
             break
         except ValueError:
             continue
+
+    ejercicio_da = fecha_pub.year if fecha_pub else datetime.now().year
 
     # Persistir NormaJGM — tipo_da arranca como DESCONOCIDO
     norma_obj = models.NormaJGM(
@@ -154,7 +190,6 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
     downloaded = await _descargar_pdf(norma_data, pdf_path)
 
     if not downloaded:
-        # Sin PDF: marcar como NORMATIVA para no reintentar en próximos runs
         norma_obj.tipo_da = TIPO_DA_NORMATIVA
         print(f"  ⚠️  Sin PDF para {norma_id} — marcada como NORMATIVA (no se reintentará)")
         db.commit()
@@ -163,7 +198,6 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
     # Extraer tabla de partidas
     df_partidas = extraer_tabla_presupuesto(downloaded)
     if df_partidas is None or df_partidas.empty:
-        # PDF descargado pero sin tabla de gasto: marcar como NORMATIVA
         norma_obj.tipo_da = TIPO_DA_NORMATIVA
         print(f"  ⚠️  Tabla vacía en {norma_id} — marcada como NORMATIVA (no se reintentará)")
         db.commit()
@@ -187,18 +221,11 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
         inciso_id    = str(fila.get("inciso_id") or "").strip() or None
         principal_id = str(fila.get("principal_id") or "").strip() or None
 
+        # ── FIX: lookup con ejercicio ──────────────────────────────────────
         partida_id: Optional[int] = None
         if jur_id and programa_id:
-            partida = (
-                db.query(models.PresupuestoBase)
-                .filter(
-                    models.PresupuestoBase.jurisdiccion_id == jur_id,
-                    models.PresupuestoBase.programa_id == programa_id,
-                )
-                .first()
-            )
-            if partida:
-                partida_id = partida.id
+            partida_id = _buscar_partida(db, jur_id, programa_id, ejercicio_da)
+        # ──────────────────────────────────────────────────────────────────
 
         mod = models.ModificacionPresupuestaria(
             norma_db_id=norma_obj.id,
@@ -218,7 +245,6 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
         total_reduccion += reduccion
         total_aumento += aumento
 
-    # Marcar como GASTO y actualizar totales
     norma_obj.tipo_da = TIPO_DA_GASTO
     norma_obj.monto_total_reduccion = round(total_reduccion, 2)
     norma_obj.monto_total_ampliacion = round(total_aumento, 2)
@@ -232,18 +258,63 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
     return insertadas
 
 
+# ── Re-linkeo de modificaciones existentes ───────────────────────────────────
+
+def re_linkear_partidas(db: Session) -> None:
+    """
+    Recorre todas las modificaciones existentes y actualiza partida_id
+    usando el lookup con ejercicio correcto.
+
+    Útil para corregir el bug histórico donde todas apuntaban a 2023.
+    Correr una sola vez después de tener todos los presupuestos en la DB.
+    """
+    from sqlalchemy import text
+
+    print("\n🔧 Re-linkeando partida_id en modificaciones existentes...")
+
+    mods = db.execute(text("""
+        SELECT m.id, m.norma_id, m.jurisdiccion_id, m.programa_id,
+               m.partida_id,
+               CAST(STRFTIME('%Y', m.fecha_boletin) AS INTEGER) AS ejercicio_da
+        FROM modificaciones m
+        WHERE m.jurisdiccion_id IS NOT NULL
+          AND m.programa_id IS NOT NULL
+    """)).fetchall()
+
+    actualizadas = 0
+    sin_match = 0
+
+    for row in mods:
+        mod_id      = row[0]
+        jur_id      = row[2]
+        programa_id = row[3]
+        partida_id_actual = row[4]
+        ejercicio_da = row[5] or datetime.now().year
+
+        nuevo_partida_id = _buscar_partida(db, jur_id, programa_id, ejercicio_da)
+
+        if nuevo_partida_id != partida_id_actual:
+            db.execute(
+                text("UPDATE modificaciones SET partida_id = :pid WHERE id = :mid"),
+                {"pid": nuevo_partida_id, "mid": mod_id}
+            )
+            if nuevo_partida_id:
+                actualizadas += 1
+            else:
+                sin_match += 1
+
+    db.commit()
+    print(f"   → Actualizadas: {actualizadas}")
+    print(f"   → Sin match en ningún ejercicio: {sin_match}")
+    print("   ✅ Re-linkeo completado\n")
+
+
 # ── Pipeline principal ────────────────────────────────────────────────────────
 
 async def sincronizar(
     desde: str = "10/12/2023",
     solo_recientes: bool = False,
 ) -> None:
-    """
-    Pipeline completo:
-      - Infoleg CSV (histórico completo desde `desde`)
-      - BORA API (últimos 30 días si solo_recientes=True, sino desde `desde`)
-      - Fusión, dedup, persistencia
-    """
     models.Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
@@ -251,7 +322,6 @@ async def sincronizar(
     print(f"🚀 Sincronización MAP — {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     print(f"{'='*60}\n")
 
-    # ── 1. Infoleg (CSV completo, cache local) ────────────────────────────────
     normas_infoleg: list[dict] = []
     if not solo_recientes:
         print("📂 Fuente 1: Infoleg CSV...")
@@ -261,7 +331,6 @@ async def sincronizar(
         except Exception as e:
             print(f"   ⚠️  Infoleg falló: {e}")
 
-    # ── 2. BORA API (recientes) ───────────────────────────────────────────────
     print("\n📡 Fuente 2: BORA API (tiempo real)...")
     desde_bora = (
         (date.today() - timedelta(days=30)).strftime("%d/%m/%Y")
@@ -275,7 +344,6 @@ async def sincronizar(
     except Exception as e:
         print(f"   ⚠️  BORA API falló: {e}")
 
-    # ── 3. Fusión ─────────────────────────────────────────────────────────────
     normas = _fusionar_normas(normas_infoleg, normas_bora)
     print(f"\n🔀 Total fusionado (dedup): {len(normas)} normas únicas\n")
 
@@ -284,7 +352,6 @@ async def sincronizar(
         db.close()
         return
 
-    # ── 4. Procesar norma por norma ───────────────────────────────────────────
     print("📋 Procesando PDFs y extrayendo partidas...\n")
     total_mods = 0
     errores = 0
@@ -303,7 +370,6 @@ async def sincronizar(
         if i % 10 == 0:
             await asyncio.sleep(1)
 
-    # ── 5. Invalidar caché macro ──────────────────────────────────────────────
     cargar_macro_indices.cache_clear()
     print("\n🔄 Caché de índices macro limpiada")
 
@@ -335,6 +401,16 @@ if __name__ == "__main__":
         action="store_true",
         help="Solo buscar en BORA últimos 30 días (más rápido, para runs diarios)",
     )
+    p.add_argument(
+        "--re-linkear",
+        action="store_true",
+        help="Re-linkear partida_id en modificaciones existentes (corrige bug histórico)",
+    )
     args = p.parse_args()
 
-    asyncio.run(sincronizar(desde=args.desde, solo_recientes=args.solo_recientes))
+    if args.re_linkear:
+        db = SessionLocal()
+        re_linkear_partidas(db)
+        db.close()
+    else:
+        asyncio.run(sincronizar(desde=args.desde, solo_recientes=args.solo_recientes))

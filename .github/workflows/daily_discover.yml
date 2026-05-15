@@ -31,28 +31,17 @@ jobs:
       - name: Run BORA discovery
         run: python .github/scripts/discover_bora.py
         env:
-          DESDE: "14/04/2026"   # fecha desde la que buscar (últimos 30 días aprox)
-
-      - name: Check for new DAs
-        id: check
-        run: |
-          if [ -f data/nuevas_das.json ]; then
-            COUNT=$(python -c "import json; d=json.load(open('data/nuevas_das.json')); print(len(d))")
-            echo "count=$COUNT" >> $GITHUB_OUTPUT
-            echo "Encontradas: $COUNT DAs"
-          else
-            echo "count=0" >> $GITHUB_OUTPUT
-          fi
+          DESDE: "14/04/2026"
 
       - name: Commit results
-        if: steps.check.outputs.count != '0'
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/nuevas_das.json
-          git commit -m "chore: BORA discovery $(date +'%Y-%m-%d') — ${{ steps.check.outputs.count }} DAs encontradas"
-          git push
-
-      - name: No new DAs
-        if: steps.check.outputs.count == '0'
-        run: echo "Sin DAs nuevas hoy."
+          if git diff --staged --quiet; then
+            echo "Sin cambios en nuevas_das.json — nada para commitear."
+          else
+            COUNT=$(python -c "import json; d=json.load(open('data/nuevas_das.json')); print(len(d))")
+            git commit -m "chore: BORA discovery $(date +'%Y-%m-%d') — ${COUNT} DAs encontradas"
+            git push
+          fi
