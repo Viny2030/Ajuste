@@ -337,21 +337,21 @@ def q5_recortes_jgm_por_entidad(exportar: bool = False) -> pd.DataFrame:
     Muestra presupuesto original 2026 como referencia de tamaño de cada entidad.
     """
     sql = """
-        SELECT
-            COALESCE(pb.entidad_id, '?')            AS entidad_id,
-            COALESCE(pb.entidad_desc, 'Sin partida') AS entidad,
-            COUNT(DISTINCT m.norma_id)               AS cant_normas,
-            COUNT(1)                                 AS cant_partidas,
-            ROUND(SUM(m.reduccion), 2)               AS total_reduccion,
-            ROUND(SUM(m.aumento),   2)               AS total_aumento,
-            ROUND(SUM(m.monto_neto), 2)              AS neto
-        FROM modificaciones m
-        LEFT JOIN presupuesto_base pb
-               ON pb.id = m.partida_id
-        WHERE m.jurisdiccion_id = '25'
-        GROUP BY COALESCE(pb.entidad_id, '?'), COALESCE(pb.entidad_desc, 'Sin partida')
-        ORDER BY total_reduccion DESC
-    """
+          SELECT COALESCE(pb.entidad_id, '?')             AS entidad_id, \
+                 COALESCE(pb.entidad_desc, 'Sin partida') AS entidad, \
+                 COUNT(DISTINCT m.norma_id)               AS cant_normas, \
+                 COUNT(1)                                 AS cant_partidas, \
+                 ROUND(SUM(m.reduccion), 2)               AS total_reduccion, \
+                 ROUND(SUM(m.aumento), 2)                 AS total_aumento, \
+                 ROUND(SUM(m.monto_neto), 2)              AS neto
+          FROM modificaciones m
+                   LEFT JOIN presupuesto_base pb
+                             ON pb.id = m.partida_id
+          WHERE m.jurisdiccion_id = '25'
+            AND (pb.ejercicio = 2026 OR m.partida_id IS NULL)
+          GROUP BY COALESCE(pb.entidad_id, '?'), COALESCE(pb.entidad_desc, 'Sin partida')
+          ORDER BY total_reduccion DESC \
+          """
     df_mods = pd.read_sql(text(sql), engine)
 
     # Presupuesto original 2026 por entidad — para calcular % de recorte
