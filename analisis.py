@@ -9,6 +9,7 @@ Queries disponibles:
   3. Presupuesto original vs modificado por jurisdicción
   4. Presupuesto 2026 por programa (JGM)
   5. Recortes JGM cruzados por entidad — dónde cae el ajuste dentro de JGM
+  6. Evolución mensual en pesos constantes (base dic-2023) y USD al TC del día de la DA
 
 Nota de unidades:
   - presupuesto_base 2023: pesos nominales
@@ -262,14 +263,12 @@ def q4_ejecucion_2026_jgm(exportar: bool = False) -> pd.DataFrame:
     """
     Muestra presupuestado vs vigente vs devengado por programa JGM en 2026.
     Los montos en presupuesto_base están en millones → se muestran en millones.
-    El devengado viene del CSV de ejecución (credito_mensual_2026.csv si existe,
-    o del campo monto_vigente como proxy si no).
     """
     sql = """
         SELECT
             pb.programa_id,
-            MAX(pb.programa_desc)           AS programa,
-            MAX(pb.inciso_desc)             AS inciso_principal,
+            MAX(pb.programa_desc)            AS programa,
+            MAX(pb.inciso_desc)              AS inciso_principal,
             ROUND(SUM(pb.monto_original), 2) AS presupuestado_mm,
             ROUND(SUM(pb.monto_vigente),  2) AS vigente_mm,
             ROUND(SUM(pb.monto_vigente) - SUM(pb.monto_original), 2) AS variacion_mm
@@ -332,29 +331,24 @@ def q5_recortes_jgm_por_entidad(exportar: bool = False) -> pd.DataFrame:
     """
     Cruza las modificaciones de JGM (jurisdiccion_id=25) contra presupuesto_base
     via partida_id para obtener la entidad afectada.
-
-    Para las filas sin partida_id (partida_id IS NULL), agrupa como 'Sin partida'.
-    Muestra presupuesto original 2026 como referencia de tamaño de cada entidad.
     """
     sql = """
-          SELECT COALESCE(pb.entidad_id, '?')             AS entidad_id, \
-                 COALESCE(pb.entidad_desc, 'Sin partida') AS entidad, \
-                 COUNT(DISTINCT m.norma_id)               AS cant_normas, \
-                 COUNT(1)                                 AS cant_partidas, \
-                 ROUND(SUM(m.reduccion), 2)               AS total_reduccion, \
-                 ROUND(SUM(m.aumento), 2)                 AS total_aumento, \
-                 ROUND(SUM(m.monto_neto), 2)              AS neto
-          FROM modificaciones m
-                   LEFT JOIN presupuesto_base pb
-                             ON pb.id = m.partida_id
-          WHERE m.jurisdiccion_id = '25'
-            AND (pb.ejercicio = 2026 OR m.partida_id IS NULL)
-          GROUP BY COALESCE(pb.entidad_id, '?'), COALESCE(pb.entidad_desc, 'Sin partida')
-          ORDER BY total_reduccion DESC \
-          """
+        SELECT COALESCE(pb.entidad_id, '?')             AS entidad_id,
+               COALESCE(pb.entidad_desc, 'Sin partida') AS entidad,
+               COUNT(DISTINCT m.norma_id)               AS cant_normas,
+               COUNT(1)                                 AS cant_partidas,
+               ROUND(SUM(m.reduccion), 2)               AS total_reduccion,
+               ROUND(SUM(m.aumento), 2)                 AS total_aumento,
+               ROUND(SUM(m.monto_neto), 2)              AS neto
+        FROM modificaciones m
+        LEFT JOIN presupuesto_base pb ON pb.id = m.partida_id
+        WHERE m.jurisdiccion_id = '25'
+          AND (pb.ejercicio = 2026 OR m.partida_id IS NULL)
+        GROUP BY COALESCE(pb.entidad_id, '?'), COALESCE(pb.entidad_desc, 'Sin partida')
+        ORDER BY total_reduccion DESC
+    """
     df_mods = pd.read_sql(text(sql), engine)
 
-    # Presupuesto original 2026 por entidad — para calcular % de recorte
     sql_base = """
         SELECT
             entidad_id,
@@ -369,7 +363,6 @@ def q5_recortes_jgm_por_entidad(exportar: bool = False) -> pd.DataFrame:
     df = df_mods.merge(df_base, on="entidad_id", how="left")
     df["presup_original_2026"] = df["presup_original_2026"].fillna(0)
 
-    # % de recorte neto sobre presupuesto original 2026
     df["recorte_pct_2026"] = (
         (df["total_reduccion"] - df["total_aumento"])
         / df["presup_original_2026"].replace(0, float("nan"))
@@ -398,11 +391,11 @@ def q5_recortes_jgm_por_entidad(exportar: bool = False) -> pd.DataFrame:
         )
 
     print("  " + "-"*94)
-    tot_red = df["total_reduccion"].sum()
-    tot_aum = df["total_aumento"].sum()
-    tot_net = df["neto"].sum()
+    tot_red  = df["total_reduccion"].sum()
+    tot_aum  = df["total_aumento"].sum()
+    tot_net  = df["neto"].sum()
     tot_base = df["presup_original_2026"].sum()
-    tot_pct = (tot_red - tot_aum) / tot_base * 100 if tot_base else 0
+    tot_pct  = (tot_red - tot_aum) / tot_base * 100 if tot_base else 0
     print(
         f"  {'TOTAL JGM':<48}  {'':>4}  "
         f"{_fmt(tot_red):>13}  "
@@ -419,13 +412,173 @@ def q5_recortes_jgm_por_entidad(exportar: bool = False) -> pd.DataFrame:
     return df
 
 
+# ── Query 6: Evolución mensual en pesos constantes y USD ─────────────────────
+
+def q6_evolucion_real(exportar: bool = False) -> pd.DataFrame:
+    """
+    Reexpresa cada modificación mensual en:
+      - Pesos constantes de dic-2023 (deflactados por IPC acumulado)
+      - USD al TC oficial venta del día de la DA
+
+    Criterio: TC e IPC al momento de cada Decisión Administrativa.
+    Fuente: argentinadatos.com (tabla macro_indices).
+    """
+    import sqlite3
+    from datetime import datetime, timedelta
+
+    conn = sqlite3.connect("sql_app.db")
+    cur = conn.cursor()
+
+    # ── TC diario ─────────────────────────────────────────────────────────────
+    cur.execute("""
+        SELECT fecha, valor FROM macro_indices
+        WHERE indicador = 'TC_oficial_venta'
+        ORDER BY fecha
+    """)
+    tc_diario = {r[0]: r[1] for r in cur.fetchall()}
+
+    # ── IPC mensual → índice de nivel acumulado, base dic-2023 = 100 ─────────
+    cur.execute("""
+        SELECT fecha, valor FROM macro_indices
+        WHERE indicador = 'IPC_variacion_mensual'
+        ORDER BY fecha
+    """)
+    ipc_rows  = cur.fetchall()
+    ipc_dict  = {r[0]: r[1] for r in ipc_rows}
+    fechas_ipc = sorted(ipc_dict.keys())
+
+    nivel = {}
+    base  = 100.0
+    for f in fechas_ipc:
+        base = base * (1 + ipc_dict[f] / 100)
+        nivel[f] = base
+
+    dic23 = [f for f in fechas_ipc if f.startswith('2023-12')]
+    base_dic23 = nivel[dic23[-1]] if dic23 else 1.0
+    deflactor  = {f: nivel[f] / base_dic23 for f in nivel}
+
+    conn.close()
+
+    def get_tc(fecha_str: str):
+        """TC del día exacto o el día hábil anterior disponible (hasta 10 días atrás)."""
+        d = str(fecha_str)[:10]
+        for i in range(10):
+            c = (datetime.strptime(d, '%Y-%m-%d') - timedelta(days=i)).strftime('%Y-%m-%d')
+            if c in tc_diario:
+                return tc_diario[c]
+        return None
+
+    def get_deflactor(fecha_str: str):
+        """Deflactor del mes de la DA. Si no hay, usa el más cercano anterior."""
+        mes = str(fecha_str)[:7]
+        candidatas = [f for f in deflactor if f.startswith(mes)]
+        if candidatas:
+            return deflactor[candidatas[-1]]
+        anteriores = [f for f in sorted(deflactor.keys()) if f[:7] <= mes]
+        return deflactor[anteriores[-1]] if anteriores else 1.0
+
+    # ── Modificaciones agrupadas por mes ──────────────────────────────────────
+    sql = """
+        SELECT
+            STRFTIME('%Y-%m', m.fecha_boletin) AS mes,
+            m.fecha_boletin,
+            ROUND(SUM(m.reduccion), 2)          AS reduccion,
+            ROUND(SUM(m.aumento), 2)            AS aumento,
+            ROUND(SUM(m.monto_neto), 2)         AS neto
+        FROM modificaciones m
+        WHERE m.fecha_boletin IS NOT NULL
+        GROUP BY mes
+        ORDER BY mes
+    """
+    df = pd.read_sql(text(sql), engine)
+
+    # ── Aplicar TC y deflactor ────────────────────────────────────────────────
+    registros = []
+    for _, r in df.iterrows():
+        fecha_ref = r['fecha_boletin']
+        tc   = get_tc(str(fecha_ref))
+        defl = get_deflactor(str(fecha_ref))
+        red, aum, neto = r['reduccion'], r['aumento'], r['neto']
+        registros.append({
+            'mes':           r['mes'],
+            'reduccion_nom': red,
+            'aumento_nom':   aum,
+            'neto_nom':      neto,
+            'tc':            tc,
+            'deflactor':     defl,
+            'reduccion_cte': red  / defl if defl else None,
+            'aumento_cte':   aum  / defl if defl else None,
+            'neto_cte':      neto / defl if defl else None,
+            'reduccion_usd': red  / tc   if tc   else None,
+            'aumento_usd':   aum  / tc   if tc   else None,
+            'neto_usd':      neto / tc   if tc   else None,
+        })
+
+    df6 = pd.DataFrame(registros)
+    df6['neto_cte_acum'] = df6['neto_cte'].cumsum()
+    df6['neto_usd_acum'] = df6['neto_usd'].cumsum()
+
+    def _usd(val):
+        if val is None or pd.isna(val):
+            return "         n/d"
+        av = abs(val)
+        if av >= 1_000_000_000:
+            return f"USD{val/1_000_000_000:>7.1f} B"
+        if av >= 1_000_000:
+            return f"USD{val/1_000_000:>7.1f} MM"
+        return f"USD{val/1_000:>7.1f} K"
+
+    print("\n" + "="*114)
+    print("QUERY 6 — Evolución mensual en pesos constantes (base dic-2023) y USD")
+    print("          TC e IPC al momento de cada Decisión Administrativa")
+    print("="*114)
+    print(
+        f"  {'Mes':>7}  {'TC':>6}  {'Defl':>5}  "
+        f"{'Neto nominal':>14}  {'Neto $ cte':>14}  {'Acum $ cte':>14}  "
+        f"{'Neto USD':>12}  {'Acum USD':>12}"
+    )
+    print("  " + "-"*108)
+
+    for _, r in df6.iterrows():
+        tc_str   = f"{r['tc']:>6.0f}"       if r['tc']        else "   n/d"
+        defl_str = f"{r['deflactor']:>5.2f}" if r['deflactor'] else "  n/d"
+        print(
+            f"  {r['mes']:>7}  {tc_str}  {defl_str}  "
+            f"{_fmt(r['neto_nom']):>14}  "
+            f"{_fmt(r['neto_cte']):>14}  "
+            f"{_fmt(r['neto_cte_acum']):>14}  "
+            f"{_usd(r['neto_usd']):>12}  "
+            f"{_usd(r['neto_usd_acum']):>12}"
+        )
+
+    print("  " + "-"*108)
+    tot_nom = df6['neto_nom'].sum()
+    tot_cte = df6['neto_cte'].sum()
+    tot_usd = df6['neto_usd'].sum()
+    print(
+        f"  {'TOTAL':>7}  {'':>6}  {'':>5}  "
+        f"{_fmt(tot_nom):>14}  "
+        f"{_fmt(tot_cte):>14}  "
+        f"{'':>14}  "
+        f"{_usd(tot_usd):>12}"
+    )
+    print("="*114)
+    print("  Pesos constantes: base dic-2023 = 100  |  IPC fuente: argentinadatos.com")
+    print("  USD: TC oficial venta al día de la DA   |  TC fuente: argentinadatos.com")
+    print("="*114)
+
+    if exportar:
+        _exportar(df6, "q6_evolucion_real")
+    return df6
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Análisis presupuestario MAP")
     p.add_argument(
-        "--query", type=int, choices=[1, 2, 3, 4, 5],
-        help="Correr solo la query indicada (1-5). Sin este flag corre las cinco."
+        "--query", type=int, choices=[1, 2, 3, 4, 5, 6],
+        help="Correr solo la query indicada (1-6). Sin este flag corre las seis."
     )
     p.add_argument(
         "--exportar", action="store_true",
@@ -433,7 +586,7 @@ if __name__ == "__main__":
     )
     args = p.parse_args()
 
-    queries = [args.query] if args.query else [1, 2, 3, 4, 5]
+    queries = [args.query] if args.query else [1, 2, 3, 4, 5, 6]
 
     if 1 in queries:
         q1_recortes_por_jurisdiccion(exportar=args.exportar)
@@ -445,3 +598,5 @@ if __name__ == "__main__":
         q4_ejecucion_2026_jgm(exportar=args.exportar)
     if 5 in queries:
         q5_recortes_jgm_por_entidad(exportar=args.exportar)
+    if 6 in queries:
+        q6_evolucion_real(exportar=args.exportar)
