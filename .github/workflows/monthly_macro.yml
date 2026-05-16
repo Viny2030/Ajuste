@@ -5,15 +5,9 @@ on:
     - cron: '0 12 16 * *'   # día 16 de cada mes a las 12:00 UTC (09:00 AR)
   workflow_dispatch:         # permite correrlo manualmente desde GitHub
 
-  jobs:
-    update_macro:
-      runs-on: ubuntu-latest
-      permissions:
-        contents: write
-
-      steps:
-        - name: Checkout repo
-          uses: actions/checkout@v4
+jobs:
+  update_macro:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
