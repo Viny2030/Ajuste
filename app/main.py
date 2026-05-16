@@ -7,6 +7,7 @@ Endpoints completos:
   /api/v1/analisis/ranking            → Top N partidas más ajustadas
   /api/v1/analisis/por-inciso         → Ajuste agregado por inciso
   /api/v1/macro/series                → IPC y USD desde BCRA
+  /api/v1/macro/base-monetaria        → Base Monetaria en vivo BCRA
   /api/v1/normativa/                  → Listado de normas JGM
   /api/v1/normativa/{norma_id}        → Detalle de una norma
   /api/v1/normativa/{norma_id}/partidas → Partidas afectadas por norma
@@ -15,7 +16,8 @@ Endpoints completos:
 """
 import asyncio
 import uvicorn
-from datetime import datetime
+import httpx
+from datetime import datetime, date, timedelta
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
@@ -130,7 +132,7 @@ def programas_por_jurisdiccion(
     )
     if inciso_id:
         q = q.filter(models.PresupuestoBase.inciso_id == inciso_id)
-    programas = q.all()
+    programas = q.limit(500).all()
     if not programas:
         raise HTTPException(404, detail=f"Jurisdiccion '{jurisdiccion_id}' no encontrada")
     all_mods = db.query(models.ModificacionPresupuestaria).all()
@@ -211,24 +213,56 @@ def ranking_ajuste(
     inciso_id: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    """Top N programas con mayor reducción real del presupuesto."""
-    q = db.query(models.PresupuestoBase)
+    macro = cargar_macro_indices()
+    factor = macro["factor_deflactacion"]
+
+    q = db.query(
+        models.PresupuestoBase.programa_id,
+        models.PresupuestoBase.programa_desc,
+        models.PresupuestoBase.jurisdiccion_desc,
+        models.PresupuestoBase.inciso_id,
+        models.PresupuestoBase.inciso_desc,
+        func.sum(models.PresupuestoBase.monto_original).label("original"),
+        func.sum(models.PresupuestoBase.monto_vigente).label("vigente"),
+    ).group_by(
+        models.PresupuestoBase.programa_id,
+        models.PresupuestoBase.programa_desc,
+        models.PresupuestoBase.jurisdiccion_desc,
+        models.PresupuestoBase.inciso_id,
+        models.PresupuestoBase.inciso_desc,
+    )
     if jurisdiccion_id:
         q = q.filter(models.PresupuestoBase.jurisdiccion_id == jurisdiccion_id)
     if inciso_id:
         q = q.filter(models.PresupuestoBase.inciso_id == inciso_id)
-    programas = q.all()
 
-    # Cargar TODAS las modificaciones sin filtro IN (evita "too many SQL variables" en SQLite)
-    # Como la tabla de modificaciones empieza vacía (aún no se corrió el scraper),
-    # esto es O(1) por ahora y escala bien cuando haya datos.
-    all_mods = db.query(models.ModificacionPresupuestaria).all()
-    mods_map: dict = {}
-    for m in all_mods:
-        mods_map.setdefault(m.programa_id, []).append(m)
+    rows = q.all()
 
-    analizador = AnalizadorPresupuestario(db)
-    return analizador.ranking_ajuste(programas, mods_map, top_n)
+    resultado = []
+    for r in rows:
+        if not r.original or r.original == 0:
+            continue
+        var_nom = ((r.vigente / r.original) - 1) * 100
+        real = r.vigente / factor
+        var_real = ((real / r.original) - 1) * 100
+        resultado.append({
+            "programa_id": r.programa_id,
+            "programa_desc": r.programa_desc,
+            "jurisdiccion": r.jurisdiccion_desc,
+            "inciso_id": r.inciso_id,
+            "inciso_desc": r.inciso_desc,
+            "monto_original": round(r.original, 2),
+            "monto_vigente_nominal": round(r.vigente, 2),
+            "monto_real_en_moneda_2023": round(real, 2),
+            "variacion_nominal_pct": round(var_nom, 2),
+            "variacion_real_pct": round(var_real, 2),
+            "licuacion_pct": round(var_nom - var_real, 2),
+            "cantidad_modificaciones": 0,
+            "estado_ajuste": "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
+        })
+
+    resultado.sort(key=lambda x: x["variacion_real_pct"])
+    return resultado[:top_n]
 
 
 @app.get(
@@ -282,6 +316,114 @@ def series_macro(db: Session = Depends(get_db)):
     """Retorna las series mensuales de IPC y USD oficial desde Enero 2023."""
     analizador = AnalizadorPresupuestario(db)
     return analizador.get_serie_macro()
+
+
+# ── MACRO: BASE MONETARIA (BCRA API en vivo) ─────────────────────
+
+BCRA_MONETARIAS   = "https://api.bcra.gob.ar/estadisticas/v4.0/monetarias"
+BCRA_CAMBIARIAS   = "https://api.bcra.gob.ar/estadisticascambiarias/v1.0/Cotizaciones"
+ID_BASE_MONETARIA = 15
+FECHA_ASUNCION    = "2023-12-07"
+BM_ASUNCION_MM    = 10_124_959   # millones ARS — BCRA 07/12/2023 (último hábil antes del 10/12)
+
+
+def _label_mes(fecha_str: str) -> str:
+    meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]
+    try:
+        p = fecha_str.split("-")
+        return f"{meses[int(p[1])-1]} {p[0]}"
+    except Exception:
+        return fecha_str
+
+
+@app.get(
+    "/api/v1/macro/base-monetaria",
+    tags=["Macro"],
+    summary="Base Monetaria — datos en vivo BCRA",
+)
+async def base_monetaria():
+    """
+    Consulta la API pública del BCRA (Variables Monetarias v4.0).
+    Base Monetaria diaria desde dic-2023 a hoy + TC USD oficial.
+    Sin autenticación requerida.
+    """
+    hoy      = date.today().isoformat()
+    hace_90d = (date.today() - timedelta(days=90)).isoformat()
+
+    async with httpx.AsyncClient(timeout=12, verify=False) as client:
+
+        # 1. Serie diaria Base Monetaria desde asunción
+        resp = await client.get(
+            f"{BCRA_MONETARIAS}/{ID_BASE_MONETARIA}",
+            params={"desde": FECHA_ASUNCION, "hasta": hoy, "limit": 3000},
+        )
+        if resp.status_code != 200:
+            raise HTTPException(502, "Error al consultar API BCRA (base monetaria)")
+
+        detalle     = resp.json()["results"][0]["detalle"]
+        detalle_asc = list(reversed(detalle))   # la API devuelve desc → invertimos
+
+        ultimo    = detalle_asc[-1]
+        bm_actual = ultimo["valor"]
+        fecha_ult = ultimo["fecha"]
+
+        # 2. Tipo de cambio USD oficial más reciente
+        tc_usd = None
+        try:
+            r2 = await client.get(
+                f"{BCRA_CAMBIARIAS}/USD",
+                params={"fechadesde": hace_90d, "fechahasta": hoy, "limit": 5},
+            )
+            if r2.status_code == 200:
+                for row in r2.json().get("results", []):
+                    det = row.get("detalle", [])
+                    if det and det[0].get("tipoCotizacion", 0) > 0:
+                        tc_usd = det[0]["tipoCotizacion"]
+                        break
+        except Exception:
+            pass
+
+    # 3. KPIs
+    var_pct = round((bm_actual / BM_ASUNCION_MM - 1) * 100, 1)
+    mult    = round(bm_actual / BM_ASUNCION_MM, 2)
+
+    # 4. Serie mensual para gráfico (primer dato de cada mes)
+    serie = []
+    meses_vistos = set()
+    for row in detalle_asc:
+        mes = row["fecha"][:7]
+        if mes not in meses_vistos:
+            meses_vistos.add(mes)
+            serie.append({
+                "fecha":   row["fecha"],
+                "label":   _label_mes(row["fecha"]),
+                "bm_bill": round(row["valor"] / 1_000_000, 1),
+                "var_pct": round((row["valor"] / BM_ASUNCION_MM - 1) * 100, 1),
+                "mult":    round(row["valor"] / BM_ASUNCION_MM, 2),
+            })
+
+    return {
+        "inicio": {
+            "fecha":       FECHA_ASUNCION,
+            "label":       "07/12/2023",
+            "bm_billones": round(BM_ASUNCION_MM / 1_000_000, 1),
+        },
+        "actual": {
+            "fecha":       fecha_ult,
+            "label":       _label_mes(fecha_ult),
+            "bm_billones": round(bm_actual / 1_000_000, 1),
+            "bm_usd_mm":   round(bm_actual / tc_usd, 0) if tc_usd else None,
+            "tc_usd":      tc_usd,
+        },
+        "variacion_pct": var_pct,
+        "multiplicador":  mult,
+        "nota": (
+            f"La cantidad de dinero circulante (más los encajes bancarios) "
+            f"se multiplicó por {mult}x respecto al valor que recibió "
+            f"la administración actual al asumir en diciembre de 2023."
+        ),
+        "serie_mensual": serie,
+    }
 
 
 # ── NORMATIVA JGM ────────────────────────────────────────────────
@@ -359,7 +501,6 @@ def comparativa_global(
     """
     q = db.query(models.ModificacionPresupuestaria)
     if jurisdiccion_id:
-        # join para filtrar por jurisdiccion
         q = q.join(models.PresupuestoBase).filter(
             models.PresupuestoBase.jurisdiccion_id == jurisdiccion_id
         )
@@ -368,10 +509,9 @@ def comparativa_global(
     analizador = AnalizadorPresupuestario(db)
     macro = analizador.get_serie_macro()
 
-    # Indexar IPC por mes
     ipc_idx = {}
     for row in macro["ipc"]:
-        mes = row["fecha"][:7]  # YYYY-MM
+        mes = row["fecha"][:7]
         ipc_idx[mes] = row.get("ipc_acum_vs_ene23", 1.0)
 
     usd_idx = {}
@@ -379,7 +519,6 @@ def comparativa_global(
         mes = row["fecha"][:7]
         usd_idx[mes] = row.get("usd_oficial")
 
-    # Agrupar modificaciones por mes
     por_mes = {}
     for m in mods:
         if not m.fecha_boletin:

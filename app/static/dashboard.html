@@ -17,7 +17,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .kpi-value { font-size: 28px; font-weight: 500; line-height: 1; }
 .kpi-sub { font-size: 11px; color: #aaa; margin-top: 4px; }
 .red { color: #c0392b; } .green { color: #27ae60; } .amber { color: #b46414; }
-.tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
 .tab { padding: 7px 16px; border-radius: 6px; cursor: pointer; border: 1px solid #e0e0da; background: white; font-size: 13px; color: #666; }
 .tab.active { background: #5b2d8e; color: white; border-color: #5b2d8e; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -38,6 +38,22 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
 .panel.active { display: block; }
 .legend { display: flex; gap: 16px; font-size: 12px; color: #888; margin-bottom: 10px; }
 .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }
+
+/* ── BASE MONETARIA ─────────────────────────────────────── */
+.bm-kpi-row{display:flex;gap:.9rem;flex-wrap:wrap;margin-bottom:1.2rem}
+.bm-card{flex:1 1 160px;background:#fff;border-radius:10px;padding:1rem 1.2rem;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.bm-card__label{font-size:.75rem;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;line-height:1.35}
+.bm-card__value{font-size:1.75rem;font-weight:700;color:#1a1a2e;line-height:1}
+.bm-card__note{font-size:.7rem;color:#888;margin-top:.25rem}
+.bm-nota{background:#fff8e1;border-left:4px solid #ffc107;border-radius:6px;padding:.8rem 1.1rem;font-size:.87rem;color:#5a4200;margin-bottom:1.3rem;line-height:1.55}
+.bm-chart-wrap{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);padding:1.1rem 1.3rem .9rem;margin-bottom:1.3rem}
+.bm-chart-title{font-size:.85rem;font-weight:700;color:#333;margin:0 0 .8rem;text-transform:uppercase;letter-spacing:.05em}
+.bm-table-wrap{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:auto}
+.bm-table{width:100%;border-collapse:collapse;font-size:.87rem}
+.bm-table th{background:#f4f6fb;color:#333;font-weight:700;padding:.6rem 1rem;text-align:left;border-bottom:2px solid #e0e4ef;white-space:nowrap}
+.bm-table td{padding:.5rem 1rem;border-bottom:1px solid #f0f2f8;color:#222}
+.bm-table tr:last-child td{border-bottom:none}
+.bm-table tr:nth-child(even) td{background:#fafbff}
 </style>
 </head>
 <body>
@@ -51,6 +67,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
   </div>
   <div style="margin-left:auto;font-size:12px;opacity:0.6;" id="last-update"></div>
 </div>
+
 <div class="main">
   <div class="kpi-grid">
     <div class="kpi"><div class="kpi-label">programas analizados</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">base 2023</div></div>
@@ -58,11 +75,13 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
     <div class="kpi"><div class="kpi-label">factor IPC acumulado</div><div class="kpi-value" id="kpi-ipc">8.5×</div><div class="kpi-sub">ene 2023 → may 2026</div></div>
     <div class="kpi"><div class="kpi-label">programas &gt;50% reducción real</div><div class="kpi-value red" id="kpi-cut50">—</div><div class="kpi-sub">de los programas con datos</div></div>
   </div>
+
   <div class="tabs">
     <button class="tab active" onclick="sw('ranking',this)">ranking</button>
     <button class="tab" onclick="sw('inciso',this)">por inciso</button>
     <button class="tab" onclick="sw('scatter',this)">nominal vs real</button>
     <button class="tab" onclick="sw('detalle',this)">detalle de partidas</button>
+    <button class="tab" onclick="sw('base-monetaria',this)">💵 base monetaria</button>
   </div>
 
   <!-- RANKING -->
@@ -127,79 +146,215 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
       <div id="tbl-detalle"></div>
     </div>
   </div>
-</div>
+
+  <!-- BASE MONETARIA -->
+  <div class="panel" id="tab-base-monetaria">
+    <div class="bm-kpi-row">
+      <div class="bm-card" style="border-left:5px solid #6c757d">
+        <div class="bm-card__label">Base Monetaria<br><small style="font-weight:400;color:#888">07/12/2023 — asunción</small></div>
+        <div class="bm-card__value" id="bm-inicio">—</div>
+        <div class="bm-card__note">billones de pesos</div>
+      </div>
+      <div class="bm-card" style="border-left:5px solid #0d6efd">
+        <div class="bm-card__label">Base Monetaria<br><small style="font-weight:400;color:#888" id="bm-fecha-actual">hoy</small></div>
+        <div class="bm-card__value" id="bm-actual">—</div>
+        <div class="bm-card__note">billones de pesos</div>
+      </div>
+      <div class="bm-card" style="border-left:5px solid #dc3545">
+        <div class="bm-card__label">Variación acumulada</div>
+        <div class="bm-card__value" id="bm-pct" style="color:#dc3545">—</div>
+        <div class="bm-card__note">desde dic 2023</div>
+      </div>
+      <div class="bm-card" style="border-left:5px solid #fd7e14">
+        <div class="bm-card__label">Multiplicador</div>
+        <div class="bm-card__value" id="bm-mult" style="color:#fd7e14">—</div>
+        <div class="bm-card__note">veces respecto al inicio</div>
+      </div>
+      <div class="bm-card" style="border-left:5px solid #198754">
+        <div class="bm-card__label">BM en USD<br><small style="font-weight:400;color:#888">TC oficial</small></div>
+        <div class="bm-card__value" id="bm-usd" style="color:#198754">—</div>
+        <div class="bm-card__note">millones de dólares</div>
+      </div>
+    </div>
+
+    <div class="bm-nota" id="bm-nota">Cargando datos del BCRA...</div>
+
+    <div class="bm-chart-wrap">
+      <h3 class="bm-chart-title">Evolución mensual — Base Monetaria (billones de $)</h3>
+      <canvas id="bmChart" height="300"></canvas>
+    </div>
+
+    <div class="bm-table-wrap">
+      <table class="bm-table">
+        <thead>
+          <tr>
+            <th>Período</th>
+            <th>Base Monetaria (B$)</th>
+            <th>Var. vs dic-2023</th>
+            <th>Multiplicador</th>
+          </tr>
+        </thead>
+        <tbody id="bm-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /main -->
 
 <script>
-const API='http://localhost:8000/api/v1';
-let D=[],I=[];
-let cRI,cII,cLI,cSI;
+const API = 'http://127.0.0.1:8000/api/v1';
+let D = [], I = [];
+let cRI, cII, cLI, cSI, _bmChart;
+let _bmCargado = false;
 
 function fmtM(n){if(!n&&n!==0)return'—';const a=Math.abs(n);if(a>=1e9)return(n/1e9).toFixed(1)+'B';if(a>=1e6)return(n/1e6).toFixed(1)+'M';if(a>=1e3)return(n/1e3).toFixed(1)+'K';return n.toFixed(0);}
 function fmtP(n){return(n>0?'+':'')+n.toFixed(1)+'%';}
-function sw(name,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');}
 
-async function init(){
-  try{
-    const[root,rank,inc]=await Promise.all([
-      fetch('http://localhost:8000/').then(r=>r.json()),
-      fetch(`${API}/analisis/ranking?top_n=100`).then(r=>r.json()),
-      fetch(`${API}/analisis/por-inciso`).then(r=>r.json()),
-    ]);
-    D=rank; I=inc;
-    document.getElementById('kpi-total').textContent=D.length;
-    document.getElementById('kpi-ipc').textContent=(root.factor_ipc_acumulado||8.5).toFixed(2)+'×';
-    document.getElementById('last-update').textContent=new Date(root.servidor_tiempo).toLocaleString('es-AR');
-    const reds=D.filter(d=>d.variacion_real_pct<0);
-    const avg=reds.reduce((s,d)=>s+d.variacion_real_pct,0)/(reds.length||1);
-    document.getElementById('kpi-avg').textContent=avg.toFixed(1)+'%';
-    document.getElementById('kpi-cut50').textContent=D.filter(d=>d.variacion_real_pct<-50).length;
-    const jurs=[...new Set(D.map(d=>d.jurisdiccion))].sort();
-    ['rjur','djur'].forEach(id=>{const s=document.getElementById(id);jurs.forEach(j=>{const o=document.createElement('option');o.value=j;o.textContent=j.length>45?j.slice(0,45)+'…':j;s.appendChild(o);});});
-    renderRanking();renderInciso();renderScatter();renderDetalle();
-  }catch(e){document.querySelector('.main').innerHTML=`<div style="padding:40px;text-align:center;color:#aaa;">⚠️ No se pudo conectar con la API en localhost:8000<br><small>${e.message}</small><br><br>Asegurate de que uvicorn esté corriendo.</div>`;}
+function sw(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'base-monetaria' && !_bmCargado) {
+    _bmCargado = true;
+    cargarBaseMonetaria();
+  }
 }
 
-function renderRanking(){
-  const jur=document.getElementById('rjur').value;
-  const n=parseInt(document.getElementById('rn').value);
-  let d=D.filter(x=>!jur||x.jurisdiccion===jur).sort((a,b)=>a.variacion_real_pct-b.variacion_real_pct).slice(0,n);
-  document.getElementById('rwrap').style.height=(d.length*38+80)+'px';
-  const labs=d.map(x=>{const s=x.programa_desc||x.programa_id;return s.length>55?s.slice(0,55)+'…':s;});
-  if(cRI)cRI.destroy();
-  cRI=new Chart(document.getElementById('cR'),{type:'bar',data:{labels:labs,datasets:[
+async function init() {
+  try {
+    const [root, rank, inc] = await Promise.all([
+      fetch('http://127.0.0.1:8000/').then(r => r.json()),
+      fetch(`${API}/analisis/ranking?top_n=100`).then(r => r.json()),
+      fetch(`${API}/analisis/por-inciso`).then(r => r.json()),
+    ]);
+    D = rank; I = inc;
+    document.getElementById('kpi-total').textContent = D.length;
+    document.getElementById('kpi-ipc').textContent = (root.factor_ipc_acumulado || 8.5).toFixed(2) + '×';
+    document.getElementById('last-update').textContent = new Date(root.servidor_tiempo).toLocaleString('es-AR');
+    const reds = D.filter(d => d.variacion_real_pct < 0);
+    const avg = reds.reduce((s, d) => s + d.variacion_real_pct, 0) / (reds.length || 1);
+    document.getElementById('kpi-avg').textContent = avg.toFixed(1) + '%';
+    document.getElementById('kpi-cut50').textContent = D.filter(d => d.variacion_real_pct < -50).length;
+    const jurs = [...new Set(D.map(d => d.jurisdiccion))].sort();
+    ['rjur','djur'].forEach(id => {
+      const s = document.getElementById(id);
+      jurs.forEach(j => { const o = document.createElement('option'); o.value = j; o.textContent = j.length > 45 ? j.slice(0,45)+'…' : j; s.appendChild(o); });
+    });
+    renderRanking(); renderInciso(); renderScatter(); renderDetalle();
+  } catch(e) {
+    document.querySelector('.main').innerHTML = `<div style="padding:40px;text-align:center;color:#aaa;">⚠️ No se pudo conectar con la API en localhost:8000<br><small>${e.message}</small><br><br>Asegurate de que uvicorn esté corriendo.</div>`;
+  }
+}
+
+function renderRanking() {
+  const jur = document.getElementById('rjur').value;
+  const n = parseInt(document.getElementById('rn').value);
+  let d = D.filter(x => !jur || x.jurisdiccion === jur).sort((a,b) => a.variacion_real_pct - b.variacion_real_pct).slice(0, n);
+  document.getElementById('rwrap').style.height = (d.length * 38 + 80) + 'px';
+  const labs = d.map(x => { const s = x.programa_desc || x.programa_id; return s.length > 55 ? s.slice(0,55)+'…' : s; });
+  if (cRI) cRI.destroy();
+  cRI = new Chart(document.getElementById('cR'), {type:'bar',data:{labels:labs,datasets:[
     {label:'nominal %',data:d.map(x=>+x.variacion_nominal_pct.toFixed(1)),backgroundColor:'rgba(52,120,200,0.45)',borderColor:'#3478C8',borderWidth:1},
     {label:'real %',data:d.map(x=>+x.variacion_real_pct.toFixed(1)),backgroundColor:d.map(x=>x.variacion_real_pct<0?'rgba(192,57,43,0.8)':'rgba(39,174,96,0.8)'),borderColor:d.map(x=>x.variacion_real_pct<0?'#c0392b':'#27ae60'),borderWidth:1},
   ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{afterBody:(items)=>{const x=d[items[0].dataIndex];return[`nominal: ${fmtP(x.variacion_nominal_pct)}`,`real: ${fmtP(x.variacion_real_pct)}`,`licuación: ${x.licuacion_pct.toFixed(1)}%`,`modificaciones: ${x.cantidad_modificaciones}`];}}}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
 }
 
-function renderInciso(){
-  const labs=I.map(d=>`${d.inciso_id} – ${(d.inciso_desc||'').slice(0,20)}`);
-  const vr=I.map(d=>+d.variacion_real_pct.toFixed(1));
-  const lic=I.map(d=>+((d.variacion_nominal_pct||0)-(d.variacion_real_pct||0)).toFixed(1));
-  if(cII)cII.destroy();
-  cII=new Chart(document.getElementById('cI'),{type:'bar',data:{labels:labs,datasets:[{label:'var. real %',data:vr,backgroundColor:vr.map(v=>v<0?'rgba(192,57,43,0.7)':'rgba(39,174,96,0.7)'),borderColor:vr.map(v=>v<0?'#c0392b':'#27ae60'),borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}}});
-  if(cLI)cLI.destroy();
-  cLI=new Chart(document.getElementById('cL'),{type:'bar',data:{labels:labs,datasets:[{label:'licuación %',data:lic,backgroundColor:'rgba(180,100,20,0.6)',borderColor:'#b46414',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}}});
-  document.getElementById('tbl-inciso').innerHTML=I.map(d=>`<div class="tr" style="grid-template-columns:2fr 1fr 1fr 1fr 80px;"><span>${d.inciso_id} — ${d.inciso_desc||''}</span><span class="nr">${fmtM(d.total_original)}</span><span class="nr">${fmtM(d.total_vigente)}</span><span class="nr">${fmtM(d.total_real_moneda_2023)}</span><span class="nr ${d.variacion_real_pct<0?'red':'green'}">${d.variacion_real_pct.toFixed(1)}%</span></div>`).join('');
+function renderInciso() {
+  const labs = I.map(d => `${d.inciso_id} – ${(d.inciso_desc||'').slice(0,20)}`);
+  const vr = I.map(d => +d.variacion_real_pct.toFixed(1));
+  const lic = I.map(d => +((d.variacion_nominal_pct||0)-(d.variacion_real_pct||0)).toFixed(1));
+  if (cII) cII.destroy();
+  cII = new Chart(document.getElementById('cI'), {type:'bar',data:{labels:labs,datasets:[{label:'var. real %',data:vr,backgroundColor:vr.map(v=>v<0?'rgba(192,57,43,0.7)':'rgba(39,174,96,0.7)'),borderColor:vr.map(v=>v<0?'#c0392b':'#27ae60'),borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}}});
+  if (cLI) cLI.destroy();
+  cLI = new Chart(document.getElementById('cL'), {type:'bar',data:{labels:labs,datasets:[{label:'licuación %',data:lic,backgroundColor:'rgba(180,100,20,0.6)',borderColor:'#b46414',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}}});
+  document.getElementById('tbl-inciso').innerHTML = I.map(d => `<div class="tr" style="grid-template-columns:2fr 1fr 1fr 1fr 80px;"><span>${d.inciso_id} — ${d.inciso_desc||''}</span><span class="nr">${fmtM(d.total_original)}</span><span class="nr">${fmtM(d.total_vigente)}</span><span class="nr">${fmtM(d.total_real_moneda_2023)}</span><span class="nr ${d.variacion_real_pct<0?'red':'green'}">${d.variacion_real_pct.toFixed(1)}%</span></div>`).join('');
 }
 
-function renderScatter(){
-  const pts=D.map(d=>({x:+d.variacion_nominal_pct.toFixed(1),y:+d.variacion_real_pct.toFixed(1),label:d.programa_desc}));
-  const mn=Math.min(...pts.map(p=>p.x),...pts.map(p=>p.y))-20;
-  const mx=Math.max(...pts.map(p=>p.x),...pts.map(p=>p.y))+20;
-  if(cSI)cSI.destroy();
-  cSI=new Chart(document.getElementById('cS'),{type:'scatter',data:{datasets:[
+function renderScatter() {
+  const pts = D.map(d => ({x:+d.variacion_nominal_pct.toFixed(1),y:+d.variacion_real_pct.toFixed(1),label:d.programa_desc}));
+  const mn = Math.min(...pts.map(p=>p.x),...pts.map(p=>p.y))-20;
+  const mx = Math.max(...pts.map(p=>p.x),...pts.map(p=>p.y))+20;
+  if (cSI) cSI.destroy();
+  cSI = new Chart(document.getElementById('cS'), {type:'scatter',data:{datasets:[
     {label:'programas',data:pts,backgroundColor:pts.map(p=>p.y<0?'rgba(192,57,43,0.5)':'rgba(39,174,96,0.5)'),pointRadius:5},
     {label:'diagonal',data:[{x:mn,y:mn},{x:mx,y:mx}],type:'line',borderColor:'#ccc',borderDash:[4,4],pointRadius:0,fill:false},
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>{const p=ctx.raw;return`${(p.label||'').slice(0,40)}: nom ${p.x}%, real ${p.y}%`;}}}},scales:{x:{title:{display:true,text:'variación nominal %',font:{size:12}},ticks:{callback:v=>v+'%'}},y:{title:{display:true,text:'variación real %',font:{size:12}},ticks:{callback:v=>v+'%'}}}}});
 }
 
-function renderDetalle(){
-  const jur=document.getElementById('djur').value;
-  const est=document.getElementById('dest').value;
-  const q=document.getElementById('dsrch').value.toLowerCase();
-  const data=D.filter(d=>(!jur||d.jurisdiccion===jur)&&(!est||d.estado_ajuste===est)&&(!q||(d.programa_desc||'').toLowerCase().includes(q)||(d.jurisdiccion||'').toLowerCase().includes(q))).sort((a,b)=>a.variacion_real_pct-b.variacion_real_pct);
-  document.getElementById('tbl-detalle').innerHTML=data.map(d=>`<div class="tr" style="grid-template-columns:2fr 80px 80px 90px 80px;"><span><div class="prog-name">${d.programa_desc||d.programa_id}</div><div class="prog-jur">${d.jurisdiccion||''}</div></span><span class="nr ${d.variacion_nominal_pct<0?'red':'green'}">${fmtP(d.variacion_nominal_pct)}</span><span class="nr ${d.variacion_real_pct<0?'red':'green'}">${fmtP(d.variacion_real_pct)}</span><span class="nr amber">${d.licuacion_pct.toFixed(1)}%</span><span><span class="pill ${d.estado_ajuste==='REDUCCIÓN'?'pill-red':'pill-green'}">${d.estado_ajuste}</span></span></div>`).join('');
+function renderDetalle() {
+  const jur = document.getElementById('djur').value;
+  const est = document.getElementById('dest').value;
+  const q = document.getElementById('dsrch').value.toLowerCase();
+  const data = D.filter(d=>(!jur||d.jurisdiccion===jur)&&(!est||d.estado_ajuste===est)&&(!q||(d.programa_desc||'').toLowerCase().includes(q)||(d.jurisdiccion||'').toLowerCase().includes(q))).sort((a,b)=>a.variacion_real_pct-b.variacion_real_pct);
+  document.getElementById('tbl-detalle').innerHTML = data.map(d => `<div class="tr" style="grid-template-columns:2fr 80px 80px 90px 80px;"><span><div class="prog-name">${d.programa_desc||d.programa_id}</div><div class="prog-jur">${d.jurisdiccion||''}</div></span><span class="nr ${d.variacion_nominal_pct<0?'red':'green'}">${fmtP(d.variacion_nominal_pct)}</span><span class="nr ${d.variacion_real_pct<0?'red':'green'}">${fmtP(d.variacion_real_pct)}</span><span class="nr amber">${d.licuacion_pct.toFixed(1)}%</span><span><span class="pill ${d.estado_ajuste==='REDUCCIÓN'?'pill-red':'pill-green'}">${d.estado_ajuste}</span></span></div>`).join('');
+}
+
+async function cargarBaseMonetaria() {
+  try {
+    const res = await fetch('/api/v1/macro/base-monetaria');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const d = await res.json();
+
+    document.getElementById('bm-inicio').textContent =
+      '$ ' + d.inicio.bm_billones.toFixed(1).replace('.',',') + ' B';
+    document.getElementById('bm-actual').textContent =
+      '$ ' + d.actual.bm_billones.toFixed(1).replace('.',',') + ' B';
+    document.getElementById('bm-fecha-actual').textContent = d.actual.label;
+    document.getElementById('bm-pct').textContent =
+      '+' + d.variacion_pct.toFixed(1).replace('.',',') + '%';
+    document.getElementById('bm-mult').textContent =
+      '× ' + d.multiplicador.toFixed(2).replace('.',',');
+    document.getElementById('bm-usd').textContent = d.actual.bm_usd_mm
+      ? 'USD ' + Number(d.actual.bm_usd_mm).toLocaleString('es-AR') + ' M'
+      : 'N/D';
+    document.getElementById('bm-nota').innerHTML = d.nota.replace(
+      /(\d+,\d+x|\d+\.\d+x)/g, '<strong>$1</strong>'
+    );
+
+    const labels = d.serie_mensual.map(s => s.label);
+    const vals   = d.serie_mensual.map(s => s.bm_bill);
+    const ctx    = document.getElementById('bmChart').getContext('2d');
+    if (_bmChart) _bmChart.destroy();
+    _bmChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Base Monetaria (B$)',
+          data: vals,
+          backgroundColor: vals.map((_,i) =>
+            i === vals.length-1 ? 'rgba(220,53,69,.85)' : 'rgba(91,45,142,.65)'),
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {display:false},
+          tooltip: {callbacks:{label: c => '$ '+c.raw.toFixed(1).replace('.',',')+' B'}}
+        },
+        scales: {
+          y: {beginAtZero:true, ticks:{callback:v=>'$'+v+'B'}, grid:{color:'#f0f2f8'}},
+          x: {grid:{display:false}}
+        }
+      }
+    });
+
+    const tbody = document.getElementById('bm-tbody');
+    tbody.innerHTML = '';
+    d.serie_mensual.forEach(row => {
+      tbody.innerHTML += `<tr>
+        <td>${row.label}</td>
+        <td>$ ${row.bm_bill.toFixed(1).replace('.',',')} B</td>
+        <td style="color:#dc3545;font-weight:600">+${row.var_pct.toFixed(1).replace('.',',')}%</td>
+        <td style="color:#fd7e14;font-weight:600">× ${row.mult.toFixed(2).replace('.',',')}</td>
+      </tr>`;
+    });
+
+  } catch(e) {
+    document.getElementById('bm-nota').textContent = 'Error cargando datos del BCRA: ' + e.message;
+  }
 }
 
 init();
