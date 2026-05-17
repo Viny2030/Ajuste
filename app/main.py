@@ -208,7 +208,7 @@ def ajuste_por_programa(programa_id: str, db: Session = Depends(get_db)):
     tags=["Analítica"],
 )
 def ranking_ajuste(
-    top_n: int = Query(20, le=100),
+    top_n: int = Query(20, le=500),   # subimos el límite: los tabs sectoriales necesitan todos
     jurisdiccion_id: Optional[str] = None,
     inciso_id: Optional[str] = None,
     db: Session = Depends(get_db),
@@ -216,6 +216,7 @@ def ranking_ajuste(
     macro = cargar_macro_indices()
     factor = macro["factor_deflactacion"]
 
+    # ── 1. Base 2023: original + vigente base agrupados por programa ──────────
     q = db.query(
         models.PresupuestoBase.programa_id,
         models.PresupuestoBase.programa_desc,
@@ -223,7 +224,7 @@ def ranking_ajuste(
         models.PresupuestoBase.inciso_id,
         models.PresupuestoBase.inciso_desc,
         func.sum(models.PresupuestoBase.monto_original).label("original"),
-        func.sum(models.PresupuestoBase.monto_vigente).label("vigente"),
+        func.sum(models.PresupuestoBase.monto_vigente).label("vigente_base"),
     ).group_by(
         models.PresupuestoBase.programa_id,
         models.PresupuestoBase.programa_desc,
@@ -236,29 +237,68 @@ def ranking_ajuste(
     if inciso_id:
         q = q.filter(models.PresupuestoBase.inciso_id == inciso_id)
 
-    rows = q.all()
+    base_rows = q.all()
 
+    # ── 2. Modificaciones sintéticas (CREDITO-VIGENTE-*): neto por programa ──
+    # sum(monto_neto) = vigente_reciente - vigente_2023, en pesos nominales
+    mods_q = (
+        db.query(
+            models.ModificacionPresupuestaria.programa_id,
+            models.ModificacionPresupuestaria.inciso_id,
+            func.sum(models.ModificacionPresupuestaria.monto_neto).label("neto"),
+            func.count(models.ModificacionPresupuestaria.id).label("cant"),
+        )
+        .filter(
+            models.ModificacionPresupuestaria.norma_id.like("CREDITO-VIGENTE-%")
+        )
+        .group_by(
+            models.ModificacionPresupuestaria.programa_id,
+            models.ModificacionPresupuestaria.inciso_id,
+        )
+    )
+    # key: (programa_id, inciso_id) → {neto, cant}
+    mods_map = {
+        (str(r.programa_id), str(r.inciso_id or "")): {
+            "neto": float(r.neto or 0),
+            "cant": int(r.cant or 0),
+        }
+        for r in mods_q.all()
+    }
+
+    # ── 3. Calcular variaciones usando vigente real ───────────────────────────
     resultado = []
-    for r in rows:
+    for r in base_rows:
         if not r.original or r.original == 0:
             continue
-        var_nom = ((r.vigente / r.original) - 1) * 100
-        real = r.vigente / factor
-        var_real = ((real / r.original) - 1) * 100
+
+        key = (str(r.programa_id), str(r.inciso_id or ""))
+        mod = mods_map.get(key, {"neto": 0, "cant": 0})
+
+        # vigente real = base 2023 + diferencia neta del sync
+        # Si no hay modificaciones sintéticas aún, cae en monto_vigente de la base
+        vigente_real = (r.vigente_base or 0) + mod["neto"]
+
+        # Protección: vigente no puede ser negativo
+        vigente_real = max(0.0, vigente_real)
+
+        var_nom  = ((vigente_real / r.original) - 1) * 100
+        real_pesos = vigente_real / factor
+        var_real = ((real_pesos / r.original) - 1) * 100
+
         resultado.append({
-            "programa_id": r.programa_id,
-            "programa_desc": r.programa_desc,
-            "jurisdiccion": r.jurisdiccion_desc,
-            "inciso_id": r.inciso_id,
-            "inciso_desc": r.inciso_desc,
-            "monto_original": round(r.original, 2),
-            "monto_vigente_nominal": round(r.vigente, 2),
-            "monto_real_en_moneda_2023": round(real, 2),
-            "variacion_nominal_pct": round(var_nom, 2),
-            "variacion_real_pct": round(var_real, 2),
-            "licuacion_pct": round(var_nom - var_real, 2),
-            "cantidad_modificaciones": 0,
-            "estado_ajuste": "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
+            "programa_id":             r.programa_id,
+            "programa_desc":           r.programa_desc,
+            "jurisdiccion":            r.jurisdiccion_desc,
+            "inciso_id":               r.inciso_id,
+            "inciso_desc":             r.inciso_desc,
+            "monto_original":          round(r.original, 2),
+            "monto_vigente_nominal":   round(vigente_real, 2),
+            "monto_real_en_moneda_2023": round(real_pesos, 2),
+            "variacion_nominal_pct":   round(var_nom, 2),
+            "variacion_real_pct":      round(var_real, 2),
+            "licuacion_pct":           round(var_nom - var_real, 2),
+            "cantidad_modificaciones": mod["cant"],
+            "estado_ajuste":           "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
         })
 
     resultado.sort(key=lambda x: x["variacion_real_pct"])
@@ -301,6 +341,7 @@ def ajuste_por_inciso(db: Session = Depends(get_db)):
             "total_vigente": round(r.total_vigente, 2),
             "total_real_moneda_2023": round(real, 2),
             "variacion_real_pct": round(var_real, 2),
+            "variacion_nominal_pct": round(((r.total_vigente / r.total_original) - 1) * 100, 2) if r.total_original else 0,
             "estado": "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
         })
     return sorted(resultado, key=lambda x: x["variacion_real_pct"])
@@ -324,7 +365,11 @@ BCRA_MONETARIAS   = "https://api.bcra.gob.ar/estadisticas/v4.0/monetarias"
 BCRA_CAMBIARIAS   = "https://api.bcra.gob.ar/estadisticascambiarias/v1.0/Cotizaciones"
 ID_BASE_MONETARIA = 15
 FECHA_ASUNCION    = "2023-12-07"
-BM_ASUNCION_MM    = 10_124_959   # millones ARS — BCRA 07/12/2023 (último hábil antes del 10/12)
+BM_ASUNCION_MM    = 10_124_959   # millones ARS — BCRA 07/12/2023
+
+# TC fallback: valor hardcodeado actualizable si la API cambiaria falla.
+# Actualizar manualmente si el TC se aleja mucho de este valor.
+TC_USD_FALLBACK   = 1_150.0      # ARS/USD oficial aprox. (actualizar periódicamente)
 
 
 def _label_mes(fecha_str: str) -> str:
@@ -334,6 +379,62 @@ def _label_mes(fecha_str: str) -> str:
         return f"{meses[int(p[1])-1]} {p[0]}"
     except Exception:
         return fecha_str
+
+
+async def _obtener_tc_usd(client: httpx.AsyncClient) -> tuple[float | None, bool]:
+    """
+    Intenta obtener el TC USD oficial desde la API BCRA cambiaria.
+    Retorna (tc, es_fallback):
+      - (valor, False) si la API respondió bien
+      - (TC_USD_FALLBACK, True) si falló → usar valor hardcodeado
+    La API BCRA cambiaria devuelve una lista de cotizaciones por fecha.
+    Estructura: results = [{ "fecha": "...", "detalle": [{ "codigoMoneda": "USD", "tipoPase": 0.0, ... }] }]
+    El TC oficial está en tipoPase o en el campo tipoCotizacion según el endpoint.
+    Probamos el endpoint de divisas que devuelve venta del BNA.
+    """
+    hoy      = date.today().isoformat()
+    hace_30d = (date.today() - timedelta(days=30)).isoformat()
+
+    # Endpoint alternativo: /estadisticascambiarias/v1.0/Cotizaciones/USD
+    # devuelve lista de { fecha, detalle: [{ tipoCotizacion, ... }] }
+    urls_a_probar = [
+        (
+            f"{BCRA_CAMBIARIAS}/USD",
+            {"fechadesde": hace_30d, "fechahasta": hoy, "limit": 10},
+            # extractor: busca el primer tipoCotizacion > 0 en detalle
+            lambda data: next(
+                (
+                    det.get("tipoCotizacion") or det.get("tipoPase")
+                    for row in data.get("results", [])
+                    for det in (row.get("detalle") or [])
+                    if (det.get("tipoCotizacion") or det.get("tipoPase") or 0) > 0
+                ),
+                None,
+            ),
+        ),
+        # Fallback endpoint: variables monetarias variable 4 (TC referencia BCRA)
+        (
+            "https://api.bcra.gob.ar/estadisticas/v4.0/monetarias/4",
+            {"desde": hace_30d, "hasta": hoy, "limit": 5},
+            lambda data: next(
+                (row["valor"] for row in reversed(data.get("results", [{}])[0].get("detalle", []))),
+                None,
+            ),
+        ),
+    ]
+
+    for url, params, extractor in urls_a_probar:
+        try:
+            r = await client.get(url, params=params)
+            if r.status_code == 200:
+                tc = extractor(r.json())
+                if tc and float(tc) > 0:
+                    return float(tc), False
+        except Exception:
+            continue
+
+    # Ambos endpoints fallaron → usar fallback hardcodeado
+    return TC_USD_FALLBACK, True
 
 
 @app.get(
@@ -347,8 +448,7 @@ async def base_monetaria():
     Base Monetaria diaria desde dic-2023 a hoy + TC USD oficial.
     Sin autenticación requerida.
     """
-    hoy      = date.today().isoformat()
-    hace_90d = (date.today() - timedelta(days=90)).isoformat()
+    hoy = date.today().isoformat()
 
     async with httpx.AsyncClient(timeout=12, verify=False) as client:
 
@@ -367,25 +467,15 @@ async def base_monetaria():
         bm_actual = ultimo["valor"]
         fecha_ult = ultimo["fecha"]
 
-        # 2. Tipo de cambio USD oficial más reciente
-        tc_usd = None
-        try:
-            r2 = await client.get(
-                f"{BCRA_CAMBIARIAS}/USD",
-                params={"fechadesde": hace_90d, "fechahasta": hoy, "limit": 5},
-            )
-            if r2.status_code == 200:
-                for row in r2.json().get("results", []):
-                    det = row.get("detalle", [])
-                    if det and det[0].get("tipoCotizacion", 0) > 0:
-                        tc_usd = det[0]["tipoCotizacion"]
-                        break
-        except Exception:
-            pass
+        # 2. Tipo de cambio USD oficial — con fallback robusto
+        tc_usd, tc_es_fallback = await _obtener_tc_usd(client)
 
     # 3. KPIs
     var_pct = round((bm_actual / BM_ASUNCION_MM - 1) * 100, 1)
     mult    = round(bm_actual / BM_ASUNCION_MM, 2)
+
+    # BM en USD: siempre calculable ahora (tc_usd nunca es None)
+    bm_usd_mm = round(bm_actual / tc_usd, 0)
 
     # 4. Serie mensual para gráfico (primer dato de cada mes)
     serie = []
@@ -402,6 +492,13 @@ async def base_monetaria():
                 "mult":    round(row["valor"] / BM_ASUNCION_MM, 2),
             })
 
+    # Nota sobre el TC usado
+    tc_nota = (
+        f"TC USD: ${tc_usd:,.0f} (oficial BNA)"
+        if not tc_es_fallback
+        else f"TC USD: ${tc_usd:,.0f} (referencia aproximada — API BCRA no disponible)"
+    )
+
     return {
         "inicio": {
             "fecha":       FECHA_ASUNCION,
@@ -412,15 +509,17 @@ async def base_monetaria():
             "fecha":       fecha_ult,
             "label":       _label_mes(fecha_ult),
             "bm_billones": round(bm_actual / 1_000_000, 1),
-            "bm_usd_mm":   round(bm_actual / tc_usd, 0) if tc_usd else None,
+            "bm_usd_mm":   bm_usd_mm,
             "tc_usd":      tc_usd,
+            "tc_es_fallback": tc_es_fallback,
         },
         "variacion_pct": var_pct,
         "multiplicador":  mult,
         "nota": (
             f"La cantidad de dinero circulante (más los encajes bancarios) "
             f"se multiplicó por {mult}x respecto al valor que recibió "
-            f"la administración actual al asumir en diciembre de 2023."
+            f"la administración actual al asumir en diciembre de 2023. "
+            f"{tc_nota}."
         ),
         "serie_mensual": serie,
     }
