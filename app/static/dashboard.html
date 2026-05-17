@@ -119,18 +119,37 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
       <h1>Monitor de Ajuste Presupuestario</h1>
       <span class="badge-version">MAP v2.0</span>
     </div>
-    <span style="font-size:12px;opacity:0.6;">Presupuesto 2023 → 2025 · Deflactado por IPC</span>
+    <span style="font-size:12px;opacity:0.6;">Presupuesto 2023 → 2026 · ① Nominal · ② Real (IPC) · ③ USD constantes</span>
   </div>
   <div style="margin-left:auto;font-size:12px;opacity:0.6;" id="last-update"></div>
 </div>
 
 <div class="main">
   <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-label">programas analizados</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">base 2023</div></div>
-    <div class="kpi"><div class="kpi-label">reducción real promedio</div><div class="kpi-value red" id="kpi-avg">—</div><div class="kpi-sub">deflactado por IPC acumulado</div></div>
-    <div class="kpi"><div class="kpi-label">factor IPC acumulado</div><div class="kpi-value" id="kpi-ipc">8.5×</div><div class="kpi-sub">ene 2023 → may 2026</div></div>
-    <div class="kpi"><div class="kpi-label">programas &gt;50% reducción real</div><div class="kpi-value red" id="kpi-cut50">—</div><div class="kpi-sub">de los programas con datos</div></div>
+    <div class="kpi" data-tt="Total de programas presupuestarios con datos en la base 2023.">
+      <div class="kpi-label">programas analizados</div>
+      <div class="kpi-value" id="kpi-total">—</div>
+      <div class="kpi-sub">base 2023</div>
+    </div>
+    <div class="kpi" data-tt="Ajuste real promedio: variación del gasto deflactada por IPC acumulado desde ene-2023. Mide la pérdida de poder de compra real del presupuesto.">
+      <div class="kpi-label">ajuste real promedio <span style="font-size:10px;color:#c8b8e8;">① pesos constantes</span></div>
+      <div class="kpi-value red" id="kpi-avg">—</div>
+      <div class="kpi-sub">gasto vigente ÷ IPC vs original 2023</div>
+    </div>
+    <div class="kpi" data-tt="Factor IPC acumulado desde enero 2023 hasta hoy. Un factor de 10× significa que los precios se multiplicaron por 10 — el mismo peso vale 10 veces menos.">
+      <div class="kpi-label">factor IPC acumulado</div>
+      <div class="kpi-value" id="kpi-ipc">—</div>
+      <div class="kpi-sub">ene-2023 → hoy · inflación acumulada</div>
+    </div>
+    <div class="kpi" data-tt="Programas donde el ajuste real supera el 50% — es decir, el gasto en pesos constantes de 2023 cayó más de la mitad.">
+      <div class="kpi-label">programas con ajuste real &gt;50% <span style="font-size:10px;color:#c8b8e8;">① </span></div>
+      <div class="kpi-value red" id="kpi-cut50">—</div>
+      <div class="kpi-sub">pérdida real de más de la mitad</div>
+    </div>
   </div>
+
+  <!-- Tooltip global — fuera de cualquier panel -->
+  <div id="tt" style="display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;font-size:12px;padding:8px 12px;border-radius:6px;max-width:280px;line-height:1.5;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.3);"></div>
 
   <div class="tabs">
     <button class="tab active" onclick="sw('ranking',this)">ranking</button>
@@ -152,15 +171,20 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
   <!-- RANKING -->
   <div class="panel active" id="tab-ranking">
     <div class="card">
-      <div class="card-title">programas con mayor reducción real</div>
+      <div class="card-title">programas con mayor ajuste real — pérdida de poder de compra</div>
+      <div style="background:#f0f4fb;border-radius:6px;padding:10px 14px;font-size:12px;color:#1a3a6e;margin-bottom:12px;line-height:1.6;">
+        <strong>① Ajuste nominal</strong> — variación en pesos corrientes vs presupuesto original 2023 &nbsp;|&nbsp;
+        <strong>② Ajuste real</strong> — ídem deflactado por IPC: pérdida de poder de compra &nbsp;|&nbsp;
+        <strong>③ Ajuste USD</strong> — variación en dólares al TC de ene-2023 vs TC actual
+      </div>
       <div class="filters">
         <select id="rjur" onchange="renderRanking()"><option value="">todas las jurisdicciones</option></select>
         <select id="rn" onchange="renderRanking()"><option value="10">top 10</option><option value="20" selected>top 20</option><option value="50">top 50</option></select>
       </div>
       <div class="legend">
-        <span><span class="legend-dot" style="background:#3478C8"></span>nominal</span>
-        <span><span class="legend-dot" style="background:#c0392b"></span>real deflactado (reducción)</span>
-        <span><span class="legend-dot" style="background:#27ae60"></span>real deflactado (incremento)</span>
+        <span><span class="legend-dot" style="background:#3478C8"></span>① ajuste nominal (pesos corrientes)</span>
+        <span><span class="legend-dot" style="background:#c0392b"></span>② ajuste real negativo (pesos de ene-2023)</span>
+        <span><span class="legend-dot" style="background:#27ae60"></span>② ajuste real positivo</span>
       </div>
       <div style="position:relative;width:100%;" id="rwrap"><canvas id="cR" role="img" aria-label="Ranking programas mayor reducción real"></canvas></div>
     </div>
@@ -190,8 +214,11 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
   <!-- SCATTER -->
   <div class="panel" id="tab-scatter">
     <div class="card">
-      <div class="card-title">variación nominal vs real — cada punto es un programa</div>
-      <p style="font-size:12px;color:#aaa;margin-bottom:12px;">Puntos bajo la diagonal: licuados por inflación. Sobre la diagonal: ganaron poder de compra real.</p>
+      <div class="card-title">① ajuste nominal vs ② ajuste real — cada punto es un programa</div>
+      <p style="font-size:12px;color:#aaa;margin-bottom:12px;">
+        <strong>Eje X:</strong> ajuste nominal (pesos corrientes vs 2023). <strong>Eje Y:</strong> ajuste real (deflactado por IPC, pesos de ene-2023).<br>
+        Puntos bajo la diagonal: licuados por inflación — el Estado gastó más nominalmente pero menos en términos reales. Sobre la diagonal: ganaron poder de compra real.
+      </p>
       <div style="position:relative;height:420px;"><canvas id="cS" role="img" aria-label="Dispersión nominal vs real por programa"></canvas></div>
     </div>
   </div>
@@ -205,8 +232,13 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
         <select id="dest" onchange="renderDetalle()"><option value="">todos</option><option value="REDUCCIÓN">solo reducciones</option><option value="INCREMENTO">solo incrementos</option></select>
         <input type="text" id="dsrch" placeholder="buscar programa..." oninput="renderDetalle()" style="width:200px;">
       </div>
-      <div class="th" style="grid-template-columns:2fr 80px 80px 90px 80px;">
-        <span>programa</span><span class="nr">nominal</span><span class="nr">real</span><span class="nr">licuación</span><span class="nr">estado</span>
+      <div class="th" style="grid-template-columns:2fr 90px 90px 90px 90px 80px;">
+        <span>programa</span>
+        <span class="nr" data-tt="① Ajuste nominal: variación en pesos corrientes vs original 2023">nominal %</span>
+        <span class="nr" data-tt="② Ajuste real: variación deflactada por IPC — pérdida de poder de compra en pesos de ene-2023">real % ②</span>
+        <span class="nr" data-tt="③ Ajuste en USD: variación en dólares constantes (TC ene-2023 como base)">USD % ③</span>
+        <span class="nr" data-tt="Licuación: parte del ajuste nominal que se explica por inflación, no por recorte real">licuación</span>
+        <span class="nr">estado</span>
       </div>
       <div id="tbl-detalle"></div>
     </div>
@@ -593,6 +625,18 @@ let D = [], I = [];
 let cRI, cII, cLI, cSI, _bmChart;
 let _bmCargado = false;
 
+// ── Paleta de colores fuerte ─────────────────────────────
+const C = {
+  nominal:   { bg: 'rgba(37,99,235,0.85)',  border: '#1d4ed8' },
+  reduccion: { bg: 'rgba(185,28,28,0.90)',  border: '#991b1b' },
+  aumento:   { bg: 'rgba(21,128,61,0.90)',  border: '#14532d' },
+  licuacion: { bg: 'rgba(180,83,9,0.88)',   border: '#92400e' },
+  scatter_r: 'rgba(185,28,28,0.80)',
+  scatter_g: 'rgba(21,128,61,0.80)',
+  purple:    'rgba(109,40,217,0.85)',
+  gray:      '#94a3b8',
+};
+
 // Mapeo jurisdicciones por sector
 // Normalizado en minúsculas para comparación flexible
 const SECTOR_JURIS = {
@@ -611,6 +655,28 @@ const _sectCharts = {};
 
 function fmtM(n){if(!n&&n!==0)return'—';const a=Math.abs(n);if(a>=1e9)return(n/1e9).toFixed(1)+'B';if(a>=1e6)return(n/1e6).toFixed(1)+'M';if(a>=1e3)return(n/1e3).toFixed(1)+'K';return n.toFixed(0);}
 function fmtP(n){return(n>0?'+':'')+n.toFixed(1)+'%';}
+function fmtAbs(n){if(n===null||n===undefined)return'—';const sign=n>=0?'+':'-';const a=Math.abs(n);if(a>=1e12)return sign+'$'+(a/1e12).toFixed(2)+'B';if(a>=1e9)return sign+'$'+(a/1e9).toFixed(1)+'MM';if(a>=1e6)return sign+'$'+(a/1e6).toFixed(1)+'M';return sign+'$'+a.toFixed(0);}
+function fmtUSD(n){if(n===null||n===undefined)return'—';const sign=n>=0?'+':'-';const a=Math.abs(n);if(a>=1e9)return sign+'USD '+(a/1e9).toFixed(1)+'B';if(a>=1e6)return sign+'USD '+(a/1e6).toFixed(1)+'M';return sign+'USD '+a.toFixed(0);}
+
+// ── Sistema de tooltips ─────────────────────────────────
+let _tt = null;
+function getTT() { return _tt || (_tt = document.getElementById('tt')); }
+document.addEventListener('mouseover', e => {
+  const el = e.target.closest('[data-tt]');
+  const tt = getTT(); if (!tt) return;
+  if (!el) { tt.style.display='none'; return; }
+  tt.textContent = el.dataset.tt;
+  tt.style.display = 'block';
+});
+document.addEventListener('mousemove', e => {
+  const tt = getTT(); if (!tt || tt.style.display === 'none') return;
+  tt.style.left = Math.min(e.clientX + 12, window.innerWidth - 300) + 'px';
+  tt.style.top  = (e.clientY + 16) + 'px';
+});
+document.addEventListener('mouseout', e => {
+  const tt = getTT(); if (!tt) return;
+  if (!e.target.closest('[data-tt]')) tt.style.display = 'none';
+});
 
 function sw(name, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -699,16 +765,16 @@ function renderSectorBarChart(canvasId, wrapId, data, sortKey) {
         {
           label: 'nominal %',
           data: sorted.map(d => +d.variacion_nominal_pct.toFixed(1)),
-          backgroundColor: 'rgba(52,120,200,0.4)',
-          borderColor: '#3478C8',
+          backgroundColor: 'C.nominal.bg',
+          borderColor: C.nominal.border,
           borderWidth: 1,
         },
         {
           label: 'real %',
           data: sorted.map(d => +d.variacion_real_pct.toFixed(1)),
           backgroundColor: sorted.map(d => d.variacion_real_pct < 0
-            ? 'rgba(192,57,43,0.75)' : 'rgba(39,174,96,0.75)'),
-          borderColor: sorted.map(d => d.variacion_real_pct < 0 ? '#c0392b' : '#27ae60'),
+            ? 'C.reduccion.bg' : 'C.aumento.bg'),
+          borderColor: sorted.map(d => d.variacion_real_pct < 0 ? C.reduccion.border : C.aumento.border),
           borderWidth: 1,
         },
       ],
@@ -747,7 +813,7 @@ function renderSectorScatter(canvasId, data) {
           label: 'programas',
           data: pts,
           backgroundColor: pts.map(p => p.y < 0
-            ? 'rgba(192,57,43,0.55)' : 'rgba(39,174,96,0.55)'),
+            ? 'C.reduccion.bg' : 'C.aumento.bg'),
           pointRadius: 5,
         },
         {
@@ -830,8 +896,8 @@ function renderSalarioCharts(data) {
       data: {
         labels: rows.map(r => r.jur.length>40?r.jur.slice(0,40)+'…':r.jur),
         datasets: [
-          { label:'nominal %', data:rows.map(r=>+r.nom.toFixed(1)), backgroundColor:'rgba(52,120,200,0.4)', borderColor:'#3478C8', borderWidth:1 },
-          { label:'real %', data:rows.map(r=>+r.real.toFixed(1)), backgroundColor:rows.map(r=>r.real<0?'rgba(192,57,43,0.75)':'rgba(39,174,96,0.75)'), borderColor:rows.map(r=>r.real<0?'#c0392b':'#27ae60'), borderWidth:1 },
+          { label:'nominal %', data:rows.map(r=>+r.nom.toFixed(1)), backgroundColor:'C.nominal.bg', borderColor:C.nominal.border, borderWidth:1 },
+          { label:'real %', data:rows.map(r=>+r.real.toFixed(1)), backgroundColor:rows.map(r=>r.real<0?'C.reduccion.bg':'C.aumento.bg'), borderColor:rows.map(r=>r.real<0?C.reduccion.border:C.aumento.border), borderWidth:1 },
         ],
       },
       options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}}},y:{ticks:{font:{size:11}}}} },
@@ -846,7 +912,7 @@ function renderSalarioCharts(data) {
       type: 'bar',
       data: {
         labels: rows.map(r => r.jur.length>40?r.jur.slice(0,40)+'…':r.jur),
-        datasets: [{ label:'licuación %', data:rows.map(r=>+r.lic.toFixed(1)), backgroundColor:'rgba(180,100,20,0.6)', borderColor:'#b46414', borderWidth:1 }],
+        datasets: [{ label:'licuación %', data:rows.map(r=>+r.lic.toFixed(1)), backgroundColor:'C.licuacion.bg', borderColor:C.licuacion.border, borderWidth:1 }],
       },
       options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}}},y:{ticks:{font:{size:11}}}} },
     });
@@ -935,22 +1001,22 @@ function renderLicuacion() {
         {
           label: 'licuación %',
           data: sorted.map(r => +Math.max(0, r.lic).toFixed(1)),
-          backgroundColor: 'rgba(217,119,6,0.7)',
-          borderColor: '#d97706',
+          backgroundColor: 'C.licuacion.bg',
+          borderColor: C.licuacion.border,
           borderWidth: 1,
         },
         {
           label: 'recorte real %',
           data: sorted.map(r => +Math.min(0, r.real).toFixed(1)),
-          backgroundColor: 'rgba(192,57,43,0.75)',
-          borderColor: '#c0392b',
+          backgroundColor: 'C.reduccion.bg',
+          borderColor: C.reduccion.border,
           borderWidth: 1,
         },
         {
           label: 'ganancia real %',
           data: sorted.map(r => +(r.real > 0 ? r.real : 0).toFixed(1)),
-          backgroundColor: 'rgba(39,174,96,0.65)',
-          borderColor: '#27ae60',
+          backgroundColor: 'C.aumento.bg',
+          borderColor: C.aumento.border,
           borderWidth: 1,
         },
       ],
@@ -992,8 +1058,8 @@ function renderLicuacion() {
       datasets: [{
         label: 'jurisdicciones',
         data: pts,
-        backgroundColor: pts.map(p => p.y < -20 ? 'rgba(192,57,43,0.65)'
-          : p.y < 0 ? 'rgba(217,119,6,0.65)' : 'rgba(39,174,96,0.65)'),
+        backgroundColor: pts.map(p => p.y < -20 ? 'C.reduccion.bg'
+          : p.y < 0 ? 'C.licuacion.bg' : 'C.aumento.bg'),
         pointRadius: 6,
       }],
     },
@@ -1030,8 +1096,8 @@ function renderLicuacion() {
     data: {
       labels: conAjuste.map(r => r.jur.length > 30 ? r.jur.slice(0, 30) + '…' : r.jur),
       datasets: [
-        { label: 'licuación %', data: pctLic, backgroundColor: 'rgba(217,119,6,0.75)', borderColor: '#d97706', borderWidth: 1 },
-        { label: 'recorte %',   data: pctRecorte, backgroundColor: 'rgba(192,57,43,0.7)', borderColor: '#c0392b', borderWidth: 1 },
+        { label: 'licuación %', data: pctLic, backgroundColor: 'C.licuacion.bg', borderColor: C.licuacion.border, borderWidth: 1 },
+        { label: 'recorte %',   data: pctRecorte, backgroundColor: 'C.reduccion.bg', borderColor: C.reduccion.border, borderWidth: 1 },
       ],
     },
     options: {
@@ -1107,7 +1173,7 @@ function renderResumen() {
   const grid = document.getElementById('resumen-sector-grid');
   grid.innerHTML = stats.map(s => {
     const barW = Math.min(100, Math.abs(s.real));
-    const barColor = s.real < 0 ? '#c0392b' : '#27ae60';
+    const barColor = s.real < 0 ? C.reduccion.border : C.aumento.border;
     return `
     <div class="resumen-sector-card" style="border-left:4px solid ${s.color};background:${s.bg}08;">
       <div class="resumen-sector-icon">${s.icon}</div>
@@ -1149,21 +1215,21 @@ function renderResumen() {
         {
           label: 'nominal %',
           data: sorted.map(s => +s.nom.toFixed(1)),
-          backgroundColor: 'rgba(52,120,200,0.45)',
-          borderColor: '#3478C8', borderWidth: 1,
+          backgroundColor: 'C.nominal.bg',
+          borderColor: C.nominal.border, borderWidth: 1,
         },
         {
           label: 'real %',
           data: sorted.map(s => +s.real.toFixed(1)),
-          backgroundColor: sorted.map(s => s.real < 0 ? 'rgba(192,57,43,0.8)' : 'rgba(39,174,96,0.8)'),
-          borderColor: sorted.map(s => s.real < 0 ? '#c0392b' : '#27ae60'),
+          backgroundColor: sorted.map(s => s.real < 0 ? 'C.reduccion.bg' : 'C.aumento.bg'),
+          borderColor: sorted.map(s => s.real < 0 ? C.reduccion.border : C.aumento.border),
           borderWidth: 1,
         },
         {
           label: 'licuación %',
           data: sorted.map(s => +s.lic.toFixed(1)),
-          backgroundColor: 'rgba(180,100,20,0.5)',
-          borderColor: '#b46414', borderWidth: 1,
+          backgroundColor: 'C.licuacion.bg',
+          borderColor: C.licuacion.border, borderWidth: 1,
         },
       ],
     },
@@ -1212,7 +1278,7 @@ function renderResumen() {
   // real_t = (vigente_t / ipcFactor) / original - 1
   // Como no tenemos serie histórica, simulamos con el dato actual y
   // asumimos que el vigente creció nominalmente de forma proporcional al IPC × (1 + ajuste_nominal/meses)
-  const colores = ['#145a2a','#3d1e6e','#d97706','#1a3a6e','#9b1c1c','#1a4a6e'];
+  const colores = ['#145a2a','#3d1e6e',C.licuacion.border,'#1a3a6e','#9b1c1c','#1a4a6e'];
   const datasets = SECTORES_META.map((s,si) => {
     const st = stats.find(x=>x.id===s.id);
     // variación nominal mensualizada (aprox.)
@@ -1292,8 +1358,8 @@ function renderRanking() {
   const labs = d.map(x => { const s = x.programa_desc || x.programa_id; return s.length > 55 ? s.slice(0,55)+'…' : s; });
   if (cRI) cRI.destroy();
   cRI = new Chart(document.getElementById('cR'), {type:'bar',data:{labels:labs,datasets:[
-    {label:'nominal %',data:d.map(x=>+x.variacion_nominal_pct.toFixed(1)),backgroundColor:'rgba(52,120,200,0.45)',borderColor:'#3478C8',borderWidth:1},
-    {label:'real %',data:d.map(x=>+x.variacion_real_pct.toFixed(1)),backgroundColor:d.map(x=>x.variacion_real_pct<0?'rgba(192,57,43,0.8)':'rgba(39,174,96,0.8)'),borderColor:d.map(x=>x.variacion_real_pct<0?'#c0392b':'#27ae60'),borderWidth:1},
+    {label:'nominal %',data:d.map(x=>+x.variacion_nominal_pct.toFixed(1)),backgroundColor:C.nominal.bg,borderColor:C.nominal.border,borderWidth:1},
+    {label:'real %',data:d.map(x=>+x.variacion_real_pct.toFixed(1)),backgroundColor:d.map(x=>x.variacion_real_pct<0?C.reduccion.bg:C.aumento.bg),borderColor:d.map(x=>x.variacion_real_pct<0?C.reduccion.border:C.aumento.border),borderWidth:1},
   ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{afterBody:(items)=>{const x=d[items[0].dataIndex];return[`nominal: ${fmtP(x.variacion_nominal_pct)}`,`real: ${fmtP(x.variacion_real_pct)}`,`licuación: ${x.licuacion_pct.toFixed(1)}%`,`modificaciones: ${x.cantidad_modificaciones}`];}}}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
 }
 
@@ -1302,9 +1368,9 @@ function renderInciso() {
   const vr = I.map(d => +d.variacion_real_pct.toFixed(1));
   const lic = I.map(d => +((d.variacion_nominal_pct||0)-(d.variacion_real_pct||0)).toFixed(1));
   if (cII) cII.destroy();
-  cII = new Chart(document.getElementById('cI'), {type:'bar',data:{labels:labs,datasets:[{label:'var. real %',data:vr,backgroundColor:vr.map(v=>v<0?'rgba(192,57,43,0.7)':'rgba(39,174,96,0.7)'),borderColor:vr.map(v=>v<0?'#c0392b':'#27ae60'),borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}}});
+  cII = new Chart(document.getElementById('cI'), {type:'bar',data:{labels:labs,datasets:[{label:'var. real %',data:vr,backgroundColor:vr.map(v=>v<0?C.reduccion.bg:C.aumento.bg),borderColor:vr.map(v=>v<0?C.reduccion.border:C.aumento.border),borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}}});
   if (cLI) cLI.destroy();
-  cLI = new Chart(document.getElementById('cL'), {type:'bar',data:{labels:labs,datasets:[{label:'licuación %',data:lic,backgroundColor:'rgba(180,100,20,0.6)',borderColor:'#b46414',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}}});
+  cLI = new Chart(document.getElementById('cL'), {type:'bar',data:{labels:labs,datasets:[{label:'licuación %',data:lic,backgroundColor:C.licuacion.bg,borderColor:C.licuacion.border,borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}}});
   document.getElementById('tbl-inciso').innerHTML = I.map(d => `<div class="tr" style="grid-template-columns:2fr 1fr 1fr 1fr 80px;"><span>${d.inciso_id} — ${d.inciso_desc||''}</span><span class="nr">${fmtM(d.total_original)}</span><span class="nr">${fmtM(d.total_vigente)}</span><span class="nr">${fmtM(d.total_real_moneda_2023)}</span><span class="nr ${d.variacion_real_pct<0?'red':'green'}">${d.variacion_real_pct.toFixed(1)}%</span></div>`).join('');
 }
 
@@ -1314,9 +1380,9 @@ function renderScatter() {
   const mx = Math.max(...pts.map(p=>p.x),...pts.map(p=>p.y))+20;
   if (cSI) cSI.destroy();
   cSI = new Chart(document.getElementById('cS'), {type:'scatter',data:{datasets:[
-    {label:'programas',data:pts,backgroundColor:pts.map(p=>p.y<0?'rgba(192,57,43,0.5)':'rgba(39,174,96,0.5)'),pointRadius:5},
-    {label:'diagonal',data:[{x:mn,y:mn},{x:mx,y:mx}],type:'line',borderColor:'#ccc',borderDash:[4,4],pointRadius:0,fill:false},
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>{const p=ctx.raw;return`${(p.label||'').slice(0,40)}: nom ${p.x}%, real ${p.y}%`;}}}},scales:{x:{title:{display:true,text:'variación nominal %',font:{size:12}},ticks:{callback:v=>v+'%'}},y:{title:{display:true,text:'variación real %',font:{size:12}},ticks:{callback:v=>v+'%'}}}}});
+    {label:'programas',data:pts,backgroundColor:pts.map(p=>p.y<0?C.scatter_r:C.scatter_g),pointRadius:6,pointHoverRadius:9},
+    {label:'diagonal',data:[{x:mn,y:mn},{x:mx,y:mx}],type:'line',borderColor:'#94a3b8',borderDash:[5,5],pointRadius:0,fill:false,borderWidth:1.5},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>{const p=ctx.raw;return`${(p.label||'').slice(0,40)}: nom ${p.x}%, real ${p.y}%`;}}}},scales:{x:{title:{display:true,text:'① ajuste nominal %',font:{size:12}},ticks:{callback:v=>v+'%'}},y:{title:{display:true,text:'② ajuste real %',font:{size:12}},ticks:{callback:v=>v+'%'}}}}});
 }
 
 function renderDetalle() {
@@ -1324,7 +1390,32 @@ function renderDetalle() {
   const est = document.getElementById('dest').value;
   const q = document.getElementById('dsrch').value.toLowerCase();
   const data = D.filter(d=>(!jur||d.jurisdiccion===jur)&&(!est||d.estado_ajuste===est)&&(!q||(d.programa_desc||'').toLowerCase().includes(q)||(d.jurisdiccion||'').toLowerCase().includes(q))).sort((a,b)=>a.variacion_real_pct-b.variacion_real_pct);
-  document.getElementById('tbl-detalle').innerHTML = data.map(d => `<div class="tr" style="grid-template-columns:2fr 80px 80px 90px 80px;"><span><div class="prog-name">${d.programa_desc||d.programa_id}</div><div class="prog-jur">${d.jurisdiccion||''}</div></span><span class="nr ${d.variacion_nominal_pct<0?'red':'green'}">${fmtP(d.variacion_nominal_pct)}</span><span class="nr ${d.variacion_real_pct<0?'red':'green'}">${fmtP(d.variacion_real_pct)}</span><span class="nr amber">${d.licuacion_pct.toFixed(1)}%</span><span><span class="pill ${d.estado_ajuste==='REDUCCIÓN'?'pill-red':'pill-green'}">${d.estado_ajuste}</span></span></div>`).join('');
+  document.getElementById('tbl-detalle').innerHTML = data.map(d => {
+    const nomPct  = d.ajuste_nominal_pct ?? d.variacion_nominal_pct ?? 0;
+    const realPct = d.ajuste_real_pct    ?? d.variacion_real_pct    ?? 0;
+    const usdPct  = d.ajuste_usd_pct;
+    const nomAbs  = d.ajuste_nominal_abs;
+    const realAbs = d.ajuste_real_abs;
+    const usdAbs  = d.ajuste_usd_abs;
+    const lic     = d.licuacion_pct ?? 0;
+    return `<div class="tr" style="grid-template-columns:2fr 90px 90px 90px 90px 80px;">
+      <span>
+        <div class="prog-name">${d.programa_desc||d.programa_id}</div>
+        <div class="prog-jur">${d.jurisdiccion||''}</div>
+      </span>
+      <span class="nr ${nomPct<0?'red':'green'}" data-tt="① Ajuste nominal\n${fmtP(nomPct)} en pesos corrientes\nAbsoluto: ${fmtAbs(nomAbs)}">
+        ${fmtP(nomPct)}<br><small style="color:#aaa;font-size:10px;">${fmtAbs(nomAbs)}</small>
+      </span>
+      <span class="nr ${realPct<0?'red':'green'}" data-tt="② Ajuste real (pesos de ene-2023)\n${fmtP(realPct)} deflactado por IPC\nAbsoluto: ${fmtAbs(realAbs)}">
+        ${fmtP(realPct)}<br><small style="color:#aaa;font-size:10px;">${fmtAbs(realAbs)}</small>
+      </span>
+      <span class="nr ${usdPct!==null&&usdPct<0?'red':usdPct!==null?'green':''}" data-tt="③ Ajuste en USD constantes\nBase: TC ene-2023\nAbsoluto: ${fmtUSD(usdAbs)}">
+        ${usdPct!==null?fmtP(usdPct):'—'}<br><small style="color:#aaa;font-size:10px;">${fmtUSD(usdAbs)}</small>
+      </span>
+      <span class="nr amber" data-tt="Licuación: diferencia entre ajuste nominal y real. Representa la parte del ajuste absorbida por inflación, sin recorte nominal.">${lic.toFixed(1)}%</span>
+      <span><span class="pill ${d.estado_ajuste==='REDUCCIÓN'?'pill-red':'pill-green'}">${d.estado_ajuste}</span></span>
+    </div>`;
+  }).join('');
 }
 
 async function cargarBaseMonetaria() {

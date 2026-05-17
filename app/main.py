@@ -215,17 +215,19 @@ def ranking_ajuste(
 ):
     macro = cargar_macro_indices()
     factor = macro["factor_deflactacion"]
+    usd_actual = macro.get("usd_actual")
+    TC_ENE2023 = 187.0
+    tc_actual  = usd_actual if usd_actual else TC_ENE2023 * factor
 
-    # ── 1. Base 2023: original + vigente base agrupados por programa ──────────
-    q = db.query(
+    # ── 1. Original 2023 agrupado por programa/inciso ─────────────────────────
+    q_base = db.query(
         models.PresupuestoBase.programa_id,
         models.PresupuestoBase.programa_desc,
         models.PresupuestoBase.jurisdiccion_desc,
         models.PresupuestoBase.inciso_id,
         models.PresupuestoBase.inciso_desc,
         func.sum(models.PresupuestoBase.monto_original).label("original"),
-        func.sum(models.PresupuestoBase.monto_vigente).label("vigente_base"),
-    ).group_by(
+    ).filter(models.PresupuestoBase.ejercicio == 2023).group_by(
         models.PresupuestoBase.programa_id,
         models.PresupuestoBase.programa_desc,
         models.PresupuestoBase.jurisdiccion_desc,
@@ -233,73 +235,95 @@ def ranking_ajuste(
         models.PresupuestoBase.inciso_desc,
     )
     if jurisdiccion_id:
-        q = q.filter(models.PresupuestoBase.jurisdiccion_id == jurisdiccion_id)
+        q_base = q_base.filter(models.PresupuestoBase.jurisdiccion_id == jurisdiccion_id)
     if inciso_id:
-        q = q.filter(models.PresupuestoBase.inciso_id == inciso_id)
+        q_base = q_base.filter(models.PresupuestoBase.inciso_id == inciso_id)
 
-    base_rows = q.all()
-
-    # ── 2. Modificaciones sintéticas (CREDITO-VIGENTE-*): neto por programa ──
-    # sum(monto_neto) = vigente_reciente - vigente_2023, en pesos nominales
-    mods_q = (
-        db.query(
-            models.ModificacionPresupuestaria.programa_id,
-            models.ModificacionPresupuestaria.inciso_id,
-            func.sum(models.ModificacionPresupuestaria.monto_neto).label("neto"),
-            func.count(models.ModificacionPresupuestaria.id).label("cant"),
-        )
-        .filter(
-            models.ModificacionPresupuestaria.norma_id.like("CREDITO-VIGENTE-%")
-        )
-        .group_by(
-            models.ModificacionPresupuestaria.programa_id,
-            models.ModificacionPresupuestaria.inciso_id,
-        )
-    )
-    # key: (programa_id, inciso_id) → {neto, cant}
-    # strip() para evitar espacios, lower() no aplica (son IDs numéricos)
-    mods_map = {
-        (str(r.programa_id).strip(), str(r.inciso_id or "").strip()): {
-            "neto": float(r.neto or 0),
-            "cant": int(r.cant or 0),
-        }
-        for r in mods_q.all()
+    base_map = {
+        (str(r.programa_id).strip(), str(r.inciso_id or '').strip()): r
+        for r in q_base.all()
     }
 
-    # ── 3. Calcular variaciones usando vigente real ───────────────────────────
+    # ── 2. Vigente más reciente (2026 > 2025 > 2024) ─────────────────────────
+    vigente_map = {}
+    for anio in [2024, 2025, 2026]:
+        q_vig = db.query(
+            models.PresupuestoBase.programa_id,
+            models.PresupuestoBase.inciso_id,
+            func.sum(models.PresupuestoBase.monto_vigente).label("vigente"),
+        ).filter(models.PresupuestoBase.ejercicio == anio).group_by(
+            models.PresupuestoBase.programa_id,
+            models.PresupuestoBase.inciso_id,
+        )
+        if jurisdiccion_id:
+            q_vig = q_vig.filter(models.PresupuestoBase.jurisdiccion_id == jurisdiccion_id)
+        if inciso_id:
+            q_vig = q_vig.filter(models.PresupuestoBase.inciso_id == inciso_id)
+        for r in q_vig.all():
+            key = (str(r.programa_id).strip(), str(r.inciso_id or '').strip())
+            vigente_map[key] = float(r.vigente or 0)  # 2026 pisa 2025, 2025 pisa 2024
+
+    # ── 3. Cantidad de modificaciones por programa ────────────────────────────
+    cant_map = {
+        (str(r.programa_id).strip(), str(r.inciso_id or '').strip()): int(r.cant or 0)
+        for r in db.query(
+            models.ModificacionPresupuestaria.programa_id,
+            models.ModificacionPresupuestaria.inciso_id,
+            func.count(models.ModificacionPresupuestaria.id).label("cant"),
+        ).filter(
+            models.ModificacionPresupuestaria.norma_id.like("CREDITO-VIGENTE-%")
+        ).group_by(
+            models.ModificacionPresupuestaria.programa_id,
+            models.ModificacionPresupuestaria.inciso_id,
+        ).all()
+    }
+
+    # ── 4. Calcular variaciones ───────────────────────────────────────────────
     resultado = []
-    for r in base_rows:
+    for key, r in base_map.items():
         if not r.original or r.original == 0:
             continue
 
-        key = (str(r.programa_id).strip(), str(r.inciso_id or "").strip())
-        mod = mods_map.get(key, {"neto": 0, "cant": 0})
+        # Vigente: año más reciente, fallback al original 2023
+        vigente_real = vigente_map.get(key)
+        if vigente_real is None or vigente_real == 0:
+            continue
 
-        # vigente real = base 2023 + diferencia neta del sync
-        # Si no hay modificaciones sintéticas aún, cae en monto_vigente de la base
-        vigente_real = (r.vigente_base or 0) + mod["neto"]
-
-        # Protección: vigente no puede ser negativo
-        vigente_real = max(0.0, vigente_real)
-
-        var_nom  = ((vigente_real / r.original) - 1) * 100
+        var_nom    = ((vigente_real / r.original) - 1) * 100
         real_pesos = vigente_real / factor
-        var_real = ((real_pesos / r.original) - 1) * 100
+        var_real   = ((real_pesos / r.original) - 1) * 100
+        abs_nom    = vigente_real - r.original
+        abs_real   = real_pesos - r.original
+
+        original_usd = round(r.original / TC_ENE2023, 2)
+        vigente_usd  = round(vigente_real / tc_actual, 2) if tc_actual else None
+        abs_usd      = round(vigente_usd - original_usd, 2) if vigente_usd is not None else None
+        var_usd_pct  = round(((vigente_usd / original_usd) - 1) * 100, 2) if (vigente_usd and original_usd) else None
 
         resultado.append({
-            "programa_id":             r.programa_id,
-            "programa_desc":           r.programa_desc,
-            "jurisdiccion":            r.jurisdiccion_desc,
-            "inciso_id":               r.inciso_id,
-            "inciso_desc":             r.inciso_desc,
-            "monto_original":          round(r.original, 2),
-            "monto_vigente_nominal":   round(vigente_real, 2),
+            "programa_id":               r.programa_id,
+            "programa_desc":             r.programa_desc,
+            "jurisdiccion":              r.jurisdiccion_desc,
+            "inciso_id":                 r.inciso_id,
+            "inciso_desc":               r.inciso_desc,
+            "monto_original":            round(r.original, 2),
+            "monto_vigente_nominal":     round(vigente_real, 2),
             "monto_real_en_moneda_2023": round(real_pesos, 2),
-            "variacion_nominal_pct":   round(var_nom, 2),
-            "variacion_real_pct":      round(var_real, 2),
-            "licuacion_pct":           round(var_nom - var_real, 2),
-            "cantidad_modificaciones": mod["cant"],
-            "estado_ajuste":           "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
+            "ajuste_nominal_pct":        round(var_nom, 2),
+            "ajuste_nominal_abs":        round(abs_nom, 2),
+            "ajuste_real_pct":           round(var_real, 2),
+            "ajuste_real_abs":           round(abs_real, 2),
+            "ajuste_usd_pct":            var_usd_pct,
+            "ajuste_usd_abs":            abs_usd,
+            "monto_original_usd":        original_usd,
+            "monto_vigente_usd":         vigente_usd,
+            "tc_ene2023":                TC_ENE2023,
+            "tc_actual":                 round(tc_actual, 2) if tc_actual else None,
+            "licuacion_pct":             round(var_nom - var_real, 2),
+            "cantidad_modificaciones":   cant_map.get(key, 0),
+            "estado_ajuste":             "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
+            "variacion_nominal_pct":     round(var_nom, 2),
+            "variacion_real_pct":        round(var_real, 2),
         })
 
     resultado.sort(key=lambda x: x["variacion_real_pct"])

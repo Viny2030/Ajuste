@@ -2,8 +2,8 @@
 """
 Estrategia:
 - Base: credito_original_2023 en pesos nominales (seed_2023 ya multiplicó ×1_000_000)
-- Vigente: credito_vigente del año más reciente (2026 > 2025 > 2024), también en millones
-  → se normaliza ×1_000_000 antes de comparar contra la base 2023
+- Vigente: credito_vigente del año más reciente (2026 > 2025 > 2024), en miles de pesos
+  → se normaliza ×1_000 antes de comparar contra la base 2023
 - ModificacionPresupuestaria guarda la diferencia NETA en pesos nominales
 
 Ejecución:
@@ -89,12 +89,12 @@ def _descargar_df(anio: int) -> pd.DataFrame | None:
         if col in df.columns:
             df[col] = (
                 df[col].astype(str)
-                .str.replace(",", ".", regex=False)
+                .str.replace(",", ".", regex=False)   # coma decimal → punto
                 .str.replace(r"[^\d\.]", "", regex=True)
                 .pipe(pd.to_numeric, errors="coerce")
                 .fillna(0.0)
-                # Todos los años (2024/2025/2026) vienen en millones → pesos nominales
-                .mul(1_000_000)
+                # CSVs vienen en MILES de pesos → multiplicar ×1_000 para pesos nominales
+                .mul(1_000)
                 .round(0)
             )
     return df
@@ -102,7 +102,7 @@ def _descargar_df(anio: int) -> pd.DataFrame | None:
 
 def calcular_y_cargar_modificaciones():
     """
-    1. Descarga vigente 2024, 2025 y 2026 (todos en millones → normaliza ×1_000_000)
+    1. Descarga vigente 2024, 2025 y 2026 (en miles de pesos → normaliza ×1_000)
     2. Para cada partida toma el vigente más reciente (2026 > 2025 > 2024)
     3. Diferencia = vigente_reciente_pesos - monto_vigente_2023_pesos
     4. El ZIP de 2026 se regenera diariamente → cada run refleja ejecución actualizada
@@ -114,12 +114,12 @@ def calcular_y_cargar_modificaciones():
     base_rows = db.query(models.PresupuestoBase).filter(
         models.PresupuestoBase.ejercicio == 2023
     ).all()
-    # Sumar monto_vigente por key (igual que agrupamos 2024/2025/2026)
-    # Los valores en DB están en millones → multiplicar ×1_000_000 para pesos nominales
+
+    # Sumar monto_vigente por key
+    # Los valores en DB están en pesos nominales (seed_2023 ya multiplicó correctamente)
     base_map = {}
     for r in base_rows:
         key = (r.jurisdiccion_id, r.programa_id, r.inciso_id, r.fuente_financiamiento_id)
-        # monto_vigente 2023 ya está en pesos nominales (seed_2023 multiplicó ×1_000_000)
         base_map[key] = base_map.get(key, 0.0) + (r.monto_vigente or 0.0)
     print(f"   {len(base_map):,} partidas base 2023 (agregadas)")
 
@@ -183,10 +183,8 @@ def calcular_y_cargar_modificaciones():
     for key, v in vigente_map.items():
         jur_id, prog_id, inciso_id, ff_id = key
 
-        # base_map[key] es float en pesos (ya agregado y ×1_000_000)
         vigente_2023     = base_map.get(key, 0.0)
-        # v["vigente"] también en pesos (_descargar_df multiplicó ×1_000_000)
-        vigente_reciente = v["vigente"]
+        vigente_reciente = v["vigente"]   # ya en pesos nominales (×1_000 aplicado)
 
         diferencia = vigente_reciente - vigente_2023
 
