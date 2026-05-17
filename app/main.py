@@ -257,8 +257,9 @@ def ranking_ajuste(
         )
     )
     # key: (programa_id, inciso_id) → {neto, cant}
+    # strip() para evitar espacios, lower() no aplica (son IDs numéricos)
     mods_map = {
-        (str(r.programa_id), str(r.inciso_id or "")): {
+        (str(r.programa_id).strip(), str(r.inciso_id or "").strip()): {
             "neto": float(r.neto or 0),
             "cant": int(r.cant or 0),
         }
@@ -271,7 +272,7 @@ def ranking_ajuste(
         if not r.original or r.original == 0:
             continue
 
-        key = (str(r.programa_id), str(r.inciso_id or ""))
+        key = (str(r.programa_id).strip(), str(r.inciso_id or "").strip())
         mod = mods_map.get(key, {"neto": 0, "cant": 0})
 
         # vigente real = base 2023 + diferencia neta del sync
