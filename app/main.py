@@ -54,7 +54,7 @@ if os.path.exists(static_dir):
 @app.get("/dashboard", tags=["Home"], include_in_schema=False)
 async def dashboard():
     """Dashboard visual del ajuste presupuestario."""
-    path = os.path.join(os.path.dirname(__file__), "static", "dashboard.html")
+    path = os.path.join(os.path.dirname(__file__), "static", "static/dashboard.html")
     return FileResponse(path)
 
 # ── Dependencia DB ──────────────────────────────────────────────
@@ -336,39 +336,75 @@ def ranking_ajuste(
 )
 def ajuste_por_inciso(db: Session = Depends(get_db)):
     """
-    Agregado del ajuste real por tipo de gasto (inciso):
-    1-Personal, 2-Bienes, 3-Servicios, 4-Transferencias, 5-Inversión, etc.
+    Agregado del ajuste real por tipo de gasto (inciso).
+    Original: ejercicio 2023 (pesos nominales).
+    Vigente:  ejercicio más reciente disponible (2026 > 2025 > 2024),
+              normalizado × 1.000.000 porque esos CSVs vienen en millones.
     """
-    rows = (
-        db.query(
-            models.PresupuestoBase.inciso_id,
-            models.PresupuestoBase.inciso_desc,
-            func.sum(models.PresupuestoBase.monto_original).label("total_original"),
-            func.sum(models.PresupuestoBase.monto_vigente).label("total_vigente"),
-        )
-        .group_by(
-            models.PresupuestoBase.inciso_id,
-            models.PresupuestoBase.inciso_desc,
-        )
-        .all()
-    )
-
     macro = cargar_macro_indices()
     factor = macro["factor_deflactacion"]
-    resultado = []
-    for r in rows:
-        real = r.total_vigente / factor
-        var_real = ((real / r.total_original) - 1) * 100 if r.total_original else 0
-        resultado.append({
-            "inciso_id": r.inciso_id,
+
+    # ── 1. Original 2023 por inciso ──────────────────────────────
+    q_orig = db.query(
+        models.PresupuestoBase.inciso_id,
+        models.PresupuestoBase.inciso_desc,
+        func.sum(models.PresupuestoBase.monto_original).label("total_original"),
+    ).filter(
+        models.PresupuestoBase.ejercicio == 2023
+    ).group_by(
+        models.PresupuestoBase.inciso_id,
+        models.PresupuestoBase.inciso_desc,
+    ).all()
+
+    orig_map = {
+        str(r.inciso_id or "").strip(): {
             "inciso_desc": r.inciso_desc,
-            "total_original": round(r.total_original, 2),
-            "total_vigente": round(r.total_vigente, 2),
-            "total_real_moneda_2023": round(real, 2),
-            "variacion_real_pct": round(var_real, 2),
-            "variacion_nominal_pct": round(((r.total_vigente / r.total_original) - 1) * 100, 2) if r.total_original else 0,
+            "total_original": float(r.total_original or 0),
+        }
+        for r in q_orig
+    }
+
+    # ── 2. Vigente más reciente (2026 > 2025 > 2024), escala × 1.000.000 ──
+    vigente_map = {}
+    for anio in [2024, 2025, 2026]:
+        q_vig = db.query(
+            models.PresupuestoBase.inciso_id,
+            func.sum(models.PresupuestoBase.monto_vigente).label("total_vigente"),
+        ).filter(
+            models.PresupuestoBase.ejercicio == anio
+        ).group_by(
+            models.PresupuestoBase.inciso_id,
+        ).all()
+        for r in q_vig:
+            key = str(r.inciso_id or "").strip()
+            # 2026 pisa 2025, 2025 pisa 2024
+            vigente_map[key] = float(r.total_vigente or 0) * 1_000_000
+
+    # ── 3. Calcular variaciones ──────────────────────────────────
+    resultado = []
+    for inciso_id, orig in orig_map.items():
+        total_orig = orig["total_original"]
+        total_vig  = vigente_map.get(inciso_id)
+
+        if not total_orig or total_orig == 0 or not total_vig:
+            continue
+
+        real     = total_vig / factor
+        var_nom  = ((total_vig  / total_orig) - 1) * 100
+        var_real = ((real       / total_orig) - 1) * 100
+
+        resultado.append({
+            "inciso_id":              inciso_id,
+            "inciso_desc":            orig["inciso_desc"],
+            "total_original":         round(total_orig, 2),
+            "total_vigente":          round(total_vig,  2),
+            "total_real_moneda_2023": round(real,       2),
+            "variacion_nominal_pct":  round(var_nom,    2),
+            "variacion_real_pct":     round(var_real,   2),
+            "licuacion_pct":          round(var_nom - var_real, 2),
             "estado": "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
         })
+
     return sorted(resultado, key=lambda x: x["variacion_real_pct"])
 
 
