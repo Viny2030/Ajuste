@@ -13,6 +13,8 @@ Endpoints completos:
   /api/v1/normativa/{norma_id}/partidas → Partidas afectadas por norma
   /api/v1/comparativa/                → Gasto nominal vs real vs inflación vs USD
   /api/v1/scrape/trigger              → Dispara scraper BORA (async)
+  /api/social/kpis                    → KPIs sanitarios (mortalidad, adultos mayores, suicidios)
+  /api/social/status                  → Health-check datos sociales
 """
 import asyncio
 import uvicorn
@@ -32,6 +34,7 @@ from app.database import models, schemas
 from app.database.session import SessionLocal, engine
 from app.core.engine import AnalizadorPresupuestario, cargar_macro_indices
 from app.core.viz import generar_grafico_ajuste
+from scripts.social.router_social import router as social_router
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -45,11 +48,14 @@ app = FastAPI(
     version="2.0.0",
 )
 
-
 # Servir archivos estáticos (dashboard)
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+# ── Routers ─────────────────────────────────────────────────────
+app.include_router(social_router)
+
 
 @app.get("/dashboard", tags=["Home"], include_in_schema=False)
 async def dashboard():
@@ -208,7 +214,7 @@ def ajuste_por_programa(programa_id: str, db: Session = Depends(get_db)):
     tags=["Analítica"],
 )
 def ranking_ajuste(
-    top_n: int = Query(20, le=500),   # subimos el límite: los tabs sectoriales necesitan todos
+    top_n: int = Query(20, le=500),
     jurisdiccion_id: Optional[str] = None,
     inciso_id: Optional[str] = None,
     db: Session = Depends(get_db),
@@ -219,7 +225,6 @@ def ranking_ajuste(
     TC_ENE2023 = 187.0
     tc_actual  = usd_actual if usd_actual else TC_ENE2023 * factor
 
-    # ── 1. Original 2023 agrupado por programa/inciso ─────────────────────────
     q_base = db.query(
         models.PresupuestoBase.programa_id,
         models.PresupuestoBase.programa_desc,
@@ -244,7 +249,6 @@ def ranking_ajuste(
         for r in q_base.all()
     }
 
-    # ── 2. Vigente más reciente (2026 > 2025 > 2024) ─────────────────────────
     vigente_map = {}
     for anio in [2024, 2025, 2026]:
         q_vig = db.query(
@@ -261,9 +265,8 @@ def ranking_ajuste(
             q_vig = q_vig.filter(models.PresupuestoBase.inciso_id == inciso_id)
         for r in q_vig.all():
             key = (str(r.programa_id).strip(), str(r.inciso_id or '').strip())
-            vigente_map[key] = float(r.vigente or 0)  # 2026 pisa 2025, 2025 pisa 2024
+            vigente_map[key] = float(r.vigente or 0)
 
-    # ── 3. Cantidad de modificaciones por programa ────────────────────────────
     cant_map = {
         (str(r.programa_id).strip(), str(r.inciso_id or '').strip()): int(r.cant or 0)
         for r in db.query(
@@ -278,13 +281,11 @@ def ranking_ajuste(
         ).all()
     }
 
-    # ── 4. Calcular variaciones ───────────────────────────────────────────────
     resultado = []
     for key, r in base_map.items():
         if not r.original or r.original == 0:
             continue
 
-        # Vigente: año más reciente, fallback al original 2023
         vigente_real = vigente_map.get(key)
         if vigente_real is None or vigente_real == 0:
             continue
@@ -344,7 +345,6 @@ def ajuste_por_inciso(db: Session = Depends(get_db)):
     macro = cargar_macro_indices()
     factor = macro["factor_deflactacion"]
 
-    # ── 1. Original 2023 por inciso ──────────────────────────────
     q_orig = db.query(
         models.PresupuestoBase.inciso_id,
         models.PresupuestoBase.inciso_desc,
@@ -364,7 +364,6 @@ def ajuste_por_inciso(db: Session = Depends(get_db)):
         for r in q_orig
     }
 
-    # ── 2. Vigente más reciente (2026 > 2025 > 2024), escala × 1.000.000 ──
     vigente_map = {}
     for anio in [2024, 2025, 2026]:
         q_vig = db.query(
@@ -377,10 +376,8 @@ def ajuste_por_inciso(db: Session = Depends(get_db)):
         ).all()
         for r in q_vig:
             key = str(r.inciso_id or "").strip()
-            # 2026 pisa 2025, 2025 pisa 2024
             vigente_map[key] = float(r.total_vigente or 0) * 1_000_000
 
-    # ── 3. Calcular variaciones ──────────────────────────────────
     resultado = []
     for inciso_id, orig in orig_map.items():
         total_orig = orig["total_original"]
@@ -428,9 +425,7 @@ ID_BASE_MONETARIA = 15
 FECHA_ASUNCION    = "2023-12-07"
 BM_ASUNCION_MM    = 10_124_959   # millones ARS — BCRA 07/12/2023
 
-# TC fallback: valor hardcodeado actualizable si la API cambiaria falla.
-# Actualizar manualmente si el TC se aleja mucho de este valor.
-TC_USD_FALLBACK   = 1_150.0      # ARS/USD oficial aprox. (actualizar periódicamente)
+TC_USD_FALLBACK   = 1_150.0
 
 
 def _label_mes(fecha_str: str) -> str:
@@ -443,26 +438,13 @@ def _label_mes(fecha_str: str) -> str:
 
 
 async def _obtener_tc_usd(client: httpx.AsyncClient) -> tuple[float | None, bool]:
-    """
-    Intenta obtener el TC USD oficial desde la API BCRA cambiaria.
-    Retorna (tc, es_fallback):
-      - (valor, False) si la API respondió bien
-      - (TC_USD_FALLBACK, True) si falló → usar valor hardcodeado
-    La API BCRA cambiaria devuelve una lista de cotizaciones por fecha.
-    Estructura: results = [{ "fecha": "...", "detalle": [{ "codigoMoneda": "USD", "tipoPase": 0.0, ... }] }]
-    El TC oficial está en tipoPase o en el campo tipoCotizacion según el endpoint.
-    Probamos el endpoint de divisas que devuelve venta del BNA.
-    """
     hoy      = date.today().isoformat()
     hace_30d = (date.today() - timedelta(days=30)).isoformat()
 
-    # Endpoint alternativo: /estadisticascambiarias/v1.0/Cotizaciones/USD
-    # devuelve lista de { fecha, detalle: [{ tipoCotizacion, ... }] }
     urls_a_probar = [
         (
             f"{BCRA_CAMBIARIAS}/USD",
             {"fechadesde": hace_30d, "fechahasta": hoy, "limit": 10},
-            # extractor: busca el primer tipoCotizacion > 0 en detalle
             lambda data: next(
                 (
                     det.get("tipoCotizacion") or det.get("tipoPase")
@@ -473,7 +455,6 @@ async def _obtener_tc_usd(client: httpx.AsyncClient) -> tuple[float | None, bool
                 None,
             ),
         ),
-        # Fallback endpoint: variables monetarias variable 4 (TC referencia BCRA)
         (
             "https://api.bcra.gob.ar/estadisticas/v4.0/monetarias/4",
             {"desde": hace_30d, "hasta": hoy, "limit": 5},
@@ -494,7 +475,6 @@ async def _obtener_tc_usd(client: httpx.AsyncClient) -> tuple[float | None, bool
         except Exception:
             continue
 
-    # Ambos endpoints fallaron → usar fallback hardcodeado
     return TC_USD_FALLBACK, True
 
 
@@ -513,7 +493,6 @@ async def base_monetaria():
 
     async with httpx.AsyncClient(timeout=12, verify=False) as client:
 
-        # 1. Serie diaria Base Monetaria desde asunción
         resp = await client.get(
             f"{BCRA_MONETARIAS}/{ID_BASE_MONETARIA}",
             params={"desde": FECHA_ASUNCION, "hasta": hoy, "limit": 3000},
@@ -522,23 +501,19 @@ async def base_monetaria():
             raise HTTPException(502, "Error al consultar API BCRA (base monetaria)")
 
         detalle     = resp.json()["results"][0]["detalle"]
-        detalle_asc = list(reversed(detalle))   # la API devuelve desc → invertimos
+        detalle_asc = list(reversed(detalle))
 
         ultimo    = detalle_asc[-1]
         bm_actual = ultimo["valor"]
         fecha_ult = ultimo["fecha"]
 
-        # 2. Tipo de cambio USD oficial — con fallback robusto
         tc_usd, tc_es_fallback = await _obtener_tc_usd(client)
 
-    # 3. KPIs
     var_pct = round((bm_actual / BM_ASUNCION_MM - 1) * 100, 1)
     mult    = round(bm_actual / BM_ASUNCION_MM, 2)
 
-    # BM en USD: siempre calculable ahora (tc_usd nunca es None)
     bm_usd_mm = round(bm_actual / tc_usd, 0)
 
-    # 4. Serie mensual para gráfico (primer dato de cada mes)
     serie = []
     meses_vistos = set()
     for row in detalle_asc:
@@ -553,7 +528,6 @@ async def base_monetaria():
                 "mult":    round(row["valor"] / BM_ASUNCION_MM, 2),
             })
 
-    # Nota sobre el TC usado
     tc_nota = (
         f"TC USD: ${tc_usd:,.0f} (oficial BNA)"
         if not tc_es_fallback

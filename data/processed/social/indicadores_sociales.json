@@ -1,0 +1,159 @@
+{
+  "_meta": {
+    "ultima_actualizacion": "2026-05-20T09:00:00+00:00",
+    "periodo_base": "Diciembre 2023 (inicio gestión Milei)",
+    "ultimo_dato_disponible": "Anuario 2024 (DEIS) / Informe 2024 (SNIC)",
+    "proxima_revision": "Anuario DEIS 2025 / SNIC 2025 (sin fecha de publicación)",
+    "fuentes": {
+      "deis": "https://www.argentina.gob.ar/salud/deis/publicaciones",
+      "snic": "https://www.argentina.gob.ar/seguridad/estadisticascriminales/datos"
+    },
+    "cambios_detectados": {},
+    "alertas_nuevos_datos": []
+  },
+  "indicadores": {
+    "mortalidad_infantil": {
+      "descripcion": "Muertes de menores de 1 año por cada 1.000 nacidos vivos",
+      "linea_de_base": {
+        "anio": 2023,
+        "tasa_por_mil": 8.0,
+        "muertes_absolutas": 3689,
+        "nacidos_vivos": 460902,
+        "componente_neonatal": 5.5,
+        "componente_posneonatal": 2.5
+      },
+      "ultimo_dato": {
+        "anio": 2024,
+        "tasa_por_mil": 8.5,
+        "muertes_absolutas": 3513,
+        "nacidos_vivos": 413135,
+        "componente_neonatal": 6.0,
+        "componente_posneonatal": 2.5,
+        "var_absoluta_tasa": 0.5,
+        "var_pct_tasa": 6.25,
+        "fuente": "DEIS – Anuario Estadísticas Vitales 2024",
+        "url_fuente": "https://www.argentina.gob.ar/salud/deis/publicaciones"
+      },
+      "variacion_desde_base": {
+        "tasa": {
+          "absoluta": 0.5,
+          "porcentual": 6.25,
+          "direccion": "sube"
+        },
+        "componente_neonatal": {
+          "absoluta": 0.5,
+          "porcentual": 9.1,
+          "direccion": "sube"
+        },
+        "nota": "La caída en muertes absolutas (-176) se explica por el derrumbe de la natalidad (-47.767 nacimientos). La tasa —que normaliza por nacidos vivos— sube de todas formas."
+      },
+      "alertas": [
+        "Mayor aumento porcentual de la tasa desde 2002",
+        "Provincias críticas: Corrientes (7,5 → 14,0), Misiones (5,8 → 9,5), Entre Ríos (5,2 → 8,8)"
+      ]
+    },
+    "mortalidad_adultos_mayores": {
+      "descripcion": "Muertes de personas de 65 años y más",
+      "linea_de_base": {
+        "anio": 2023,
+        "muertes_65_mas": 224000,
+        "muertes_totales": 322000
+      },
+      "ultimo_dato": {
+        "anio": 2024,
+        "muertes_65_mas": 245276,
+        "muertes_totales": 345000,
+        "exceso_muertes_65_mas": 21276,
+        "var_pct_65_mas": 9.5,
+        "var_pct_total": 7.1,
+        "desglose": {
+          "65_69": { "var_pct": 7.0 },
+          "75_84": { "var_pct": 8.0 },
+          "85_mas": { "var_pct": 10.0 }
+        },
+        "causas_principales": [
+          { "causa": "Neumonía e influenza",     "var_pct": 16 },
+          { "causa": "Septicemias",              "var_pct": 11 },
+          { "causa": "Enfermedades del corazón", "var_pct": 8  },
+          { "causa": "Cerebrovasculares",        "var_pct": 6  }
+        ],
+        "fuente": "DEIS – Anuario Estadísticas Vitales 2024 / ISALUD",
+        "url_fuente": "https://www.argentina.gob.ar/salud/deis/publicaciones"
+      },
+      "variacion_desde_base": {
+        "muertes_65_mas": {
+          "absoluta": 21276,
+          "porcentual": 9.5,
+          "direccion": "sube"
+        },
+        "muertes_totales": {
+          "absoluta": 23000,
+          "porcentual": 7.1,
+          "direccion": "sube"
+        },
+        "desglose_por_edad": {
+          "65_69": { "var_pct": 7.0 },
+          "75_84": { "var_pct": 8.0 },
+          "85_mas": { "var_pct": 10.0 }
+        }
+      },
+      "causas_principales_aumento": [
+        { "causa": "Neumonía e influenza",     "var_pct": 16 },
+        { "causa": "Septicemias",              "var_pct": 11 },
+        { "causa": "Enfermedades del corazón", "var_pct": 8  },
+        { "causa": "Cerebrovasculares",        "var_pct": 6  }
+      ],
+      "alertas": [
+        "21.276 muertes adicionales en mayores de 65 años vs. 2023",
+        "Los mayores de 85 años son el grupo más afectado (+10%)",
+        "Vinculado a discontinuación de medicamentos PAMI y recortes en cobertura"
+      ]
+    },
+    "suicidios": {
+      "descripcion": "Suicidios consumados registrados por SNIC",
+      "linea_de_base": {
+        "anio": 2023,
+        "casos": 4205,
+        "tasa_por_100k": 9.0
+      },
+      "ultimo_dato": {
+        "anio": 2024,
+        "casos": 4249,
+        "tasa_por_100k": 9.8,
+        "var_absoluta_casos": 44,
+        "var_pct_casos": 1.0,
+        "var_absoluta_tasa": 0.8,
+        "var_pct_tasa": 8.9,
+        "es_record_historico": true,
+        "principal_causa_muerte_violenta": true,
+        "intentos_notificados_2023_2025": 15807,
+        "promedio_intentos_diarios": 22,
+        "fuente": "SNIC – Informe Ejecutivo 2024, Ministerio de Seguridad",
+        "url_fuente": "https://www.argentina.gob.ar/seguridad/estadisticascriminales/datos"
+      },
+      "variacion_desde_base": {
+        "casos": {
+          "absoluta": 44,
+          "porcentual": 1.0,
+          "direccion": "sube"
+        },
+        "tasa": {
+          "absoluta": 0.8,
+          "porcentual": 8.9,
+          "direccion": "sube"
+        }
+      },
+      "contexto": {
+        "vs_media_oms": "Tasa argentina (9,8) supera media global OMS (8,2)",
+        "principal_muerte_violenta": true,
+        "tendencia_decada": "Crecimiento del 27% desde 2014 (3.296 casos)",
+        "intentos_2023_2025": "15.807 intentos notificados (22/día promedio)"
+      },
+      "alertas": [
+        "Récord histórico absoluto en 2024",
+        "Primera causa de muerte violenta en Argentina desde 2023",
+        "Tasa supera por primera vez el promedio mundial OMS"
+      ]
+    }
+  }
+}
