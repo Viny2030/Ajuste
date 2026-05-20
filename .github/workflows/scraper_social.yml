@@ -1,4 +1,38 @@
-name: scraper_social.yml
+name: Social Scraper — Indicadores Sanitarios
+
 on:
+  schedule:
+    - cron: "0 9 1 * *"
+    - cron: "0 9 15 * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/social/scraper_social.py"
+      - "data/processed/social/indicadores_sociales.json"
+      - ".github/workflows/scraper_social.yml"
 
 jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install httpx beautifulsoup4 lxml
+
+      - name: Correr scraper
+        run: python scripts/social/scraper_social.py
+
+      - name: Commit cambios si los hay
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/processed/social/
+          git diff --cached --quiet || git commit -m "chore: actualización automática indicadores sociales [skip ci]"
+          git push
