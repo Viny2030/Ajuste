@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "ultima_actualizacion": "2026-05-20T09:00:00+00:00",
+    "ultima_actualizacion": "2026-05-20T18:38:45.929028+00:00",
     "periodo_base": "Diciembre 2023 (inicio gestión Milei)",
     "ultimo_dato_disponible": "Anuario 2024 (DEIS) / Informe 2024 (SNIC)",
     "proxima_revision": "Anuario DEIS 2025 / SNIC 2025 (sin fecha de publicación)",
@@ -8,7 +8,11 @@
       "deis": "https://www.argentina.gob.ar/salud/deis/publicaciones",
       "snic": "https://www.argentina.gob.ar/seguridad/estadisticascriminales/datos"
     },
-    "cambios_detectados": {},
+    "cambios_detectados": {
+      "deis_publicaciones": true,
+      "deis_datos_abiertos": false,
+      "snic_suicidios": false
+    },
     "alertas_nuevos_datos": []
   },
   "indicadores": {
@@ -67,15 +71,33 @@
         "var_pct_65_mas": 9.5,
         "var_pct_total": 7.1,
         "desglose": {
-          "65_69": { "var_pct": 7.0 },
-          "75_84": { "var_pct": 8.0 },
-          "85_mas": { "var_pct": 10.0 }
+          "65_69": {
+            "var_pct": 7.0
+          },
+          "75_84": {
+            "var_pct": 8.0
+          },
+          "85_mas": {
+            "var_pct": 10.0
+          }
         },
         "causas_principales": [
-          { "causa": "Neumonía e influenza",     "var_pct": 16 },
-          { "causa": "Septicemias",              "var_pct": 11 },
-          { "causa": "Enfermedades del corazón", "var_pct": 8  },
-          { "causa": "Cerebrovasculares",        "var_pct": 6  }
+          {
+            "causa": "Neumonía e influenza",
+            "var_pct": 16
+          },
+          {
+            "causa": "Septicemias",
+            "var_pct": 11
+          },
+          {
+            "causa": "Enfermedades del corazón",
+            "var_pct": 8
+          },
+          {
+            "causa": "Cerebrovasculares",
+            "var_pct": 6
+          }
         ],
         "fuente": "DEIS – Anuario Estadísticas Vitales 2024 / ISALUD",
         "url_fuente": "https://www.argentina.gob.ar/salud/deis/publicaciones"
@@ -92,16 +114,34 @@
           "direccion": "sube"
         },
         "desglose_por_edad": {
-          "65_69": { "var_pct": 7.0 },
-          "75_84": { "var_pct": 8.0 },
-          "85_mas": { "var_pct": 10.0 }
+          "65_69": {
+            "var_pct": 7.0
+          },
+          "75_84": {
+            "var_pct": 8.0
+          },
+          "85_mas": {
+            "var_pct": 10.0
+          }
         }
       },
       "causas_principales_aumento": [
-        { "causa": "Neumonía e influenza",     "var_pct": 16 },
-        { "causa": "Septicemias",              "var_pct": 11 },
-        { "causa": "Enfermedades del corazón", "var_pct": 8  },
-        { "causa": "Cerebrovasculares",        "var_pct": 6  }
+        {
+          "causa": "Neumonía e influenza",
+          "var_pct": 16
+        },
+        {
+          "causa": "Septicemias",
+          "var_pct": 11
+        },
+        {
+          "causa": "Enfermedades del corazón",
+          "var_pct": 8
+        },
+        {
+          "causa": "Cerebrovasculares",
+          "var_pct": 6
+        }
       ],
       "alertas": [
         "21.276 muertes adicionales en mayores de 65 años vs. 2023",
