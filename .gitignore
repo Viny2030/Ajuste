@@ -17,3 +17,5 @@ data/*.csv
 # Playwright
 test-results/
 pw_screenshots/
+data/processed/infoleg_normativa.csv
+data/presupuesto_base/credito_mensual_2026.csv

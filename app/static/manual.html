@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual — Monitor de Ajuste Presupuestario (MAP)</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple: #5b2d8e;
+  --purple-light: #f7f3fd;
+  --purple-mid: #c8b8e8;
+  --red: #c0392b;
+  --green: #145a2a;
+  --amber: #b46414;
+  --blue: #1a3a6e;
+  --dark: #1a1a2e;
+  --gray: #f5f5f0;
+  --border: #e8e8e4;
+  --text: #1a1a1a;
+  --muted: #888;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--gray); color: var(--text); font-size: 15px; line-height: 1.7; }
+
+/* ── HEADER ── */
+.header {
+  background: var(--dark);
+  color: white;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+}
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.header-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: white;
+  text-decoration: none;
+}
+.header-badge {
+  background: var(--purple);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+.header-nav {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+.header-nav a {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.header-nav a:hover { background: rgba(255,255,255,0.1); color: white; }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, var(--dark) 0%, #2d1a4e 60%, var(--purple) 100%);
+  color: white;
+  padding: 80px 32px 60px;
+  text-align: center;
+}
+.hero h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 48px;
+  line-height: 1.15;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.hero h1 span { color: var(--purple-mid); }
+.hero p {
+  font-size: 18px;
+  color: rgba(255,255,255,0.75);
+  max-width: 640px;
+  margin: 0 auto 32px;
+  font-weight: 300;
+}
+.hero-pills {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hero-pill {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.85);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+/* ── LAYOUT ── */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+.content { display: grid; grid-template-columns: 240px 1fr; gap: 40px; padding: 48px 0 80px; }
+
+/* ── SIDEBAR ── */
+.sidebar { position: sticky; top: 80px; height: fit-content; }
+.sidebar-nav { background: white; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+.sidebar-section { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.sidebar-section:last-child { border-bottom: none; }
+.sidebar-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 8px 16px 4px;
+}
+.sidebar-nav a {
+  display: block;
+  padding: 7px 16px;
+  font-size: 13px;
+  color: #555;
+  text-decoration: none;
+  transition: all 0.12s;
+  border-left: 3px solid transparent;
+}
+.sidebar-nav a:hover { background: var(--purple-light); color: var(--purple); border-left-color: var(--purple-mid); }
+.sidebar-nav a.active { background: var(--purple-light); color: var(--purple); border-left-color: var(--purple); font-weight: 500; }
+
+/* ── MAIN CONTENT ── */
+.section {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 36px 40px;
+  margin-bottom: 24px;
+  scroll-margin-top: 90px;
+}
+.section-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--purple);
+  background: var(--purple-light);
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+.section h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px;
+  color: var(--dark);
+  margin-bottom: 16px;
+  line-height: 1.25;
+}
+.section h3 {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--dark);
+  margin: 28px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section h3::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: var(--purple);
+  border-radius: 2px;
+}
+.section p { color: #444; margin-bottom: 14px; }
+.section p:last-child { margin-bottom: 0; }
+
+/* ── FORMULA BOX ── */
+.formula {
+  background: var(--dark);
+  color: #e2d9f3;
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  padding: 20px 24px;
+  border-radius: 8px;
+  margin: 16px 0;
+  line-height: 1.8;
+  border-left: 4px solid var(--purple);
+}
+.formula .comment { color: #6b5a8e; }
+.formula .highlight { color: #c8b8e8; font-weight: 600; }
+
+/* ── CALLOUT ── */
+.callout {
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.callout-info { background: #f0f4fb; border-left: 4px solid var(--blue); color: var(--blue); }
+.callout-warning { background: #fff8e1; border-left: 4px solid #f59e0b; color: #7a4500; }
+.callout-red { background: #fef2f2; border-left: 4px solid var(--red); color: #7b1515; }
+.callout-green { background: #f0fdf4; border-left: 4px solid var(--green); color: var(--green); }
+.callout strong { font-weight: 700; }
+
+/* ── METRIC CARDS ── */
+.metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+.metric-card {
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+.metric-card-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 32px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.metric-card-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.metric-card-desc { font-size: 12px; color: #666; margin-top: 6px; }
+.metric-red { background: #fef2f2; border-color: #fca5a5; }
+.metric-red .metric-card-num { color: var(--red); }
+.metric-amber { background: #fffbeb; border-color: #fcd34d; }
+.metric-amber .metric-card-num { color: var(--amber); }
+.metric-blue { background: #eff6ff; border-color: #93c5fd; }
+.metric-blue .metric-card-num { color: var(--blue); }
+
+/* ── TAB CARDS ── */
+.tab-list { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+.tab-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.tab-card-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+.tab-card-name { font-weight: 600; color: var(--dark); font-size: 15px; margin-bottom: 4px; }
+.tab-card-desc { font-size: 13px; color: #555; line-height: 1.5; }
+.tab-card-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.badge-sector { background: var(--purple-light); color: var(--purple); }
+.badge-new { background: #f0fdf4; color: var(--green); }
+
+/* ── SOURCE TABLE ── */
+.source-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+.source-table th { background: var(--gray); font-weight: 600; padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border); color: #333; }
+.source-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: #444; vertical-align: top; }
+.source-table tr:last-child td { border-bottom: none; }
+.source-table tr:hover td { background: var(--gray); }
+
+/* ── DEFINITION LIST ── */
+.def-list { display: flex; flex-direction: column; gap: 14px; margin: 16px 0; }
+.def-item { display: grid; grid-template-columns: 160px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.def-item:last-child { border-bottom: none; }
+.def-term { font-weight: 600; color: var(--purple); font-size: 14px; }
+.def-desc { font-size: 14px; color: #444; line-height: 1.6; }
+
+/* ── STEP LIST ── */
+.step-list { counter-reset: steps; display: flex; flex-direction: column; gap: 16px; margin: 16px 0; }
+.step { display: flex; gap: 16px; align-items: flex-start; }
+.step-num {
+  counter-increment: steps;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--purple);
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.step-content { font-size: 14px; color: #444; line-height: 1.6; padding-top: 5px; }
+.step-content strong { color: var(--dark); }
+
+/* ── FOOTER ── */
+.footer {
+  background: var(--dark);
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  padding: 32px;
+  font-size: 13px;
+}
+.footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
+.footer strong { color: white; }
+
+@media (max-width: 768px) {
+  .content { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .hero h1 { font-size: 32px; }
+  .metric-grid { grid-template-columns: 1fr; }
+  .def-item { grid-template-columns: 1fr; gap: 4px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <a href="/dashboard" class="header-logo">MAP</a>
+    <span class="header-badge">Manual técnico</span>
+    <nav class="header-nav">
+      <a href="/dashboard">← Volver al dashboard</a>
+    </nav>
+  </div>
+</div>
+
+<div class="hero">
+  <h1>Monitor de Ajuste<br><span>Presupuestario</span></h1>
+  <p>Documentación técnica completa — metodología, fuentes de datos, interpretación de indicadores y guía de uso del dashboard.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">📊 Presupuesto 2023→2026</span>
+    <span class="hero-pill">📈 Deflactado por IPC</span>
+    <span class="hero-pill">💵 TC oficial BNA</span>
+    <span class="hero-pill">🔄 Datos BCRA en vivo</span>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Introducción</div>
+          <a href="#objetivo">Objetivo del proyecto</a>
+          <a href="#alcance">Alcance y limitaciones</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Metodología</div>
+          <a href="#conceptos">Conceptos clave</a>
+          <a href="#calculo">Fórmulas de cálculo</a>
+          <a href="#escalas">Escalas y normalización</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Dashboard</div>
+          <a href="#tabs-principales">Tabs principales</a>
+          <a href="#tabs-sectoriales">Tabs sectoriales</a>
+          <a href="#kpis">KPIs del encabezado</a>
+          <a href="#impacto-social">Impacto social</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Datos</div>
+          <a href="#fuentes">Fuentes oficiales</a>
+          <a href="#actualizacion">Actualización</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Referencia</div>
+          <a href="#glosario">Glosario</a>
+          <a href="#nota-legal">Nota legal</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main>
+
+      <!-- OBJETIVO -->
+      <div class="section" id="objetivo">
+        <div class="section-tag">Introducción</div>
+        <h2>Objetivo del proyecto</h2>
+        <p>El <strong>Monitor de Ajuste Presupuestario (MAP)</strong> es una herramienta de análisis y transparencia fiscal que cuantifica el impacto real del ajuste presupuestario implementado en Argentina a partir de diciembre de 2023.</p>
+        <p>El proyecto nace de la necesidad de medir el gasto público no solo en pesos nominales — que ocultan el efecto de la inflación — sino en términos reales (poder de compra constante) y en dólares al tipo de cambio oficial histórico.</p>
+
+        <div class="metric-grid">
+          <div class="metric-card metric-red">
+            <div class="metric-card-num">3</div>
+            <div class="metric-card-label">dimensiones de ajuste</div>
+            <div class="metric-card-desc">Nominal · Real (IPC) · USD constantes</div>
+          </div>
+          <div class="metric-card metric-amber">
+            <div class="metric-card-num">342</div>
+            <div class="metric-card-label">programas analizados</div>
+            <div class="metric-card-desc">Base presupuestaria 2023→2026</div>
+          </div>
+          <div class="metric-card metric-blue">
+            <div class="metric-card-num">24</div>
+            <div class="metric-card-label">jurisdicciones</div>
+            <div class="metric-card-desc">Todo el Poder Ejecutivo Nacional</div>
+          </div>
+        </div>
+
+        <p>El MAP permite responder preguntas concretas: ¿cuánto perdió en poder de compra el presupuesto de salud? ¿El gasto en jubilaciones creció o cayó en términos reales? ¿Qué parte del ajuste fue recorte nominal y qué parte fue licuación inflacionaria?</p>
+      </div>
+
+      <!-- ALCANCE -->
+      <div class="section" id="alcance">
+        <div class="section-tag">Introducción</div>
+        <h2>Alcance y limitaciones</h2>
+
+        <h3>Qué cubre</h3>
+        <p>El MAP analiza el <strong>Presupuesto Nacional del Poder Ejecutivo Nacional (PEN)</strong> de Argentina, comparando la asignación original de 2023 contra los créditos vigentes de 2024, 2025 y 2026.</p>
+
+        <div class="callout callout-info">
+          <strong>Punto de corte:</strong> La línea de base es el presupuesto aprobado para el ejercicio 2023 (antes de la asunción de la gestión LLA en diciembre de ese año). Las variaciones se miden desde ese punto hacia el último crédito vigente disponible.
+        </div>
+
+        <h3>Limitaciones importantes</h3>
+        <div class="callout callout-warning">
+          <strong>Herramienta experimental:</strong> Los resultados son indicadores algorítmicos basados en datos públicos oficiales. No implican juicio de valor, acusación ni determinación de responsabilidad sobre ninguna jurisdicción, organismo o persona.
+        </div>
+
+        <p>Las principales limitaciones técnicas son:</p>
+        <ul style="padding-left:20px;color:#444;font-size:14px;line-height:2;">
+          <li>El factor IPC se calcula con datos INDEC y puede usar fallback si la API BCRA no está disponible.</li>
+          <li>El tipo de cambio USD oficial puede mostrar "N/D" si la API BCRA está caída — en ese caso se usa un valor de referencia aproximado.</li>
+          <li>Los programas con presupuesto original menor a $100M en 2023 se excluyen del análisis para evitar distorsiones estadísticas.</li>
+          <li>Programas con variación real mayor a +500% o menor a -99.5% se filtran como outliers de datos.</li>
+          <li>Los sectores (Salud, Jubilaciones, etc.) se definen por nombre de jurisdicción y pueden solaparse cuando una jurisdicción abarca múltiples áreas.</li>
+        </ul>
+      </div>
+
+      <!-- CONCEPTOS -->
+      <div class="section" id="conceptos">
+        <div class="section-tag">Metodología</div>
+        <h2>Conceptos clave</h2>
+
+        <div class="def-list">
+          <div class="def-item">
+            <div class="def-term">① Ajuste nominal</div>
+            <div class="def-desc">Variación del crédito presupuestario en pesos corrientes. Compara el monto vigente actual con el monto original de 2023 sin corregir por inflación. Un ajuste nominal positivo no implica mayor poder de compra.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">② Ajuste real</div>
+            <div class="def-desc">Variación deflactada por el IPC acumulado desde enero 2023. Mide la variación del poder de compra real del gasto público. Un ajuste real negativo significa que el Estado puede comprar menos bienes y servicios con ese presupuesto.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">③ Ajuste USD</div>
+            <div class="def-desc">Variación del presupuesto medido en dólares al tipo de cambio oficial BNA. Compara el valor en USD del presupuesto original (al TC de enero 2023) con el valor actual (al TC vigente).</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Licuación</div>
+            <div class="def-desc">Diferencia entre el ajuste nominal y el ajuste real. Representa la parte del ajuste que ocurrió por erosión inflacionaria — el gasto creció nominalmente pero la inflación lo redujo en términos reales. Licuación = Ajuste nominal − Ajuste real.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Recorte</div>
+            <div class="def-desc">Cuando el ajuste nominal es negativo — el Estado gastó menos pesos nominales que en 2023. Es la porción del ajuste que ocurrió por decisión explícita de reducir el gasto en términos absolutos.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Factor IPC</div>
+            <div class="def-desc">Cociente de la inflación acumulada desde enero 2023 hasta el período actual. Si el factor es 10.53, significa que los precios se multiplicaron 10.53 veces. Se usa para deflactar los montos vigentes a pesos constantes de 2023.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Crédito vigente</div>
+            <div class="def-desc">El presupuesto aprobado modificado por todas las Decisiones Administrativas del JGM que lo ampliaron o redujeron durante el ejercicio. Es el presupuesto efectivamente disponible en un momento dado.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CÁLCULO -->
+      <div class="section" id="calculo">
+        <div class="section-tag">Metodología</div>
+        <h2>Fórmulas de cálculo</h2>
+
+        <h3>Ajuste nominal</h3>
+        <div class="formula">
+<span class="comment"># Variación en pesos corrientes</span>
+<span class="highlight">ajuste_nominal_pct</span> = (vigente / original - 1) × 100
+
+<span class="comment"># Donde:</span>
+vigente  = crédito vigente más reciente (2026 > 2025 > 2024) en millones de pesos
+original = presupuesto asignado 2023 en millones de pesos
+        </div>
+
+        <h3>Ajuste real (deflactado por IPC)</h3>
+        <div class="formula">
+<span class="comment"># Variación en pesos constantes de enero 2023</span>
+real_pesos = vigente / factor_ipc
+
+<span class="highlight">ajuste_real_pct</span> = (real_pesos / original - 1) × 100
+
+<span class="comment"># Factor IPC = IPC acumulado desde ene-2023 hasta hoy</span>
+<span class="comment"># Ejemplo: si los precios se triplicaron, factor_ipc = 3.0</span>
+<span class="comment"># Actualmente: factor_ipc ≈ 10.53 (inflación ×10.53 desde ene-2023)</span>
+        </div>
+
+        <h3>Ajuste en dólares</h3>
+        <div class="formula">
+<span class="comment"># Comparación al tipo de cambio oficial BNA</span>
+original_usd = original / TC_ene2023    <span class="comment"># TC ene-2023 = $187/USD</span>
+vigente_usd  = vigente  / TC_actual     <span class="comment"># TC actual BNA</span>
+
+<span class="highlight">ajuste_usd_pct</span> = (vigente_usd / original_usd - 1) × 100
+        </div>
+
+        <h3>Licuación</h3>
+        <div class="formula">
+<span class="comment"># Porción del ajuste absorbida por inflación</span>
+<span class="highlight">licuacion_pct</span> = ajuste_nominal_pct - ajuste_real_pct
+
+<span class="comment"># Interpretación:</span>
+<span class="comment"># Si nominal = +500% y real = -60% → licuación = 560%</span>
+<span class="comment"># El gasto subió nominalmente pero la inflación (×10.53)</span>
+<span class="comment"># lo redujo en términos reales.</span>
+        </div>
+
+        <h3>Promedio ponderado sectorial</h3>
+        <div class="formula">
+<span class="comment"># Los promedios de cada sector usan ponderación por monto original</span>
+<span class="comment"># para evitar que programas chicos distorsionen el resultado</span>
+
+total_orig = Σ(monto_original) para todos los programas del sector
+
+<span class="highlight">avg_real_ponderado</span> = Σ(variacion_real_pct × monto_original) / total_orig
+        </div>
+
+        <div class="callout callout-info">
+          <strong>Por qué ponderamos por monto:</strong> Un programa con $1M de presupuesto y -99% de variación real no debe pesar igual que uno con $500,000M y -30%. El promedio ponderado refleja el impacto económico real de cada programa en el sector.
+        </div>
+      </div>
+
+      <!-- ESCALAS -->
+      <div class="section" id="escalas">
+        <div class="section-tag">Metodología</div>
+        <h2>Escalas y normalización de datos</h2>
+
+        <p>Los datos presupuestarios del Estado argentino provienen de dos fuentes con escalas diferentes que el MAP normaliza automáticamente:</p>
+
+        <table class="source-table">
+          <thead>
+            <tr><th>Ejercicio</th><th>Escala en DB</th><th>Normalización aplicada</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>2023</strong> (base)</td><td>Pesos corrientes completos<br><small style="color:#888">Ej: 15,613,301,756 = $15.6B</small></td><td>Ninguna — es la base de comparación</td></tr>
+            <tr><td><strong>2024</strong></td><td>Millones de pesos<br><small style="color:#888">Ej: 117,376 = $117,376M</small></td><td>× 1,000,000 para comparar con 2023</td></tr>
+            <tr><td><strong>2025</strong></td><td>Millones de pesos</td><td>× 1,000,000</td></tr>
+            <tr><td><strong>2026</strong></td><td>Millones de pesos</td><td>× 1,000,000</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-warning">
+          <strong>Filtros de calidad:</strong> Se excluyen programas con monto original 2023 menor a $100M (presupuestos token) y programas con variación real fuera del rango [-99.5%, +500%] (outliers por inconsistencias en los datos fuente).
+        </div>
+      </div>
+
+      <!-- TABS PRINCIPALES -->
+      <div class="section" id="tabs-principales">
+        <div class="section-tag">Dashboard</div>
+        <h2>Tabs principales</h2>
+
+        <div class="tab-list">
+          <div class="tab-card">
+            <div class="tab-card-icon">📊</div>
+            <div>
+              <div class="tab-card-name">Ranking</div>
+              <div class="tab-card-desc">Lista los programas con mayor pérdida de poder de compra real. Muestra barras de ajuste nominal (azul) vs ajuste real (rojo/verde). El tooltip al pasar el mouse muestra montos en pesos corrientes, USD al TC del momento, y cantidad de modificaciones presupuestarias.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">📂</div>
+            <div>
+              <div class="tab-card-name">Por inciso</div>
+              <div class="tab-card-desc">Agrega el ajuste por tipo de gasto: Inciso 1 (Personal), Inciso 2 (Bienes de consumo), Inciso 3 (Servicios no personales), Inciso 4 (Bienes de uso), Inciso 5 (Transferencias), Inciso 7 (Servicio de la deuda).</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">🔵</div>
+            <div>
+              <div class="tab-card-name">Nominal vs real</div>
+              <div class="tab-card-desc">Scatter plot donde cada punto es un programa. El eje X es el ajuste nominal y el eje Y el ajuste real. Los puntos bajo la diagonal fueron licuados por inflación — subieron nominalmente pero cayeron en términos reales.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">📋</div>
+            <div>
+              <div class="tab-card-name">Detalle de partidas</div>
+              <div class="tab-card-desc">Tabla completa con todos los programas. Incluye filtros por jurisdicción y estado. Columnas: nominal %, real %, USD %, licuación %, con montos absolutos en pesos corrientes y dólares al TC del momento.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">💵</div>
+            <div>
+              <div class="tab-card-name">Base monetaria</div>
+              <div class="tab-card-desc">Datos en vivo de la Base Monetaria desde la API pública del BCRA. Muestra la evolución desde el 7 de diciembre de 2023 (día de asunción), el multiplicador acumulado y el valor en dólares al TC oficial BNA.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">📊</div>
+            <div>
+              <div class="tab-card-name">Resumen</div>
+              <div class="tab-card-desc">Vista consolidada de todos los sectores con promedios ponderados por monto. Incluye ranking sectorial comparativo y gráfico de evolución temporal estimada.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">⚖️</div>
+            <div>
+              <div class="tab-card-name">Licuación vs recorte</div>
+              <div class="tab-card-desc">Descompone el ajuste de cada jurisdicción en dos componentes: la parte absorbida por inflación (licuación) y la parte de recorte nominal explícito. Permite identificar qué ministerios ajustaron bajando el gasto vs cuáles "dejaron que la inflación los ajuste".</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABS SECTORIALES -->
+      <div class="section" id="tabs-sectoriales">
+        <div class="section-tag">Dashboard</div>
+        <h2>Tabs sectoriales</h2>
+        <p>Cada tab sectorial filtra los programas por jurisdicción y calcula KPIs con <strong>promedio ponderado por monto original</strong>. Los sectores y sus jurisdicciones fuente son:</p>
+
+        <div class="tab-list">
+          <div class="tab-card">
+            <div class="tab-card-icon">🏥</div>
+            <div>
+              <div class="tab-card-name">Salud <span class="tab-card-badge badge-sector">sectorial</span></div>
+              <div class="tab-card-desc"><strong>Fuente:</strong> Ministerio de Salud. Incluye programas de salud pública, prevención de enfermedades, atención de pacientes y regulación sanitaria.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">👴</div>
+            <div>
+              <div class="tab-card-name">Jubilaciones <span class="tab-card-badge badge-sector">sectorial</span></div>
+              <div class="tab-card-desc"><strong>Fuente:</strong> Ministerio de Capital Humano + Obligaciones a Cargo del Tesoro. Cubre ANSES y transferencias previsionales.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">👶</div>
+            <div>
+              <div class="tab-card-name">Niñez <span class="tab-card-badge badge-sector">sectorial</span></div>
+              <div class="tab-card-desc"><strong>Fuente:</strong> Ministerio de Capital Humano + Ministerio de Desarrollo Social. Programas de protección de la infancia, AUH y familia.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">🏗️</div>
+            <div>
+              <div class="tab-card-name">Obra pública <span class="tab-card-badge badge-sector">sectorial</span></div>
+              <div class="tab-card-desc"><strong>Fuente:</strong> Ministerio de Obras Públicas + Ministerio de Infraestructura + Ministerio de Transporte.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">💼</div>
+            <div>
+              <div class="tab-card-name">Salario público <span class="tab-card-badge badge-sector">sectorial</span></div>
+              <div class="tab-card-desc"><strong>Fuente:</strong> Todos los ministerios, filtrado por Inciso 1 (Personal). Mide la evolución real del gasto en sueldos del Estado a través de todas las jurisdicciones.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">📚</div>
+            <div>
+              <div class="tab-card-name">Educación <span class="tab-card-badge badge-sector">sectorial</span></div>
+              <div class="tab-card-desc"><strong>Fuente:</strong> Ministerio de Educación + Ministerio de Capital Humano. Incluye transferencias a universidades, becas y programas educativos nacionales.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <strong>Solapamiento de sectores:</strong> El Ministerio de Capital Humano concentra jubilaciones, niñez y educación. Esto genera que algunos programas aparezcan en más de un sector. Es una limitación del modelo de datos actual que se irá refinando.
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="section" id="kpis">
+        <div class="section-tag">Dashboard</div>
+        <h2>KPIs del encabezado</h2>
+
+        <div class="def-list">
+          <div class="def-item">
+            <div class="def-term">Programas analizados</div>
+            <div class="def-desc">Total de programas presupuestarios con datos válidos en la base 2023 y crédito vigente disponible en al menos un ejercicio posterior. Excluye presupuestos token y outliers.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Ajuste real promedio</div>
+            <div class="def-desc">Promedio simple de la variación real de todos los programas con reducción. Indica la caída promedio del poder de compra presupuestario desde enero 2023.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Factor IPC acumulado</div>
+            <div class="def-desc">Inflación acumulada desde enero 2023 expresada como multiplicador. Un factor de 10.53× significa que los precios se multiplicaron 10.53 veces — o sea, +953% de inflación acumulada.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Programas &gt;50% reducción real</div>
+            <div class="def-desc">Cantidad de programas donde el presupuesto real cayó más del 50% respecto de 2023. Mide la profundidad del ajuste — qué proporción del Estado perdió más de la mitad de su capacidad de gasto.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- IMPACTO SOCIAL -->
+      <div class="section" id="impacto-social">
+        <div class="section-tag">Dashboard</div>
+        <h2>Impacto social <span class="tab-card-badge badge-new" style="font-size:12px;padding:3px 10px;">nuevo</span></h2>
+
+        <p>El tab de <strong>Impacto Social</strong> monitorea tres indicadores sanitarios que pueden correlacionarse con el ajuste del gasto público en salud y protección social.</p>
+
+        <table class="source-table">
+          <thead>
+            <tr><th>Indicador</th><th>Fuente</th><th>Unidad</th><th>Línea base</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Mortalidad infantil</strong></td>
+              <td>DEIS – Anuario Estadísticas Vitales 2024</td>
+              <td>Tasa por 1,000 NV</td>
+              <td>2023 (dic)</td>
+            </tr>
+            <tr>
+              <td><strong>Muertes adultos mayores 65+</strong></td>
+              <td>DEIS – Anuario / ISALUD</td>
+              <td>Casos absolutos anuales</td>
+              <td>2023 (dic)</td>
+            </tr>
+            <tr>
+              <td><strong>Suicidios consumados</strong></td>
+              <td>SNIC – Informe Ejecutivo 2024, Min. Seguridad</td>
+              <td>Casos y tasa por 100k hab.</td>
+              <td>2023 (dic)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-red">
+          <strong>Nota metodológica:</strong> Estos indicadores no establecen causalidad directa con el ajuste presupuestario. Son datos de vigilancia epidemiológica que se monitorean en paralelo como indicadores de bienestar social general. La interpretación requiere contexto adicional.
+        </div>
+
+        <p>Los datos se actualizan automáticamente el 1 y 15 de cada mes mediante una GitHub Action que detecta cambios en las páginas oficiales de DEIS y SNIC.</p>
+      </div>
+
+      <!-- FUENTES -->
+      <div class="section" id="fuentes">
+        <div class="section-tag">Datos</div>
+        <h2>Fuentes de datos oficiales</h2>
+
+        <table class="source-table">
+          <thead>
+            <tr><th>Dato</th><th>Fuente</th><th>Endpoint / URL</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Presupuesto 2023</strong><br><small>Crédito original por programa</small></td>
+              <td>Ministerio de Economía – Presupuesto Abierto</td>
+              <td><code style="font-size:12px;">presupuestosabiertos.gob.ar</code></td>
+            </tr>
+            <tr>
+              <td><strong>Crédito vigente 2024-2026</strong><br><small>Modificaciones presupuestarias</small></td>
+              <td>Presupuesto Abierto / JGM – BORA</td>
+              <td><code style="font-size:12px;">presupuestosabiertos.gob.ar</code></td>
+            </tr>
+            <tr>
+              <td><strong>IPC mensual</strong><br><small>Índice de Precios al Consumidor</small></td>
+              <td>INDEC / API BCRA v2.0</td>
+              <td><code style="font-size:12px;">api.bcra.gob.ar/estadisticas/v2.0</code></td>
+            </tr>
+            <tr>
+              <td><strong>Tipo de cambio USD oficial</strong><br><small>TC BNA vendedor</small></td>
+              <td>BCRA – API Estadísticas Cambiarias</td>
+              <td><code style="font-size:12px;">api.bcra.gob.ar/estadisticascambiarias</code></td>
+            </tr>
+            <tr>
+              <td><strong>Base Monetaria</strong><br><small>Variable ID 15</small></td>
+              <td>BCRA – API Variables Monetarias v4.0</td>
+              <td><code style="font-size:12px;">api.bcra.gob.ar/estadisticas/v4.0/monetarias</code></td>
+            </tr>
+            <tr>
+              <td><strong>Mortalidad infantil / adultos mayores</strong></td>
+              <td>DEIS – Min. de Salud</td>
+              <td><code style="font-size:12px;">deis.msal.gov.ar</code></td>
+            </tr>
+            <tr>
+              <td><strong>Suicidios</strong></td>
+              <td>SNIC – Min. de Seguridad</td>
+              <td><code style="font-size:12px;">argentina.gob.ar/seguridad/estadisticascriminales</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ACTUALIZACIÓN -->
+      <div class="section" id="actualizacion">
+        <div class="section-tag">Datos</div>
+        <h2>Actualización de datos</h2>
+
+        <div class="step-list">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content"><strong>Presupuesto:</strong> Los datos de crédito vigente se actualizan manualmente cuando el Ministerio de Economía publica nuevos archivos en Presupuesto Abierto. Se puede disparar manualmente desde el endpoint <code>/api/v1/scrape/trigger</code>.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content"><strong>IPC y TC:</strong> Se consultan en tiempo real desde la API pública del BCRA cada vez que se carga el dashboard. Si la API está caída, el sistema usa valores de fallback calculados con datos INDEC.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content"><strong>Base Monetaria:</strong> Se consulta en vivo desde el BCRA al entrar al tab "Base Monetaria". Los datos son diarios con latencia de 1 día hábil.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content"><strong>Indicadores sociales:</strong> GitHub Action automática el 1 y 15 de cada mes a las 06:00 AM Argentina. Detecta cambios en las páginas de DEIS y SNIC y actualiza el JSON de datos.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GLOSARIO -->
+      <div class="section" id="glosario">
+        <div class="section-tag">Referencia</div>
+        <h2>Glosario</h2>
+
+        <div class="def-list">
+          <div class="def-item">
+            <div class="def-term">ARS</div>
+            <div class="def-desc">Peso argentino. Moneda de denominación del presupuesto nacional.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">BCRA</div>
+            <div class="def-desc">Banco Central de la República Argentina. Fuente de datos de IPC, TC y Base Monetaria.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Crédito original</div>
+            <div class="def-desc">Monto presupuestado al inicio del ejercicio fiscal, antes de cualquier modificación.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Crédito vigente</div>
+            <div class="def-desc">Monto presupuestado después de todas las modificaciones del ejercicio (Decisiones Administrativas JGM).</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">DA / JGM</div>
+            <div class="def-desc">Decisión Administrativa del Jefe de Gabinete de Ministros. Instrumento legal que modifica el presupuesto durante el ejercicio.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">DEIS</div>
+            <div class="def-desc">Dirección de Estadísticas e Información de Salud. Organismo del Ministerio de Salud que publica los anuarios de estadísticas vitales.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Deflactar</div>
+            <div class="def-desc">Dividir un valor nominal por el índice de precios para obtener el valor en moneda constante (poder de compra real).</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Factor IPC</div>
+            <div class="def-desc">IPC acumulado expresado como multiplicador. Factor 10.53 = inflación acumulada de 953%.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Inciso</div>
+            <div class="def-desc">Clasificación del gasto por objeto. Inciso 1=Personal, 2=Bienes de consumo, 3=Servicios no personales, 4=Bienes de uso, 5=Transferencias, 7=Servicio de la deuda.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Licuación</div>
+            <div class="def-desc">Erosión del poder de compra por inflación. El gasto sube nominalmente pero cae en términos reales.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">MM / B</div>
+            <div class="def-desc">Abreviaturas de millones (MM) y miles de millones/billones (B) de pesos.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">PEN</div>
+            <div class="def-desc">Poder Ejecutivo Nacional. El presupuesto analizado cubre todas las jurisdicciones del PEN.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">SNIC</div>
+            <div class="def-desc">Sistema Nacional de Información Criminal. Dependiente del Ministerio de Seguridad, publica estadísticas de delitos y suicidios.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">TC BNA</div>
+            <div class="def-desc">Tipo de cambio oficial del Banco de la Nación Argentina (vendedor). Usado para convertir presupuestos a dólares.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTA LEGAL -->
+      <div class="section" id="nota-legal">
+        <div class="section-tag">Referencia</div>
+        <h2>Nota legal y académica</h2>
+
+        <div class="callout callout-warning">
+          <strong>Herramienta experimental y académica.</strong> Los datos provienen de fuentes públicas oficiales del Estado argentino. Los resultados son indicadores algorítmicos y no implican juicio de valor, acusación ni determinación de responsabilidad sobre ninguna jurisdicción, organismo o persona. El objetivo es promover la transparencia y el debate informado sobre el gasto público.
+        </div>
+
+        <p>Desarrollado por <strong>Ph.D. Vicente Humberto Monteverde</strong>, investigador en economía política y fenómenos de corrupción. Doctor en Ciencias Económicas. Autor de la teoría de Transferencia Regresiva de Ingresos y desarrollador de algoritmos XAI aplicados al análisis del gasto público argentino.</p>
+
+        <p>Publicaciones en <em>Journal of Financial Crime</em> (Emerald Publishing). Asesor en transparencia y auditoría algorítmica del gasto público.</p>
+
+        <p style="margin-top:16px;">
+          Código fuente disponible en
+          <a href="https://github.com/Viny2030/Ajuste" target="_blank" style="color:var(--purple);font-weight:600;">github.com/Viny2030/Ajuste</a>
+        </p>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="footer">
+  <strong>Monitor de Ajuste Presupuestario — MAP v2.0</strong><br>
+  Ph.D. Vicente Humberto Monteverde · <a href="mailto:vhmonte@retina.ar">vhmonte@retina.ar</a> ·
+  <a href="https://github.com/Viny2030/Ajuste" target="_blank">github.com/Viny2030/Ajuste</a>
+</div>
+
+<script>
+// Highlight active section in sidebar on scroll
+const sections = document.querySelectorAll('.section[id]');
+const navLinks  = document.querySelectorAll('.sidebar-nav a');
+const observer  = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.sidebar-nav a[href="#${e.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

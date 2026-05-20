@@ -60,7 +60,12 @@ app.include_router(social_router)
 @app.get("/dashboard", tags=["Home"], include_in_schema=False)
 async def dashboard():
     """Dashboard visual del ajuste presupuestario."""
-    path = os.path.join(os.path.dirname(__file__), "static", "static/dashboard.html")
+    path = os.path.join(os.path.dirname(__file__), "static", "main.html")
+    return FileResponse(path)
+@app.get("/manual", tags=["Home"], include_in_schema=False)
+async def manual():
+    """Manual técnico del MAP."""
+    path = os.path.join(os.path.dirname(__file__), "static", "manual.html")
     return FileResponse(path)
 
 # ── Dependencia DB ──────────────────────────────────────────────
@@ -265,7 +270,7 @@ def ranking_ajuste(
             q_vig = q_vig.filter(models.PresupuestoBase.inciso_id == inciso_id)
         for r in q_vig.all():
             key = (str(r.programa_id).strip(), str(r.inciso_id or '').strip())
-            vigente_map[key] = float(r.vigente or 0)
+            vigente_map[key] = float(r.vigente or 0) * 1_000_000
 
     cant_map = {
         (str(r.programa_id).strip(), str(r.inciso_id or '').strip()): int(r.cant or 0)
@@ -283,7 +288,7 @@ def ranking_ajuste(
 
     resultado = []
     for key, r in base_map.items():
-        if not r.original or r.original == 0:
+        if not r.original or r.original < 100_000_000:
             continue
 
         vigente_real = vigente_map.get(key)
@@ -300,7 +305,9 @@ def ranking_ajuste(
         vigente_usd  = round(vigente_real / tc_actual, 2) if tc_actual else None
         abs_usd      = round(vigente_usd - original_usd, 2) if vigente_usd is not None else None
         var_usd_pct  = round(((vigente_usd / original_usd) - 1) * 100, 2) if (vigente_usd and original_usd) else None
-
+        # Filtrar outliers que distorsionan promedios sectoriales
+        if var_real > 500 or var_real < -99.5:
+            continue
         resultado.append({
             "programa_id":               r.programa_id,
             "programa_desc":             r.programa_desc,
@@ -338,9 +345,8 @@ def ranking_ajuste(
 def ajuste_por_inciso(db: Session = Depends(get_db)):
     """
     Agregado del ajuste real por tipo de gasto (inciso).
-    Original: ejercicio 2023 (pesos nominales).
-    Vigente:  ejercicio más reciente disponible (2026 > 2025 > 2024),
-              normalizado × 1.000.000 porque esos CSVs vienen en millones.
+    Original: ejercicio 2023 en pesos completos → normalizado a millones.
+    Vigente:  ejercicio más reciente disponible (2026 > 2025 > 2024), en millones × 1_000_000.
     """
     macro = cargar_macro_indices()
     factor = macro["factor_deflactacion"]
@@ -484,11 +490,6 @@ async def _obtener_tc_usd(client: httpx.AsyncClient) -> tuple[float | None, bool
     summary="Base Monetaria — datos en vivo BCRA",
 )
 async def base_monetaria():
-    """
-    Consulta la API pública del BCRA (Variables Monetarias v4.0).
-    Base Monetaria diaria desde dic-2023 a hoy + TC USD oficial.
-    Sin autenticación requerida.
-    """
     hoy = date.today().isoformat()
 
     async with httpx.AsyncClient(timeout=12, verify=False) as client:
@@ -511,7 +512,6 @@ async def base_monetaria():
 
     var_pct = round((bm_actual / BM_ASUNCION_MM - 1) * 100, 1)
     mult    = round(bm_actual / BM_ASUNCION_MM, 2)
-
     bm_usd_mm = round(bm_actual / tc_usd, 0)
 
     serie = []
@@ -572,7 +572,6 @@ def listar_normas(
     anio: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
-    """Listado de Decisiones Administrativas del JGM scrapeadas del BORA."""
     q = db.query(models.NormaJGM)
     if tipo_accion:
         q = q.filter(models.NormaJGM.tipo_accion == tipo_accion.upper())
@@ -587,7 +586,6 @@ def listar_normas(
     tags=["Normativa"],
 )
 def detalle_norma(norma_id: str, db: Session = Depends(get_db)):
-    """Detalle de una norma específica (ej: DA-58-2024)."""
     norma = (
         db.query(models.NormaJGM)
         .filter(models.NormaJGM.norma_id == norma_id)
@@ -602,11 +600,7 @@ def detalle_norma(norma_id: str, db: Session = Depends(get_db)):
     "/api/v1/normativa/{norma_id}/partidas",
     tags=["Normativa"],
 )
-def partidas_por_norma(
-    norma_id: str,
-    db: Session = Depends(get_db),
-):
-    """Partidas presupuestarias afectadas por una Decisión Administrativa."""
+def partidas_por_norma(norma_id: str, db: Session = Depends(get_db)):
     mods = (
         db.query(models.ModificacionPresupuestaria)
         .filter(models.ModificacionPresupuestaria.norma_id == norma_id)
@@ -614,7 +608,6 @@ def partidas_por_norma(
     )
     if not mods:
         raise HTTPException(404, detail=f"No hay partidas registradas para '{norma_id}'")
-
     analizador = AnalizadorPresupuestario(db)
     return [analizador.cruce_norma_inflacion(m) for m in mods]
 
@@ -629,16 +622,11 @@ def comparativa_global(
     jurisdiccion_id: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    """
-    Cuadro comparativo: Gasto Nominal vs Gasto Real vs IPC Acumulado vs USD.
-    Agrupado mensualmente por fecha de las modificaciones.
-    """
     q = db.query(models.ModificacionPresupuestaria)
     if jurisdiccion_id:
         q = q.join(models.PresupuestoBase).filter(
             models.PresupuestoBase.jurisdiccion_id == jurisdiccion_id
         )
-
     mods = q.order_by(models.ModificacionPresupuestaria.fecha_boletin).all()
     analizador = AnalizadorPresupuestario(db)
     macro = analizador.get_serie_macro()
@@ -688,7 +676,6 @@ def comparativa_global(
     tags=["Visualización"],
 )
 def grafico_ajuste(programa_id: str, db: Session = Depends(get_db)):
-    """Gráfico interactivo (Plotly): Nominal Original vs Vigente vs Real."""
     base = (
         db.query(models.PresupuestoBase)
         .filter(models.PresupuestoBase.programa_id == programa_id)
@@ -696,7 +683,6 @@ def grafico_ajuste(programa_id: str, db: Session = Depends(get_db)):
     )
     if not base:
         raise HTTPException(404, detail="No hay datos para graficar")
-
     mods = (
         db.query(models.ModificacionPresupuestaria)
         .filter(models.ModificacionPresupuestaria.programa_id == programa_id)
@@ -704,7 +690,6 @@ def grafico_ajuste(programa_id: str, db: Session = Depends(get_db)):
     )
     analizador = AnalizadorPresupuestario(db)
     ajuste = analizador.calcular_variacion_real(base, mods)
-
     return generar_grafico_ajuste(
         nombre_programa=base.programa_desc,
         original=base.monto_original,
@@ -721,10 +706,6 @@ def grafico_ajuste(programa_id: str, db: Session = Depends(get_db)):
     status_code=202,
 )
 async def trigger_scrape(background_tasks: BackgroundTasks, desde: str = "01/01/2023"):
-    """
-    Dispara el scraper del BORA en background.
-    Retorna 202 Accepted inmediatamente.
-    """
     from app.core.daily_sync import sincronizar
     background_tasks.add_task(sincronizar, desde=desde)
     return {"status": "accepted", "mensaje": f"Scraping iniciado desde {desde}"}
