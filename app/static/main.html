@@ -41,8 +41,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
 .panel.active { display: block; }
 .legend { display: flex; gap: 16px; font-size: 12px; color: #888; margin-bottom: 10px; }
 .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }
-
-/* ── BASE MONETARIA ─────────────────────────────────────── */
+/* BASE MONETARIA */
 .bm-kpi-row{display:flex;gap:.9rem;flex-wrap:wrap;margin-bottom:1.2rem}
 .bm-card{flex:1 1 160px;background:#fff;border-radius:10px;padding:1rem 1.2rem;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .bm-card__label{font-size:.75rem;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;line-height:1.35}
@@ -57,120 +56,120 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
 .bm-table td{padding:.5rem 1rem;border-bottom:1px solid #f0f2f8;color:#222}
 .bm-table tr:last-child td{border-bottom:none}
 .bm-table tr:nth-child(even) td{background:#fafbff}
-
-/* ── TABS SECTORIALES ───────────────────────────────────── */
-.sector-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #e0d8f0; }
-.sector-icon { font-size: 28px; line-height: 1; }
-.sector-title { font-size: 16px; font-weight: 600; color: #3d1e6e; }
-.sector-subtitle { font-size: 12px; color: #888; margin-top: 2px; }
-.sector-kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
-.sector-kpi { background: white; border-radius: 8px; padding: 14px 16px; border: 1px solid #e8e8e4; }
-.sector-kpi-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px; }
-.sector-kpi-value { font-size: 22px; font-weight: 600; line-height: 1; }
-.sector-kpi-sub { font-size: 11px; color: #aaa; margin-top: 3px; }
-.sector-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.sector-table-wrap { background: white; border-radius: 8px; border: 1px solid #e8e8e4; padding: 16px; }
-.sector-empty { padding: 40px; text-align: center; color: #aaa; font-size: 13px; }
-
-/* ── RESUMEN CONSOLIDADO ────────────────────────────────── */
-.resumen-kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
-.resumen-sector-card { background: white; border-radius: 10px; border: 1px solid #e8e8e4; padding: 16px 18px; display: flex; align-items: center; gap: 14px; transition: box-shadow 0.15s; }
-.resumen-sector-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-.resumen-sector-icon { font-size: 26px; line-height: 1; flex-shrink: 0; }
-.resumen-sector-info { flex: 1; min-width: 0; }
-.resumen-sector-name { font-size: 13px; font-weight: 600; color: #2a1a4e; margin-bottom: 2px; }
-.resumen-sector-jur { font-size: 11px; color: #aaa; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.resumen-sector-metrics { display: flex; gap: 16px; }
-.resumen-metric { text-align: center; }
-.resumen-metric-val { font-size: 18px; font-weight: 700; line-height: 1; }
-.resumen-metric-lbl { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
-.resumen-bar-bg { height: 4px; background: #f0f0ea; border-radius: 2px; margin-top: 10px; }
-.resumen-bar-fill { height: 4px; border-radius: 2px; }
-.tab-resumen { border-color: #1a1a2e; color: #1a1a2e; background: #f0f0f8; font-weight: 600; }
-.tab-resumen.active { background: #1a1a2e; color: white; border-color: #1a1a2e; }
-
-/* colores por sector */
-.sector-salud .sector-header { background: #f0f9f4; border-color: #b7e0cc; }
-.sector-salud .sector-title { color: #145a2a; }
-.sector-jubilaciones .sector-header { background: #f3f0fb; border-color: #c8b8e8; }
-.sector-jubilaciones .sector-title { color: #3d1e6e; }
-.sector-ninez .sector-header { background: #fff8ec; border-color: #ffd599; }
-.sector-ninez .sector-title { color: #7a4500; }
-.sector-obra-publica .sector-header { background: #f0f4fb; border-color: #b8cef0; }
-.sector-obra-publica .sector-title { color: #1a3a6e; }
-.sector-salario .sector-header { background: #fdf0f0; border-color: #f0b8b8; }
-.sector-salario .sector-title { color: #6e1a1a; }
-.sector-educacion .sector-header { background: #f0f8fb; border-color: #b8dff0; }
-.sector-educacion .sector-title { color: #1a4a6e; }
-
-/* ── AUTOR ─────────────────────────────────────────────────── */
-.autor-section { margin: 48px 0 0 0; border-top: 1px solid #e8e8e4; padding-top: 32px; }
-.autor-card { background: #1a1a2e; border-radius: 12px; padding: 28px 32px; display: flex; align-items: center; gap: 24px; color: white; max-width: 860px; margin: 0 auto 32px; }
-.autor-avatar { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; border: 3px solid #5b2d8e; flex-shrink: 0; }
-.autor-avatar-placeholder { width: 88px; height: 88px; border-radius: 50%; background: #5b2d8e; border: 3px solid #7b4dae; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; }
-.autor-info { flex: 1; min-width: 0; }
-.autor-nombre { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 6px; letter-spacing: -0.01em; }
-.autor-bio { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6; margin-bottom: 10px; }
-.autor-pub { font-size: 12px; color: rgba(255,255,255,0.55); margin-bottom: 14px; line-height: 1.5; }
-.autor-pub em { color: rgba(255,255,255,0.7); font-style: italic; }
-.autor-links { display: flex; gap: 10px; flex-wrap: wrap; }
-.autor-link { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 5px 12px; font-size: 12px; color: rgba(255,255,255,0.85); text-decoration: none; transition: background 0.15s; }
-.autor-link:hover { background: rgba(255,255,255,0.18); }
-.nota-experimental { background: #fff8e1; border-left: 4px solid #ffc107; border-radius: 8px; padding: 14px 18px; font-size: 13px; color: #5a4200; line-height: 1.6; max-width: 860px; margin: 0 auto 32px; }
-.nota-experimental strong { font-weight: 700; }
-
-/* ── DONACIONES ─────────────────────────────────────────────── */
-.donaciones-section { max-width: 860px; margin: 0 auto 48px; }
-.donaciones-titulo { text-align: center; font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
-.donaciones-sub { text-align: center; font-size: 13px; color: #888; margin-bottom: 20px; }
-.donaciones-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-@media (max-width: 680px) {
-  .donaciones-grid { grid-template-columns: 1fr; }
-  .autor-card { flex-direction: column; text-align: center; }
-  .autor-links { justify-content: center; }
-}
-.don-card { border-radius: 10px; padding: 18px 20px; border: 2px solid transparent; }
-.don-card.pesos { border-color: #1a3a6e; background: #f8faff; }
-.don-card.dolares { border-color: #145a2a; background: #f4fbf6; }
-.don-card.exterior { border-color: #7a1515; background: #fff8f8; }
-.don-card-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; margin-bottom: 14px; }
-.don-card.pesos .don-card-header { color: #1a3a6e; }
-.don-card.dolares .don-card-header { color: #145a2a; }
-.don-card.exterior .don-card-header { color: #7a1515; }
-.don-flag { background: #e8eef8; border-radius: 4px; padding: 1px 5px; font-weight: 800; font-size: 11px; letter-spacing: 0.04em; }
-.don-card.dolares .don-flag { background: #e0f0e8; }
-.don-field { margin-bottom: 10px; }
-.don-label { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
-.don-value { font-size: 13px; font-weight: 600; color: #1a1a2e; word-break: break-all; }
-.don-value.mono { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 12px; }
-.don-card.pesos .don-value.mono { color: #1a3a6e; }
-.don-card.dolares .don-value.mono { color: #145a2a; }
-.don-card.exterior .don-value.mono { color: #7a1515; }
-.map-footer { text-align: center; font-size: 12px; color: #aaa; padding: 16px 0 32px; border-top: 1px solid #e8e8e4; }
-.map-footer a { color: #888; text-decoration: none; }
-.map-footer a:hover { color: #5b2d8e; }
-/* ── SOCIAL ─────────────────────────────────────────────────── */
-.social-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 20px; }
-@media (max-width: 900px) { .social-grid { grid-template-columns: 1fr; } }
-.social-card { background: white; border-radius: 8px; border: 1px solid #e8e8e4; padding: 20px; }
-.social-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
-.social-card-title { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
-.social-badge { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: #fdecea; color: #7b1515; }
-.social-main-value { font-size: 36px; font-weight: 500; color: #c0392b; line-height: 1; }
-.social-main-sub { font-size: 11px; color: #aaa; margin-top: 4px; margin-bottom: 16px; }
-.social-compare { display: flex; gap: 10px; margin-bottom: 14px; }
-.social-compare-box { flex: 1; background: #f8f8f4; border-radius: 6px; padding: 8px 12px; }
-.social-compare-label { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 0.04em; }
-.social-compare-val { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-top: 2px; }
-.social-compare-val.red { color: #c0392b; }
-.social-var { font-size: 13px; margin-bottom: 12px; }
-.social-var-abs { font-weight: 600; color: #c0392b; }
-.social-var-pct { color: #888; }
-.social-alertas { border-top: 1px solid #f0f0ea; padding-top: 10px; margin-top: 10px; }
-.social-alerta { font-size: 11px; color: #7b1515; background: #fdecea; border-radius: 4px; padding: 4px 8px; margin-bottom: 5px; line-height: 1.4; }
-.social-fuente { font-size: 10px; color: #bbb; margin-top: 10px; font-style: italic; }
-.social-status { background: white; border-radius: 8px; border: 1px solid #e8e8e4; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: #666; }
-.social-dot { width: 8px; height: 8px; border-radius: 50%; background: #27ae60; flex-shrink: 0; }
+/* SECTOR TABS */
+.sector-header{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:8px;margin-bottom:16px;border:1px solid #e0d8f0;}
+.sector-icon{font-size:28px;line-height:1;}
+.sector-title{font-size:16px;font-weight:600;color:#3d1e6e;}
+.sector-subtitle{font-size:12px;color:#888;margin-top:2px;}
+/* TAREA 3: 5 columnas para los 5 KPIs nuevos */
+.sector-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;}
+.sector-kpi{background:white;border-radius:8px;padding:14px 16px;border:1px solid #e8e8e4;}
+.sector-kpi-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.sector-kpi-value{font-size:20px;font-weight:600;line-height:1;}
+.sector-kpi-sub{font-size:11px;color:#aaa;margin-top:3px;}
+.sector-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.sector-table-wrap{background:white;border-radius:8px;border:1px solid #e8e8e4;padding:16px;}
+.sector-empty{padding:40px;text-align:center;color:#aaa;font-size:13px;}
+.sector-loading{padding:30px;text-align:center;color:#aaa;font-size:13px;grid-column:1/-1;}
+.sector-usd-row{display:flex;gap:20px;font-size:12px;color:#888;margin-top:10px;padding:8px 12px;background:#fafaf7;border-radius:6px;}
+.sector-usd-row strong{color:#1a1a1a;}
+/* RESUMEN */
+.resumen-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.resumen-sector-card{background:white;border-radius:10px;border:1px solid #e8e8e4;padding:16px 18px;display:flex;align-items:center;gap:14px;transition:box-shadow .15s;}
+.resumen-sector-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);}
+.resumen-sector-icon{font-size:26px;line-height:1;flex-shrink:0;}
+.resumen-sector-info{flex:1;min-width:0;}
+.resumen-sector-name{font-size:13px;font-weight:600;color:#2a1a4e;margin-bottom:2px;}
+.resumen-sector-jur{font-size:11px;color:#aaa;margin-bottom:8px;}
+.resumen-sector-metrics{display:flex;gap:16px;}
+.resumen-metric{text-align:center;}
+.resumen-metric-val{font-size:18px;font-weight:700;line-height:1;}
+.resumen-metric-lbl{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+.resumen-bar-bg{height:4px;background:#f0f0ea;border-radius:2px;margin-top:10px;}
+.resumen-bar-fill{height:4px;border-radius:2px;}
+.tab-resumen{border-color:#1a1a2e;color:#1a1a2e;background:#f0f0f8;font-weight:600;}
+.tab-resumen.active{background:#1a1a2e;color:white;border-color:#1a1a2e;}
+.resumen-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;}
+.resumen-table th{background:#f4f6fb;color:#333;font-weight:700;padding:8px 12px;text-align:left;border-bottom:2px solid #e0e4ef;font-size:11px;text-transform:uppercase;letter-spacing:.04em;}
+.resumen-table th.nr,.resumen-table td.nr{text-align:right;}
+.resumen-table td{padding:9px 12px;border-bottom:1px solid #f0f0ea;}
+.resumen-table tr:nth-child(even) td{background:#fafaf7;}
+.resumen-meta{font-size:11px;color:#888;margin-bottom:12px;padding:8px 12px;background:#f7f3fd;border-radius:6px;}
+/* colores sector */
+.sector-salud .sector-header{background:#f0f9f4;border-color:#b7e0cc;}
+.sector-salud .sector-title{color:#145a2a;}
+.sector-jubilaciones .sector-header{background:#f3f0fb;border-color:#c8b8e8;}
+.sector-jubilaciones .sector-title{color:#3d1e6e;}
+.sector-ninez .sector-header{background:#fff8ec;border-color:#ffd599;}
+.sector-ninez .sector-title{color:#7a4500;}
+.sector-obra-publica .sector-header{background:#f0f4fb;border-color:#b8cef0;}
+.sector-obra-publica .sector-title{color:#1a3a6e;}
+.sector-salario .sector-header{background:#fdf0f0;border-color:#f0b8b8;}
+.sector-salario .sector-title{color:#6e1a1a;}
+.sector-educacion .sector-header{background:#f0f8fb;border-color:#b8dff0;}
+.sector-educacion .sector-title{color:#1a4a6e;}
+/* AUTOR */
+.autor-section{margin:48px 0 0 0;border-top:1px solid #e8e8e4;padding-top:32px;}
+.autor-card{background:#1a1a2e;border-radius:12px;padding:28px 32px;display:flex;align-items:center;gap:24px;color:white;max-width:860px;margin:0 auto 32px;}
+.autor-avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;border:3px solid #5b2d8e;flex-shrink:0;}
+.autor-avatar-placeholder{width:88px;height:88px;border-radius:50%;background:#5b2d8e;border:3px solid #7b4dae;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:32px;}
+.autor-info{flex:1;min-width:0;}
+.autor-nombre{font-size:20px;font-weight:700;color:#fff;margin-bottom:6px;}
+.autor-bio{font-size:13px;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:10px;}
+.autor-pub{font-size:12px;color:rgba(255,255,255,.55);margin-bottom:14px;line-height:1.5;}
+.autor-pub em{color:rgba(255,255,255,.7);font-style:italic;}
+.autor-links{display:flex;gap:10px;flex-wrap:wrap;}
+.autor-link{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:5px 12px;font-size:12px;color:rgba(255,255,255,.85);text-decoration:none;transition:background .15s;}
+.autor-link:hover{background:rgba(255,255,255,.18);}
+.nota-experimental{background:#fff8e1;border-left:4px solid #ffc107;border-radius:8px;padding:14px 18px;font-size:13px;color:#5a4200;line-height:1.6;max-width:860px;margin:0 auto 32px;}
+/* DONACIONES */
+.donaciones-section{max-width:860px;margin:0 auto 48px;}
+.donaciones-titulo{text-align:center;font-size:20px;font-weight:700;color:#1a1a2e;margin-bottom:6px;}
+.donaciones-sub{text-align:center;font-size:13px;color:#888;margin-bottom:20px;}
+.donaciones-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+@media(max-width:680px){.donaciones-grid{grid-template-columns:1fr;}.autor-card{flex-direction:column;text-align:center;}.autor-links{justify-content:center;}}
+.don-card{border-radius:10px;padding:18px 20px;border:2px solid transparent;}
+.don-card.pesos{border-color:#1a3a6e;background:#f8faff;}
+.don-card.dolares{border-color:#145a2a;background:#f4fbf6;}
+.don-card.exterior{border-color:#7a1515;background:#fff8f8;}
+.don-card-header{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin-bottom:14px;}
+.don-card.pesos .don-card-header{color:#1a3a6e;}
+.don-card.dolares .don-card-header{color:#145a2a;}
+.don-card.exterior .don-card-header{color:#7a1515;}
+.don-flag{background:#e8eef8;border-radius:4px;padding:1px 5px;font-weight:800;font-size:11px;letter-spacing:.04em;}
+.don-card.dolares .don-flag{background:#e0f0e8;}
+.don-field{margin-bottom:10px;}
+.don-label{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;}
+.don-value{font-size:13px;font-weight:600;color:#1a1a2e;word-break:break-all;}
+.don-value.mono{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:12px;}
+.don-card.pesos .don-value.mono{color:#1a3a6e;}
+.don-card.dolares .don-value.mono{color:#145a2a;}
+.don-card.exterior .don-value.mono{color:#7a1515;}
+.map-footer{text-align:center;font-size:12px;color:#aaa;padding:16px 0 32px;border-top:1px solid #e8e8e4;}
+.map-footer a{color:#888;text-decoration:none;}
+.map-footer a:hover{color:#5b2d8e;}
+/* SOCIAL */
+.social-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+@media(max-width:900px){.social-grid{grid-template-columns:1fr;}}
+.social-card{background:white;border-radius:8px;border:1px solid #e8e8e4;padding:20px;}
+.social-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.social-card-title{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;}
+.social-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:#fdecea;color:#7b1515;}
+.social-main-value{font-size:36px;font-weight:500;color:#c0392b;line-height:1;}
+.social-main-sub{font-size:11px;color:#aaa;margin-top:4px;margin-bottom:16px;}
+.social-compare{display:flex;gap:10px;margin-bottom:14px;}
+.social-compare-box{flex:1;background:#f8f8f4;border-radius:6px;padding:8px 12px;}
+.social-compare-label{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.04em;}
+.social-compare-val{font-size:16px;font-weight:600;color:#1a1a1a;margin-top:2px;}
+.social-compare-val.red{color:#c0392b;}
+.social-var{font-size:13px;margin-bottom:12px;}
+.social-var-abs{font-weight:600;color:#c0392b;}
+.social-var-pct{color:#888;}
+.social-alertas{border-top:1px solid #f0f0ea;padding-top:10px;margin-top:10px;}
+.social-alerta{font-size:11px;color:#7b1515;background:#fdecea;border-radius:4px;padding:4px 8px;margin-bottom:5px;line-height:1.4;}
+.social-fuente{font-size:10px;color:#bbb;margin-top:10px;font-style:italic;}
+.social-status{background:white;border-radius:8px;border:1px solid #e8e8e4;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:12px;color:#666;}
+.social-dot{width:8px;height:8px;border-radius:50%;background:#27ae60;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -178,7 +177,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
   <div>
     <div style="display:flex;align-items:center;gap:10px;">
       <h1>Monitor de Ajuste Presupuestario</h1>
-      <span class="badge-version">MAP v2.0</span>
+      <span class="badge-version">MAP v2.1</span>
     </div>
     <span style="font-size:12px;opacity:0.6;">Presupuesto 2023 → 2026 · ① Nominal · ② Real (IPC) · ③ USD constantes</span>
   </div>
@@ -190,26 +189,10 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
 
 <div class="main">
   <div class="kpi-grid">
-    <div class="kpi" data-tt="Total de programas presupuestarios con datos en la base 2023.">
-      <div class="kpi-label">programas analizados</div>
-      <div class="kpi-value" id="kpi-total">—</div>
-      <div class="kpi-sub">base 2023</div>
-    </div>
-    <div class="kpi" data-tt="Ajuste real promedio: variación del gasto deflactada por IPC acumulado desde ene-2023.">
-      <div class="kpi-label">ajuste real promedio <span style="font-size:10px;color:#c8b8e8;">① pesos constantes</span></div>
-      <div class="kpi-value red" id="kpi-avg">—</div>
-      <div class="kpi-sub">gasto vigente ÷ IPC vs original 2023</div>
-    </div>
-    <div class="kpi" data-tt="Factor IPC acumulado desde enero 2023 hasta hoy.">
-      <div class="kpi-label">factor IPC acumulado</div>
-      <div class="kpi-value" id="kpi-ipc">—</div>
-      <div class="kpi-sub">ene-2023 → hoy · inflación acumulada</div>
-    </div>
-    <div class="kpi" data-tt="Programas donde el ajuste real supera el 50%.">
-      <div class="kpi-label">programas con ajuste real &gt;50% <span style="font-size:10px;color:#c8b8e8;">① </span></div>
-      <div class="kpi-value red" id="kpi-cut50">—</div>
-      <div class="kpi-sub">pérdida real de más de la mitad</div>
-    </div>
+    <div class="kpi"><div class="kpi-label">programas analizados</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">base 2023</div></div>
+    <div class="kpi"><div class="kpi-label">ajuste real promedio</div><div class="kpi-value red" id="kpi-avg">—</div><div class="kpi-sub">gasto vigente ÷ IPC vs original 2023</div></div>
+    <div class="kpi"><div class="kpi-label">factor IPC acumulado</div><div class="kpi-value" id="kpi-ipc">—</div><div class="kpi-sub">ene-2023 → hoy</div></div>
+    <div class="kpi"><div class="kpi-label">programas con ajuste &gt;50%</div><div class="kpi-value red" id="kpi-cut50">—</div><div class="kpi-sub">pérdida real de más de la mitad</div></div>
   </div>
 
   <div id="tt" style="display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;font-size:12px;padding:8px 12px;border-radius:6px;max-width:280px;line-height:1.5;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.3);"></div>
@@ -221,15 +204,15 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
     <button class="tab" onclick="sw('evolucion',this);loadEvolucion()">📈 evolución real</button>
     <button class="tab" onclick="sw('detalle',this)">detalle de partidas</button>
     <button class="tab" onclick="sw('base-monetaria',this)">💵 base monetaria</button>
-    <button class="tab tab-resumen" onclick="sw('resumen',this)">📊 resumen</button>
+    <button class="tab tab-resumen" onclick="sw('resumen',this);loadResumenAPI()">📊 resumen</button>
     <button class="tab tab-resumen" onclick="sw('licuacion',this)" style="background:#fff8ec;border-color:#d97706;color:#92400e;">⚖️ licuación vs recorte</button>
     <div class="tab-sep"></div>
-    <button class="tab tab-sector" onclick="sw('salud',this)">🏥 salud</button>
-    <button class="tab tab-sector" onclick="sw('jubilaciones',this)">👴 jubilaciones</button>
-    <button class="tab tab-sector" onclick="sw('ninez',this)">👶 niñez</button>
-    <button class="tab tab-sector" onclick="sw('obra-publica',this)">🏗️ obra pública</button>
-    <button class="tab tab-sector" onclick="sw('salario',this)">💼 salario público</button>
-    <button class="tab tab-sector" onclick="sw('educacion',this)">📚 educación</button>
+    <button class="tab tab-sector" onclick="sw('salud',this);loadSectorAPI('salud')">🏥 salud</button>
+    <button class="tab tab-sector" onclick="sw('jubilaciones',this);loadSectorAPI('jubilaciones')">👴 jubilaciones</button>
+    <button class="tab tab-sector" onclick="sw('ninez',this);loadSectorAPI('ninez')">👶 niñez</button>
+    <button class="tab tab-sector" onclick="sw('obra-publica',this);loadSectorAPI('obra-publica')">🏗️ obra pública</button>
+    <button class="tab tab-sector" onclick="sw('salario',this);renderSector('salario')">💼 salario público</button>
+    <button class="tab tab-sector" onclick="sw('educacion',this);loadSectorAPI('educacion')">📚 educación</button>
     <div class="tab-sep"></div>
     <button class="tab" onclick="sw('social',this);loadSocial()">🏥 impacto social</button>
   </div>
@@ -237,20 +220,20 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
   <!-- RANKING -->
   <div class="panel active" id="tab-ranking">
     <div class="card">
-      <div class="card-title">programas con mayor ajuste real — pérdida de poder de compra</div>
+      <div class="card-title">programas con mayor ajuste real</div>
       <div style="background:#f0f4fb;border-radius:6px;padding:10px 14px;font-size:12px;color:#1a3a6e;margin-bottom:12px;line-height:1.6;">
-        <strong>① Ajuste nominal</strong> — variación en pesos corrientes vs presupuesto original 2023 &nbsp;|&nbsp;
-        <strong>② Ajuste real</strong> — ídem deflactado por IPC: pérdida de poder de compra &nbsp;|&nbsp;
-        <strong>③ Ajuste USD</strong> — variación en dólares al TC de ene-2023 vs TC actual
+        <strong>① Ajuste nominal</strong> — variación en pesos corrientes vs 2023 &nbsp;|&nbsp;
+        <strong>② Ajuste real</strong> — deflactado por IPC &nbsp;|&nbsp;
+        <strong>③ Ajuste USD</strong> — variación en dólares constantes
       </div>
       <div class="filters">
         <select id="rjur" onchange="renderRanking()"><option value="">todas las jurisdicciones</option></select>
         <select id="rn" onchange="renderRanking()"><option value="10">top 10</option><option value="20" selected>top 20</option><option value="50">top 50</option></select>
       </div>
       <div class="legend">
-        <span><span class="legend-dot" style="background:#3478C8"></span>① ajuste nominal (pesos corrientes)</span>
-        <span><span class="legend-dot" style="background:#c0392b"></span>② ajuste real negativo</span>
-        <span><span class="legend-dot" style="background:#27ae60"></span>② ajuste real positivo</span>
+        <span><span class="legend-dot" style="background:#3478C8"></span>① nominal</span>
+        <span><span class="legend-dot" style="background:#c0392b"></span>② real negativo</span>
+        <span><span class="legend-dot" style="background:#27ae60"></span>② real positivo</span>
       </div>
       <div style="position:relative;width:100%;" id="rwrap"><canvas id="cR"></canvas></div>
     </div>
@@ -259,20 +242,12 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
   <!-- INCISO -->
   <div class="panel" id="tab-inciso">
     <div class="grid2">
-      <div class="card">
-        <div class="card-title">variación real por tipo de gasto</div>
-        <div style="position:relative;height:280px;"><canvas id="cI"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">licuación inflacionaria por inciso</div>
-        <div style="position:relative;height:280px;"><canvas id="cL"></canvas></div>
-      </div>
+      <div class="card"><div class="card-title">variación real por tipo de gasto</div><div style="position:relative;height:280px;"><canvas id="cI"></canvas></div></div>
+      <div class="card"><div class="card-title">licuación inflacionaria por inciso</div><div style="position:relative;height:280px;"><canvas id="cL"></canvas></div></div>
     </div>
     <div class="card" style="margin-top:16px;">
       <div class="card-title">tabla por inciso</div>
-      <div class="th" style="grid-template-columns:2fr 1fr 1fr 1fr 80px;">
-        <span>inciso</span><span class="nr">original</span><span class="nr">vigente</span><span class="nr">real (m. 2023)</span><span class="nr">var. real</span>
-      </div>
+      <div class="th" style="grid-template-columns:2fr 1fr 1fr 1fr 80px;"><span>inciso</span><span class="nr">original</span><span class="nr">vigente</span><span class="nr">real (m. 2023)</span><span class="nr">var. real</span></div>
       <div id="tbl-inciso"></div>
     </div>
   </div>
@@ -280,11 +255,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
   <!-- SCATTER -->
   <div class="panel" id="tab-scatter">
     <div class="card">
-      <div class="card-title">① ajuste nominal vs ② ajuste real — cada punto es un programa</div>
-      <p style="font-size:12px;color:#aaa;margin-bottom:12px;">
-        <strong>Eje X:</strong> ajuste nominal. <strong>Eje Y:</strong> ajuste real (deflactado por IPC).<br>
-        Puntos bajo la diagonal: licuados por inflación. Sobre la diagonal: ganaron poder de compra real.
-      </p>
+      <div class="card-title">① ajuste nominal vs ② ajuste real</div>
       <div style="position:relative;height:420px;"><canvas id="cS"></canvas></div>
     </div>
   </div>
@@ -293,36 +264,22 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
   <div class="panel" id="tab-evolucion">
     <div class="card" style="margin-bottom:16px;">
       <div class="card-title">evolución del gasto público real — pesos constantes enero 2023</div>
-      <p style="font-size:12px;color:#aaa;margin-bottom:14px;">
-        Gasto total vigente deflactado por IPC acumulado desde enero 2023. Permite comparar el poder de compra real del Estado en cada ejercicio.
-      </p>
       <div id="evol-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;"></div>
       <div style="position:relative;height:340px;"><canvas id="cEvolucion"></canvas></div>
     </div>
-    <div class="card">
-      <div class="card-title">variación real interanual — cuánto cambió el gasto en términos reales</div>
-      <div id="evol-tabla" style="margin-top:8px;font-size:13px;"></div>
-    </div>
+    <div class="card"><div class="card-title">variación real interanual</div><div id="evol-tabla" style="margin-top:8px;font-size:13px;"></div></div>
   </div>
 
   <!-- DETALLE -->
   <div class="panel" id="tab-detalle">
     <div class="card">
       <div class="card-title">detalle completo de partidas</div>
-
       <div class="filters">
         <select id="djur" onchange="renderDetalle()"><option value="">todas las jurisdicciones</option></select>
         <select id="dest" onchange="renderDetalle()"><option value="">todos</option><option value="REDUCCIÓN">solo reducciones</option><option value="INCREMENTO">solo incrementos</option></select>
         <input type="text" id="dsrch" placeholder="buscar programa..." oninput="renderDetalle()" style="width:200px;">
       </div>
-      <div class="th" style="grid-template-columns:2fr 90px 90px 90px 90px 80px;">
-        <span>programa</span>
-        <span class="nr" data-tt="① Ajuste nominal: variación en pesos corrientes vs original 2023">nominal %</span>
-        <span class="nr" data-tt="② Ajuste real: variación deflactada por IPC">real % ②</span>
-        <span class="nr" data-tt="③ Ajuste en USD: variación en dólares constantes">USD % ③</span>
-        <span class="nr" data-tt="Licuación: parte del ajuste absorbida por inflación">licuación</span>
-        <span class="nr">estado</span>
-      </div>
+      <div class="th" style="grid-template-columns:2fr 90px 90px 90px 90px 80px;"><span>programa</span><span class="nr">nominal %</span><span class="nr">real % ②</span><span class="nr">USD % ③</span><span class="nr">licuación</span><span class="nr">estado</span></div>
       <div id="tbl-detalle"></div>
     </div>
   </div>
@@ -330,273 +287,146 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
   <!-- BASE MONETARIA -->
   <div class="panel" id="tab-base-monetaria">
     <div class="bm-kpi-row">
-      <div class="bm-card" style="border-left:5px solid #6c757d">
-        <div class="bm-card__label">Base Monetaria<br><small style="font-weight:400;color:#888">07/12/2023 — asunción</small></div>
-        <div class="bm-card__value" id="bm-inicio">—</div>
-        <div class="bm-card__note">billones de pesos</div>
-      </div>
-      <div class="bm-card" style="border-left:5px solid #0d6efd">
-        <div class="bm-card__label">Base Monetaria<br><small style="font-weight:400;color:#888" id="bm-fecha-actual">hoy</small></div>
-        <div class="bm-card__value" id="bm-actual">—</div>
-        <div class="bm-card__note">billones de pesos</div>
-      </div>
-      <div class="bm-card" style="border-left:5px solid #dc3545">
-        <div class="bm-card__label">Variación acumulada</div>
-        <div class="bm-card__value" id="bm-pct" style="color:#dc3545">—</div>
-        <div class="bm-card__note">desde dic 2023</div>
-      </div>
-      <div class="bm-card" style="border-left:5px solid #fd7e14">
-        <div class="bm-card__label">Multiplicador</div>
-        <div class="bm-card__value" id="bm-mult" style="color:#fd7e14">—</div>
-        <div class="bm-card__note">veces respecto al inicio</div>
-      </div>
-      <div class="bm-card" style="border-left:5px solid #198754">
-        <div class="bm-card__label">BM en USD<br><small style="font-weight:400;color:#888">TC oficial</small></div>
-        <div class="bm-card__value" id="bm-usd" style="color:#198754">—</div>
-        <div class="bm-card__note">millones de dólares</div>
-      </div>
+      <div class="bm-card" style="border-left:5px solid #6c757d"><div class="bm-card__label">Base Monetaria<br><small style="font-weight:400;color:#888">07/12/2023</small></div><div class="bm-card__value" id="bm-inicio">—</div><div class="bm-card__note">billones de pesos</div></div>
+      <div class="bm-card" style="border-left:5px solid #0d6efd"><div class="bm-card__label">Base Monetaria<br><small style="font-weight:400;color:#888" id="bm-fecha-actual">hoy</small></div><div class="bm-card__value" id="bm-actual">—</div><div class="bm-card__note">billones de pesos</div></div>
+      <div class="bm-card" style="border-left:5px solid #dc3545"><div class="bm-card__label">Variación acumulada</div><div class="bm-card__value" id="bm-pct" style="color:#dc3545">—</div><div class="bm-card__note">desde dic 2023</div></div>
+      <div class="bm-card" style="border-left:5px solid #fd7e14"><div class="bm-card__label">Multiplicador</div><div class="bm-card__value" id="bm-mult" style="color:#fd7e14">—</div><div class="bm-card__note">veces respecto al inicio</div></div>
+      <div class="bm-card" style="border-left:5px solid #198754"><div class="bm-card__label">BM en USD</div><div class="bm-card__value" id="bm-usd" style="color:#198754">—</div><div class="bm-card__note">millones de dólares</div></div>
     </div>
     <div class="bm-nota" id="bm-nota">Cargando datos del BCRA...</div>
-    <div class="bm-chart-wrap">
-      <h3 class="bm-chart-title">Evolución mensual — Base Monetaria (billones de $)</h3>
-      <canvas id="bmChart" height="300"></canvas>
-    </div>
-    <div class="bm-table-wrap">
-      <table class="bm-table">
-        <thead><tr><th>Período</th><th>Base Monetaria (B$)</th><th>Var. vs dic-2023</th><th>Multiplicador</th></tr></thead>
-        <tbody id="bm-tbody"></tbody>
-      </table>
-    </div>
+    <div class="bm-chart-wrap"><h3 class="bm-chart-title">Evolución mensual — Base Monetaria (billones de $)</h3><canvas id="bmChart" height="300"></canvas></div>
+    <div class="bm-table-wrap"><table class="bm-table"><thead><tr><th>Período</th><th>Base Monetaria (B$)</th><th>Var. vs dic-2023</th><th>Multiplicador</th></tr></thead><tbody id="bm-tbody"></tbody></table></div>
   </div>
 
   <!-- LICUACIÓN VS RECORTE -->
   <div class="panel" id="tab-licuacion">
-    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
-      <div class="kpi" style="border-left:4px solid #b46414;">
-        <div class="kpi-label">ajuste total nominal</div>
-        <div class="kpi-value amber" id="lv-kpi-nom">—</div>
-        <div class="kpi-sub">variación promedio ponderada</div>
-      </div>
-      <div class="kpi" style="border-left:4px solid #c0392b;">
-        <div class="kpi-label">del cual — recorte real</div>
-        <div class="kpi-value red" id="lv-kpi-recorte">—</div>
-        <div class="kpi-sub">caída del gasto en términos reales</div>
-      </div>
-      <div class="kpi" style="border-left:4px solid #d97706;">
-        <div class="kpi-label">del cual — licuación</div>
-        <div class="kpi-value amber" id="lv-kpi-lic">—</div>
-        <div class="kpi-sub">ajuste por inflación (sin recorte nominal)</div>
-      </div>
-      <div class="kpi" style="border-left:4px solid #5b2d8e;">
-        <div class="kpi-label">jurisdicciones analizadas</div>
-        <div class="kpi-value" id="lv-kpi-jur">—</div>
-        <div class="kpi-sub">con datos en la base 2023</div>
-      </div>
-    </div>
-    <div style="background:#fff8ec;border-left:4px solid #d97706;border-radius:6px;padding:10px 14px;font-size:12px;color:#7a4500;margin-bottom:16px;line-height:1.6;">
-      <strong>¿Cómo se separan?</strong>
-      <strong>Licuación</strong> = el Estado gastó nominalmente más, pero la inflación erosionó ese incremento.
-      <strong>Recorte</strong> = el Estado gastó nominalmente menos que en 2023.
+    <div class="kpi-grid" style="margin-bottom:16px;">
+      <div class="kpi" style="border-left:4px solid #b46414;"><div class="kpi-label">ajuste total nominal</div><div class="kpi-value amber" id="lv-kpi-nom">—</div></div>
+      <div class="kpi" style="border-left:4px solid #c0392b;"><div class="kpi-label">recorte real</div><div class="kpi-value red" id="lv-kpi-recorte">—</div></div>
+      <div class="kpi" style="border-left:4px solid #d97706;"><div class="kpi-label">licuación</div><div class="kpi-value amber" id="lv-kpi-lic">—</div></div>
+      <div class="kpi" style="border-left:4px solid #5b2d8e;"><div class="kpi-label">jurisdicciones</div><div class="kpi-value" id="lv-kpi-jur">—</div></div>
     </div>
     <div class="card" style="margin-bottom:16px;">
-      <div class="card-title">composición del ajuste por jurisdicción — licuación vs recorte real</div>
+      <div class="card-title">composición del ajuste por jurisdicción</div>
       <div class="filters">
-        <select id="lv-orden" onchange="renderLicuacion()">
-          <option value="lic">ordenar por licuación</option>
-          <option value="recorte">ordenar por recorte real</option>
-          <option value="total">ordenar por ajuste total</option>
-        </select>
-        <select id="lv-top" onchange="renderLicuacion()">
-          <option value="15">top 15</option>
-          <option value="25" selected>top 25</option>
-          <option value="999">todas</option>
-        </select>
+        <select id="lv-orden" onchange="renderLicuacion()"><option value="lic">por licuación</option><option value="recorte">por recorte real</option><option value="total">por ajuste total</option></select>
+        <select id="lv-top" onchange="renderLicuacion()"><option value="15">top 15</option><option value="25" selected>top 25</option><option value="999">todas</option></select>
       </div>
-      <div class="legend">
-        <span><span class="legend-dot" style="background:#d97706"></span>licuación</span>
-        <span><span class="legend-dot" style="background:#c0392b"></span>recorte real</span>
-        <span><span class="legend-dot" style="background:#27ae60"></span>ganancia real</span>
-      </div>
+      <div class="legend"><span><span class="legend-dot" style="background:#d97706"></span>licuación</span><span><span class="legend-dot" style="background:#c0392b"></span>recorte real</span><span><span class="legend-dot" style="background:#27ae60"></span>ganancia real</span></div>
       <div style="position:relative;width:100%;" id="lv-chart-wrap"><canvas id="cLicuacion"></canvas></div>
     </div>
     <div class="grid2" style="margin-bottom:16px;">
-      <div class="card">
-        <div class="card-title">mapa: licuación vs recorte — cada punto es una jurisdicción</div>
-        <p style="font-size:11px;color:#aaa;margin-bottom:10px;">Cuadrante sup. izq.: mucho recorte real. Inf. der.: mucho ajuste por inflación.</p>
-        <div style="position:relative;height:300px;"><canvas id="cLicuacionScatter"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">proporción licuación / recorte por jurisdicción</div>
-        <p style="font-size:11px;color:#aaa;margin-bottom:10px;">Barras de 100% — fracción del ajuste total por inflación vs corte nominal.</p>
-        <div style="position:relative;height:300px;"><canvas id="cLicuacionPct"></canvas></div>
-      </div>
+      <div class="card"><div class="card-title">mapa: licuación vs recorte</div><div style="position:relative;height:300px;"><canvas id="cLicuacionScatter"></canvas></div></div>
+      <div class="card"><div class="card-title">proporción licuación / recorte</div><div style="position:relative;height:300px;"><canvas id="cLicuacionPct"></canvas></div></div>
     </div>
     <div class="card">
-      <div class="card-title">tabla — jurisdicciones ordenadas por ajuste real</div>
-      <div class="th" style="grid-template-columns:2fr 80px 80px 90px 90px 80px;">
-        <span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">recorte %</span><span class="nr">tipo</span>
-      </div>
+      <div class="card-title">tabla — jurisdicciones</div>
+      <div class="th" style="grid-template-columns:2fr 80px 80px 90px 90px 80px;"><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">recorte %</span><span class="nr">tipo</span></div>
       <div id="tbl-licuacion"></div>
     </div>
   </div>
 
   <!-- SALUD -->
   <div class="panel sector-salud" id="tab-salud">
-    <div class="sector-header"><div class="sector-icon">🏥</div><div><div class="sector-title">Ministerio de Salud</div><div class="sector-subtitle">Programas de salud pública · Deflactado por IPC</div></div></div>
-    <div class="sector-kpi-row" id="salud-kpis"></div>
+    <div class="sector-header"><div class="sector-icon">🏥</div><div><div class="sector-title">Ministerio de Salud</div><div class="sector-subtitle">jur 80 · Deflactado por IPC · Endpoint /api/v1/analisis/sector</div></div></div>
+    <div class="sector-kpi-row" id="salud-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
-      <div class="card"><div class="card-title">variación real por programa</div><div style="position:relative;min-height:260px;" id="salud-chart-wrap"><canvas id="cSalud"></canvas></div></div>
-      <div class="card"><div class="card-title">nominal vs real — distribución</div><div style="position:relative;height:260px;"><canvas id="cSaludScatter"></canvas></div></div>
+      <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="salud-chart-wrap"><canvas id="cSalud"></canvas></div></div>
+      <div class="card"><div class="card-title">nominal vs real</div><div style="position:relative;height:260px;"><canvas id="cSaludScatter"></canvas></div></div>
     </div>
-    <div class="sector-table-wrap">
-      <div class="card-title">detalle de programas</div>
-      <div class="th" style="grid-template-columns:2fr 90px 90px 100px 90px;"><span>programa</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div>
-      <div id="tbl-salud"></div>
-    </div>
+    <div class="sector-table-wrap"><div class="card-title">detalle</div><div class="th" style="grid-template-columns:2fr 90px 90px 100px 90px;"><span>programa</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div><div id="tbl-salud"></div></div>
   </div>
 
   <!-- JUBILACIONES -->
   <div class="panel sector-jubilaciones" id="tab-jubilaciones">
-    <div class="sector-header"><div class="sector-icon">👴</div><div><div class="sector-title">Jubilaciones y Previsión Social</div><div class="sector-subtitle">Capital Humano + Obligaciones a Cargo del Tesoro · Deflactado por IPC</div></div></div>
-    <div class="sector-kpi-row" id="jubilaciones-kpis"></div>
+    <div class="sector-header"><div class="sector-icon">👴</div><div><div class="sector-title">Jubilaciones y Previsión Social</div><div class="sector-subtitle">Mapeo correcto: jur 50 2023 → jur 50 2026 · Deflactado por IPC</div></div></div>
+    <div class="sector-kpi-row" id="jubilaciones-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
-      <div class="card"><div class="card-title">variación real por programa</div><div style="position:relative;min-height:260px;" id="jubilaciones-chart-wrap"><canvas id="cJubilaciones"></canvas></div></div>
-      <div class="card"><div class="card-title">nominal vs real — distribución</div><div style="position:relative;height:260px;"><canvas id="cJubilacionesScatter"></canvas></div></div>
+      <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="jubilaciones-chart-wrap"><canvas id="cJubilaciones"></canvas></div></div>
+      <div class="card"><div class="card-title">nominal vs real</div><div style="position:relative;height:260px;"><canvas id="cJubilacionesScatter"></canvas></div></div>
     </div>
-    <div class="sector-table-wrap">
-      <div class="card-title">detalle de programas</div>
-      <div class="th" style="grid-template-columns:2fr 1fr 90px 90px 100px 90px;"><span>programa</span><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div>
-      <div id="tbl-jubilaciones"></div>
-    </div>
+    <div class="sector-table-wrap"><div class="card-title">detalle</div><div class="th" style="grid-template-columns:2fr 1fr 90px 90px 100px 90px;"><span>programa</span><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div><div id="tbl-jubilaciones"></div></div>
   </div>
 
   <!-- NIÑEZ -->
   <div class="panel sector-ninez" id="tab-ninez">
-    <div class="sector-header"><div class="sector-icon">👶</div><div><div class="sector-title">Programas de Niñez y Familia</div><div class="sector-subtitle">Capital Humano + Desarrollo Social · Deflactado por IPC</div></div></div>
-    <div class="sector-kpi-row" id="ninez-kpis"></div>
+    <div class="sector-header"><div class="sector-icon">👶</div><div><div class="sector-title">Programas de Niñez y Familia</div><div class="sector-subtitle">Mapeo correcto: jur 85 (2023) → jur 88 Capital Humano (2026)</div></div></div>
+    <div class="sector-kpi-row" id="ninez-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
-      <div class="card"><div class="card-title">variación real por programa</div><div style="position:relative;min-height:260px;" id="ninez-chart-wrap"><canvas id="cNinez"></canvas></div></div>
-      <div class="card"><div class="card-title">nominal vs real — distribución</div><div style="position:relative;height:260px;"><canvas id="cNinezScatter"></canvas></div></div>
+      <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="ninez-chart-wrap"><canvas id="cNinez"></canvas></div></div>
+      <div class="card"><div class="card-title">nominal vs real</div><div style="position:relative;height:260px;"><canvas id="cNinezScatter"></canvas></div></div>
     </div>
-    <div class="sector-table-wrap">
-      <div class="card-title">detalle de programas</div>
-      <div class="th" style="grid-template-columns:2fr 1fr 90px 90px 100px 90px;"><span>programa</span><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div>
-      <div id="tbl-ninez"></div>
-    </div>
+    <div class="sector-table-wrap"><div class="card-title">detalle</div><div class="th" style="grid-template-columns:2fr 1fr 90px 90px 100px 90px;"><span>programa</span><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div><div id="tbl-ninez"></div></div>
   </div>
 
   <!-- OBRA PÚBLICA -->
   <div class="panel sector-obra-publica" id="tab-obra-publica">
-    <div class="sector-header"><div class="sector-icon">🏗️</div><div><div class="sector-title">Obra Pública e Infraestructura</div><div class="sector-subtitle">Obras Públicas + Infraestructura + Transporte · Deflactado por IPC</div></div></div>
-    <div class="sector-kpi-row" id="obra-publica-kpis"></div>
+    <div class="sector-header"><div class="sector-icon">🏗️</div><div><div class="sector-title">Obra Pública e Infraestructura</div><div class="sector-subtitle">Mapeo correcto: jur 64+57+65 (2023) → jur 77 (2026) · FIX DEFINITIVO</div></div></div>
+    <div class="sector-kpi-row" id="obra-publica-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
-      <div class="card"><div class="card-title">variación real por programa</div><div style="position:relative;min-height:260px;" id="obra-publica-chart-wrap"><canvas id="cObraPublica"></canvas></div></div>
-      <div class="card"><div class="card-title">nominal vs real — distribución</div><div style="position:relative;height:260px;"><canvas id="cObraPublicaScatter"></canvas></div></div>
+      <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="obra-publica-chart-wrap"><canvas id="cObraPublica"></canvas></div></div>
+      <div class="card"><div class="card-title">nominal vs real</div><div style="position:relative;height:260px;"><canvas id="cObraPublicaScatter"></canvas></div></div>
     </div>
-    <div class="sector-table-wrap">
-      <div class="card-title">detalle de programas</div>
-      <div class="th" style="grid-template-columns:2fr 1fr 90px 90px 100px 90px;"><span>programa</span><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div>
-      <div id="tbl-obra-publica"></div>
-    </div>
+    <div class="sector-table-wrap"><div class="card-title">detalle</div><div class="th" style="grid-template-columns:2fr 1fr 90px 90px 100px 90px;"><span>programa</span><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div><div id="tbl-obra-publica"></div></div>
   </div>
 
   <!-- SALARIO PÚBLICO -->
   <div class="panel sector-salario" id="tab-salario">
-    <div class="sector-header"><div class="sector-icon">💼</div><div><div class="sector-title">Salario Público — Inciso 1 (Personal)</div><div class="sector-subtitle">Todos los ministerios · Filtrado por inciso_id = 1 · Deflactado por IPC</div></div></div>
+    <div class="sector-header"><div class="sector-icon">💼</div><div><div class="sector-title">Salario Público — Inciso 1 (Personal)</div><div class="sector-subtitle">Todos los ministerios · inciso_id = 1 · Deflactado por IPC</div></div></div>
     <div class="sector-kpi-row" id="salario-kpis"></div>
     <div class="sector-grid">
-      <div class="card"><div class="card-title">variación real por jurisdicción (inciso 1)</div><div style="position:relative;min-height:260px;" id="salario-chart-wrap"><canvas id="cSalario"></canvas></div></div>
-      <div class="card"><div class="card-title">licuación salarial por jurisdicción</div><div style="position:relative;height:260px;"><canvas id="cSalarioLic"></canvas></div></div>
+      <div class="card"><div class="card-title">variación real por jurisdicción</div><div style="position:relative;min-height:260px;" id="salario-chart-wrap"><canvas id="cSalario"></canvas></div></div>
+      <div class="card"><div class="card-title">licuación salarial</div><div style="position:relative;height:260px;"><canvas id="cSalarioLic"></canvas></div></div>
     </div>
-    <div class="sector-table-wrap">
-      <div class="card-title">detalle por jurisdicción — gasto en personal</div>
-      <div class="th" style="grid-template-columns:2fr 90px 90px 100px 90px;"><span>programa / jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div>
-      <div id="tbl-salario"></div>
-    </div>
+    <div class="sector-table-wrap"><div class="card-title">detalle</div><div class="th" style="grid-template-columns:2fr 90px 90px 100px 90px;"><span>programa / jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div><div id="tbl-salario"></div></div>
   </div>
 
-  <!-- RESUMEN CONSOLIDADO -->
+  <!-- RESUMEN CONSOLIDADO — TAREA 3: tabla con 5 KPIs desde endpoint sector -->
   <div class="panel" id="tab-resumen">
-    <div id="resumen-sector-grid" class="resumen-kpi-grid"></div>
+    <div id="resumen-sector-grid" class="resumen-kpi-grid"><div class="sector-loading">⏳ Cargando resumen sectorial…</div></div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">comparativa sectorial 2023 → 2026 — 5 KPIs por sector (desde /api/v1/analisis/sector)</div>
+      <div id="resumen-tabla-wrap"><div style="padding:20px;color:#aaa;text-align:center;">Cargando…</div></div>
+    </div>
     <div class="card" style="margin-bottom:16px;">
       <div class="card-title">variación real por sector — comparativo</div>
-      <div class="legend" style="margin-bottom:8px;">
-        <span><span class="legend-dot" style="background:#3478C8"></span>nominal promedio</span>
-        <span><span class="legend-dot" style="background:#c0392b"></span>real (reducción)</span>
-        <span><span class="legend-dot" style="background:#27ae60"></span>real (incremento)</span>
-        <span><span class="legend-dot" style="background:#b46414"></span>licuación</span>
-      </div>
       <div style="position:relative;height:320px;"><canvas id="cResumenComp"></canvas></div>
     </div>
-    <div class="card" style="margin-bottom:16px;">
-      <div class="card-title">ranking de sectores — de mayor a menor ajuste real</div>
-      <div class="th" style="grid-template-columns:32px 2fr 80px 80px 90px 80px 90px;">
-        <span>#</span><span>sector</span><span class="nr">programas</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">con reducción</span>
-      </div>
-      <div id="tbl-resumen-ranking"></div>
-    </div>
     <div class="card">
-      <div class="card-title">evolución acumulada por sector — variación real estimada por período</div>
-      <p style="font-size:12px;color:#aaa;margin-bottom:12px;">Basado en deflactor IPC mensual acumulado desde ene-2023.</p>
+      <div class="card-title">evolución acumulada estimada por sector</div>
       <div style="position:relative;height:360px;"><canvas id="cResumenTimeline"></canvas></div>
     </div>
   </div>
 
   <!-- EDUCACIÓN -->
   <div class="panel sector-educacion" id="tab-educacion">
-    <div class="sector-header"><div class="sector-icon">📚</div><div><div class="sector-title">Educación</div><div class="sector-subtitle">Ministerio de Educación + Capital Humano · Deflactado por IPC</div></div></div>
-    <div class="sector-kpi-row" id="educacion-kpis"></div>
+    <div class="sector-header"><div class="sector-icon">📚</div><div><div class="sector-title">Educación</div><div class="sector-subtitle">Mapeo correcto: jur 70+75+85 (2023) → jur 88 Capital Humano (2026)</div></div></div>
+    <div class="sector-kpi-row" id="educacion-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
-      <div class="card"><div class="card-title">variación real por programa</div><div style="position:relative;min-height:260px;" id="educacion-chart-wrap"><canvas id="cEducacion"></canvas></div></div>
-      <div class="card"><div class="card-title">nominal vs real — distribución</div><div style="position:relative;height:260px;"><canvas id="cEducacionScatter"></canvas></div></div>
+      <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="educacion-chart-wrap"><canvas id="cEducacion"></canvas></div></div>
+      <div class="card"><div class="card-title">nominal vs real</div><div style="position:relative;height:260px;"><canvas id="cEducacionScatter"></canvas></div></div>
     </div>
-    <div class="sector-table-wrap">
-      <div class="card-title">detalle de programas</div>
-      <div class="th" style="grid-template-columns:2fr 1fr 90px 90px 100px 90px;"><span>programa</span><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div>
-      <div id="tbl-educacion"></div>
-    </div>
+    <div class="sector-table-wrap"><div class="card-title">detalle</div><div class="th" style="grid-template-columns:2fr 1fr 90px 90px 100px 90px;"><span>programa</span><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div><div id="tbl-educacion"></div></div>
   </div>
 
   <!-- IMPACTO SOCIAL -->
   <div class="panel" id="tab-social">
-    <div class="social-status" id="social-status">
-      <div class="social-dot" id="social-dot"></div>
-      <span id="social-status-txt">Cargando indicadores sanitarios…</span>
-    </div>
-    <div class="social-grid" id="social-grid">
-      <div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">Cargando…</div>
-    </div>
+    <div class="social-status" id="social-status"><div class="social-dot" id="social-dot"></div><span id="social-status-txt">Cargando indicadores…</span></div>
+    <div class="social-grid" id="social-grid"><div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">Cargando…</div></div>
   </div>
 
-  <!-- ══ AUTOR + DONACIONES ══════════════════════════════════ -->
+  <!-- AUTOR + DONACIONES -->
   <div class="autor-section">
-
     <div class="nota-experimental">
-      ⚠️ <strong>Nota:</strong> Esta herramienta es de carácter <strong>experimental y académico</strong>.
-      Los datos provienen de fuentes públicas oficiales del Estado argentino.
-      Los resultados son <strong>indicadores algorítmicos</strong> —
-      no implican juicio de valor, acusación ni determinación de responsabilidad sobre ninguna
-      jurisdicción, organismo o persona. El objetivo es promover la
-      <strong>transparencia y el debate informado</strong> sobre el gasto público.
+      ⚠️ <strong>Nota:</strong> Esta herramienta es de carácter <strong>experimental y académico</strong>. Los datos provienen de fuentes públicas oficiales. Los resultados son <strong>indicadores algorítmicos</strong> — no implican juicio de valor ni acusación.
     </div>
-
     <div class="autor-card">
-      <img class="autor-avatar"
-           src="/static/img/autor.jpg"
-           alt="Ph.D. Vicente Humberto Monteverde"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <img class="autor-avatar" src="/static/img/autor.jpg" alt="Ph.D. Vicente Humberto Monteverde" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
       <div class="autor-avatar-placeholder" style="display:none;">👤</div>
       <div class="autor-info">
         <div class="autor-nombre">Ph.D. Vicente Humberto Monteverde</div>
-        <div class="autor-bio">
-          Investigador en economía política y fenómenos de corrupción. Doctor en Ciencias Económicas.
-          Autor de la teoría de <em style="color:#c8b8e8;">Transferencia Regresiva de Ingresos</em>
-          y desarrollador de algoritmos XAI aplicados al análisis del gasto público argentino.
-        </div>
-        <div class="autor-pub">
-          Publicaciones en <em>Journal of Financial Crime</em> (Emerald Publishing) ·
-          Asesor en transparencia y auditoría algorítmica del gasto público.
-        </div>
+        <div class="autor-bio">Investigador en economía política y fenómenos de corrupción. Doctor en Ciencias Económicas. Autor de la teoría de <em style="color:#c8b8e8;">Transferencia Regresiva de Ingresos</em>.</div>
+        <div class="autor-pub">Publicaciones en <em>Journal of Financial Crime</em> (Emerald Publishing) · Asesor en transparencia y auditoría algorítmica del gasto público.</div>
         <div class="autor-links">
           <a class="autor-link" href="mailto:vhmonte@retina.ar">✉ vhmonte@retina.ar</a>
           <a class="autor-link" href="mailto:viny01958@gmail.com">✉ viny01958@gmail.com</a>
@@ -604,12 +434,10 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
         </div>
       </div>
     </div>
-
     <div class="donaciones-section">
-      <div class="donaciones-titulo"><span>🧡</span> Apoyar este proyecto — Donaciones voluntarias</div>
+      <div class="donaciones-titulo">🧡 Apoyar este proyecto — Donaciones voluntarias</div>
       <div class="donaciones-sub">Si este proyecto te resulta útil, podés apoyarlo con una donación voluntaria.</div>
       <div class="donaciones-grid">
-
         <div class="don-card pesos">
           <div class="don-card-header"><span class="don-flag">AR</span> Argentina · Pesos (ARS)</div>
           <div class="don-field"><div class="don-label">Tipo</div><div class="don-value">Caja de Ahorro</div></div>
@@ -618,7 +446,6 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
           <div class="don-field"><div class="don-label">Titular</div><div class="don-value">Vicente Humberto Monteverde</div></div>
           <div class="don-field"><div class="don-label">CUIL/CUIT</div><div class="don-value">20-12034411-1</div></div>
         </div>
-
         <div class="don-card dolares">
           <div class="don-card-header"><span class="don-flag">AR</span> Argentina · Dólares (USD)</div>
           <div class="don-field"><div class="don-label">Tipo</div><div class="don-value">Caja de Ahorro Dólares</div></div>
@@ -627,7 +454,6 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
           <div class="don-field"><div class="don-label">Titular</div><div class="don-value">Vicente Humberto Monteverde</div></div>
           <div class="don-field"><div class="don-label">CUIL/CUIT</div><div class="don-value">20-12034411-1</div></div>
         </div>
-
         <div class="don-card exterior">
           <div class="don-card-header"><span>🌐</span> Desde el Exterior (USD Wire)</div>
           <div class="don-field"><div class="don-label">Banco</div><div class="don-value">Banco Santander Río</div></div>
@@ -637,19 +463,15 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
           <div class="don-field"><div class="don-label">SWIFT / BIC</div><div class="don-value mono">BSCHUYMM</div></div>
           <div class="don-field"><div class="don-label">CUIT</div><div class="don-value">20-12034411-1</div></div>
         </div>
-
       </div>
     </div>
-
     <div class="map-footer">
       Monitor de Ajuste Presupuestario &nbsp;·&nbsp;
       <a href="https://github.com/Viny2030/Ajuste" target="_blank">github.com/Viny2030/Ajuste</a>
       &nbsp;·&nbsp; Ph.D. Vicente Humberto Monteverde &nbsp;·&nbsp;
       <a href="mailto:vhmonte@retina.ar">vhmonte@retina.ar</a>
     </div>
-
-  </div><!-- /autor-section -->
-
+  </div>
 </div><!-- /main -->
 
 <script>
@@ -658,648 +480,391 @@ let D = [], I = [];
 let cRI, cII, cLI, cSI, _bmChart;
 let _bmCargado = false;
 
-const C = {
-  nominal:   { bg: 'rgba(37,99,235,0.85)',  border: '#1d4ed8' },
-  reduccion: { bg: 'rgba(185,28,28,0.90)',  border: '#991b1b' },
-  aumento:   { bg: 'rgba(21,128,61,0.90)',  border: '#14532d' },
-  licuacion: { bg: 'rgba(180,83,9,0.88)',   border: '#92400e' },
-  scatter_r: 'rgba(185,28,28,0.80)',
-  scatter_g: 'rgba(21,128,61,0.80)',
-  purple:    'rgba(109,40,217,0.85)',
-  gray:      '#94a3b8',
+// ══ TAREA 1+2: Mapeo tab → sector key del endpoint /api/v1/analisis/sector ══
+// Obra Pública: jur 64+57+65 → 77 | Capital Humano: jur 70+75+85 → 88
+const SECTOR_API_MAP = {
+  'salud':        'salud',
+  'jubilaciones': 'jubilaciones',
+  'ninez':        'capital_humano',
+  'obra-publica': 'obra_publica',
+  'educacion':    'capital_humano',
 };
 
-// Mapeo sectorial por jurisdiccion_id
-// 2023: ministerios separados | 2024+: fusionados en Capital Humano (88)
-// Criterio de exclusividad: cada programa va al sector más específico
-const SECTOR_IDS = {
-  salud: {
-    ids_2024: ['80'],
-    ids_2023: ['80'],
-    programas: null,
-  },
-  jubilaciones: {
-    ids_2024: ['88', '91'],
-    ids_2023: ['75', '91'],
-    // 2024+ prg previsionales de Cap.Humano; 2023 prg de Trabajo+Tesoro
-    programas_2024: ['16','17','20','21','30','31','99'],
-    programas_2023: ['16','17','19','20','21','31','99'],
-    excluir_jur91_prg: ['76','87'],  // subsidios energía/transporte, NO previsionales
-  },
-  ninez: {
-    ids_2024: ['88'],
-    ids_2023: ['85'],
-    // 2024+ asignaciones familiares; 2023 Desarrollo Social (excluye Potenciar Trabajo prg38)
-    programas_2024: ['19','32','38','49'],
-    programas_2023: ['26','44','56','8'],  // alimentario, niñez, jóvenes (excluye prg38 Potenciar Trabajo)
-  },
-  'obra-publica': {
-    ids_2024: ['25','30','50'],
-    ids_2023: ['64','57','65'],
-    programas: null,
-    keywords: ['obra','infraestructura','transporte','vial','agua','vivienda','habitat','saneamiento','autopista'],
-  },
-  salario: {
-    ids: null, inciso: '1',
-  },
-  educacion: {
-    ids_2024: ['88'],
-    ids_2023: ['70'],
-    programas_2024: ['26','29','40','49','23'],
-    programas_2023: null,  // toda la jur 70 es educación
-  },
-};
-
-// Fallback por nombre para datos sin jurisdiccion_id
-const SECTOR_JURIS_LEGACY = {
-  salud:          ['ministerio de salud'],
-  jubilaciones:   ['ministerio de capital humano', 'obligaciones a cargo del tesoro', 'ministerio de trabajo'],
-  ninez:          ['ministerio de desarrollo social', 'ministerio de capital humano'],
-  'obra-publica': ['ministerio de obras públicas', 'ministerio de obras publicas', 'ministerio de infraestructura', 'ministerio de transporte', 'ministerio de desarrollo territorial'],
-  salario:        null,
-  educacion:      ['ministerio de educación', 'ministerio de educacion', 'ministerio de capital humano'],
-};
-
-
+const _sectorAPICache = {};
 const _sectCharts = {};
 
 function fmtM(n){if(!n&&n!==0)return'—';const a=Math.abs(n);if(a>=1e9)return(n/1e9).toFixed(1)+'B';if(a>=1e6)return(n/1e6).toFixed(1)+'M';if(a>=1e3)return(n/1e3).toFixed(1)+'K';return n.toFixed(0);}
-function fmtP(n){return(n>0?'+':'')+n.toFixed(1)+'%';}
+function fmtP(n){if(n===null||n===undefined)return'N/D';return(n>0?'+':'')+n.toFixed(1)+'%';}
 function fmtAbs(n){if(n===null||n===undefined)return'—';const sign=n>=0?'+':'-';const a=Math.abs(n);if(a>=1e12)return sign+'$'+(a/1e12).toFixed(2)+'B';if(a>=1e9)return sign+'$'+(a/1e9).toFixed(1)+'MM';if(a>=1e6)return sign+'$'+(a/1e6).toFixed(1)+'M';return sign+'$'+a.toFixed(0);}
 function fmtUSD(n){if(n===null||n===undefined)return'—';const sign=n>=0?'+':'-';const a=Math.abs(n);if(a>=1e9)return sign+'USD '+(a/1e9).toFixed(1)+'B';if(a>=1e6)return sign+'USD '+(a/1e6).toFixed(1)+'M';return sign+'USD '+a.toFixed(0);}
+function varClass(v){if(v===null||v===undefined)return'';return v<-20?'red':v<0?'amber':'green';}
 
-let _tt = null;
-function getTT() { return _tt || (_tt = document.getElementById('tt')); }
-document.addEventListener('mouseover', e => {
-  const el = e.target.closest('[data-tt]');
-  const tt = getTT(); if (!tt) return;
-  if (!el) { tt.style.display='none'; return; }
-  tt.textContent = el.dataset.tt;
-  tt.style.display = 'block';
-});
-document.addEventListener('mousemove', e => {
-  const tt = getTT(); if (!tt || tt.style.display === 'none') return;
-  tt.style.left = Math.min(e.clientX + 12, window.innerWidth - 300) + 'px';
-  tt.style.top  = (e.clientY + 16) + 'px';
-});
-document.addEventListener('mouseout', e => {
-  const tt = getTT(); if (!tt) return;
-  if (!e.target.closest('[data-tt]')) tt.style.display = 'none';
-});
+let _tt=null;
+function getTT(){return _tt||(_tt=document.getElementById('tt'));}
+document.addEventListener('mouseover',e=>{const el=e.target.closest('[data-tt]');const tt=getTT();if(!tt)return;if(!el){tt.style.display='none';return;}tt.textContent=el.dataset.tt;tt.style.display='block';});
+document.addEventListener('mousemove',e=>{const tt=getTT();if(!tt||tt.style.display==='none')return;tt.style.left=Math.min(e.clientX+12,window.innerWidth-300)+'px';tt.style.top=(e.clientY+16)+'px';});
+document.addEventListener('mouseout',e=>{const tt=getTT();if(!tt)return;if(!e.target.closest('[data-tt]'))tt.style.display='none';});
 
-function sw(name, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
+function sw(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
   btn.classList.add('active');
-  if (name === 'base-monetaria' && !_bmCargado) { _bmCargado = true; cargarBaseMonetaria(); }
-  if (name === 'resumen' && D.length > 0) renderResumen();
-  if (name === 'licuacion' && D.length > 0) renderLicuacion();
-  const sectores = ['salud','jubilaciones','ninez','obra-publica','salario','educacion'];
-  if (sectores.includes(name) && D.length > 0) renderSector(name);
+  if(name==='base-monetaria'&&!_bmCargado){_bmCargado=true;cargarBaseMonetaria();}
+  if(name==='licuacion'&&D.length>0)renderLicuacion();
 }
 
-function filtrarSector(sector) {
-  const cfg = SECTOR_IDS[sector];
-  if (!cfg) return [];
-
-  // salario: filtra solo por inciso (todas las jurisdicciones)
-  if (cfg.inciso) return D.filter(d => String(d.inciso_id) === cfg.inciso);
-
-  return D.filter(d => {
-    const jid = d.jurisdiccion_id ? String(d.jurisdiccion_id).trim() : null;
-
-    if (jid) {
-      // Detectar si el dato es de 2023 (pre-fusión) o 2024+ por jurisdiccion_id
-      // jur 75=Trabajo, 85=Des.Social, 70=Educación → indican dato 2023
-      const ids_legacy = ['75','85','70','64','57','65'];
-      const is2023 = ids_legacy.includes(jid);
-      const ids      = is2023 ? (cfg.ids_2023 || cfg.ids_2024) : (cfg.ids_2024 || cfg.ids_2023);
-      const programas = is2023 ? cfg.programas_2023 : cfg.programas_2024;
-      const excluir91 = cfg.excluir_jur91_prg;
-
-      if (!ids || !ids.includes(jid)) return false;
-
-      // Excluir programas específicos de jur 91 que NO son previsionales
-      if (jid === '91' && excluir91) {
-        const pid = String(d.programa_id || '').trim();
-        if (excluir91.includes(pid)) return false;
-      }
-
-      // Si hay lista de programas permitidos, aplicarla
-      if (programas) {
-        const pid = String(d.programa_id || '').trim();
-        return programas.includes(pid);
-      }
-
-      // Si hay keywords en descripción del programa
-      if (cfg.keywords) {
-        const desc = (d.programa_desc || '').toLowerCase();
-        return cfg.keywords.some(kw => desc.includes(kw));
-      }
-
-      return true;
-    }
-
-    // Fallback: filtrar por nombre de jurisdicción
-    const juris = SECTOR_JURIS_LEGACY[sector];
-    if (!juris) return false;
-    const j = (d.jurisdiccion || '').toLowerCase();
-    return juris.some(jj => j.includes(jj.toLowerCase()));
-  });
-}
-
-function renderSectorKpis(sector, data) {
-  const el = document.getElementById(sector + '-kpis');
-  if (!el) return;
-  const totalOrig    = data.reduce((s,d) => s + (d.monto_original||0), 0);
-  const totalVig     = data.reduce((s,d) => s + (d.monto_vigente_nominal||0), 0);
-  const totalReal    = data.reduce((s,d) => s + (d.monto_real_en_moneda_2023||0), 0);
-  const totalOrigUSD = data.reduce((s,d) => s + (d.monto_original_usd||0), 0);
-  const totalVigUSD  = data.reduce((s,d) => s + (d.monto_vigente_usd||0), 0);
-  const varNom  = totalOrig > 0 ? ((totalVig  / totalOrig)  - 1) * 100 : 0;
-  const varReal = totalOrig > 0 ? ((totalReal / totalOrig)  - 1) * 100 : 0;
-  const varUSD  = totalOrigUSD > 0 ? ((totalVigUSD / totalOrigUSD) - 1) * 100 : 0;
-  el.innerHTML = `
-    <div class="sector-kpi">
-      <div class="sector-kpi-label">Presupuesto original 2023</div>
-      <div class="sector-kpi-value" style="font-size:17px;">${fmtAbs(totalOrig)}</div>
-      <div class="sector-kpi-sub">pesos corrientes · base</div>
-    </div>
-    <div class="sector-kpi">
-      <div class="sector-kpi-label">Crédito vigente 2026</div>
-      <div class="sector-kpi-value" style="font-size:17px;">${fmtAbs(totalVig)}</div>
-      <div class="sector-kpi-sub">pesos corrientes · último ejercicio</div>
-    </div>
-    <div class="sector-kpi">
-      <div class="sector-kpi-label">Variación nominal</div>
-      <div class="sector-kpi-value ${varNom<0?'red':'green'}">${varNom>0?'+':''}${varNom.toFixed(1)}%</div>
-      <div class="sector-kpi-sub">en pesos corrientes · sin deflactar</div>
-    </div>
-    <div class="sector-kpi">
-      <div class="sector-kpi-label">Variación real (IPC)</div>
-      <div class="sector-kpi-value ${varReal<0?'red':'green'}">${varReal>0?'+':''}${varReal.toFixed(1)}%</div>
-      <div class="sector-kpi-sub">deflactado por IPC acumulado ene-2023 → hoy</div>
-    </div>
-    <div class="sector-kpi">
-      <div class="sector-kpi-label">Variación en USD</div>
-      <div class="sector-kpi-value ${varUSD<0?'red':'green'}">${varUSD>0?'+':''}${varUSD.toFixed(1)}%</div>
-      <div class="sector-kpi-sub">USD al TC vigente en cada asignación · orig: ${fmtUSD(totalOrigUSD)} → ${fmtUSD(totalVigUSD)}</div>
-    </div>`;
-}
-
-function renderSectorBarChart(canvasId, wrapId, data) {
-  const sorted = [...data].sort((a,b) => a.variacion_real_pct - b.variacion_real_pct).slice(0,20);
-  const wrap = document.getElementById(wrapId);
-  if (wrap) wrap.style.height = Math.max(200, sorted.length * 36 + 60) + 'px';
-  const labs = sorted.map(d => { const s = d.programa_desc || d.programa_id || d.jurisdiccion || ''; return s.length > 50 ? s.slice(0,50)+'…' : s; });
-  if (_sectCharts[canvasId]) { _sectCharts[canvasId].destroy(); delete _sectCharts[canvasId]; }
-  const ctx = document.getElementById(canvasId);
-  if (!ctx) return;
-  _sectCharts[canvasId] = new Chart(ctx, {
-    type: 'bar',
-    data: { labels: labs, datasets: [
-      { label:'nominal %', data:sorted.map(d=>+d.variacion_nominal_pct.toFixed(1)), backgroundColor:C.nominal.bg, borderColor:C.nominal.border, borderWidth:1 },
-      { label:'real %', data:sorted.map(d=>+d.variacion_real_pct.toFixed(1)), backgroundColor:sorted.map(d=>d.variacion_real_pct<0?C.reduccion.bg:C.aumento.bg), borderColor:sorted.map(d=>d.variacion_real_pct<0?C.reduccion.border:C.aumento.border), borderWidth:1 },
-    ]},
-    options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{font:{size:11}},grid:{display:false}}} },
-  });
-}
-
-function renderSectorScatter(canvasId, data) {
-  if (_sectCharts[canvasId]) { _sectCharts[canvasId].destroy(); delete _sectCharts[canvasId]; }
-  const ctx = document.getElementById(canvasId);
-  if (!ctx) return;
-  const pts = data.map(d => ({ x:+d.variacion_nominal_pct.toFixed(1), y:+d.variacion_real_pct.toFixed(1), label:d.programa_desc||d.jurisdiccion||'' }));
-  const vals = pts.flatMap(p => [p.x, p.y]);
-  const mn = Math.min(...vals) - 10, mx = Math.max(...vals) + 10;
-  _sectCharts[canvasId] = new Chart(ctx, {
-    type: 'scatter',
-    data: { datasets: [
-      { label:'programas', data:pts, backgroundColor:pts.map(p=>p.y<0?C.reduccion.bg:C.aumento.bg), pointRadius:5 },
-      { label:'diagonal', data:[{x:mn,y:mn},{x:mx,y:mx}], type:'line', borderColor:'#ccc', borderDash:[4,4], pointRadius:0, fill:false },
-    ]},
-    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>`${(c.raw.label||'').slice(0,35)}: nom ${c.raw.x}%, real ${c.raw.y}%`}}}, scales:{x:{title:{display:true,text:'nominal %',font:{size:11}},ticks:{callback:v=>v+'%'}},y:{title:{display:true,text:'real %',font:{size:11}},ticks:{callback:v=>v+'%'}}} },
-  });
-}
-
-function renderSectorTable(tblId, data, showJur) {
-  const el = document.getElementById(tblId);
-  if (!el) return;
-  if (!data.length) { el.innerHTML = '<div class="sector-empty">No hay datos para este sector.</div>'; return; }
-  const cols = showJur ? 'grid-template-columns:2fr 1fr 90px 90px 100px 90px;' : 'grid-template-columns:2fr 90px 90px 100px 90px;';
-  el.innerHTML = [...data].sort((a,b) => a.variacion_real_pct - b.variacion_real_pct).map(d => `
-    <div class="tr" style="${cols}">
-      <span><div class="prog-name">${d.programa_desc||d.programa_id||'—'}</div></span>
-      ${showJur ? `<span class="prog-jur">${(d.jurisdiccion||'').length>30?(d.jurisdiccion||'').slice(0,30)+'…':d.jurisdiccion||''}</span>` : ''}
-      <span class="nr ${d.variacion_nominal_pct<0?'red':'green'}">${fmtP(d.variacion_nominal_pct)}</span>
-      <span class="nr ${d.variacion_real_pct<0?'red':'green'}">${fmtP(d.variacion_real_pct)}</span>
-      <span class="nr amber">${(d.licuacion_pct||0).toFixed(1)}%</span>
-      <span><span class="pill ${d.estado_ajuste==='REDUCCIÓN'?'pill-red':'pill-green'}">${d.estado_ajuste||'—'}</span></span>
-    </div>`).join('');
-}
-
-function renderSalarioCharts(data) {
-  const byJur = {};
-  data.forEach(d => { const k = d.jurisdiccion||'N/D'; if (!byJur[k]) byJur[k]={nom:[],real:[],lic:[]}; byJur[k].nom.push(d.variacion_nominal_pct); byJur[k].real.push(d.variacion_real_pct); byJur[k].lic.push(d.licuacion_pct||0); });
-  const avg = arr => arr.reduce((s,v)=>s+v,0)/arr.length;
-  const rows = Object.entries(byJur).map(([jur,v]) => ({jur,real:avg(v.real),nom:avg(v.nom),lic:avg(v.lic)})).sort((a,b)=>a.real-b.real).slice(0,20);
-  if (_sectCharts['cSalario']) { _sectCharts['cSalario'].destroy(); delete _sectCharts['cSalario']; }
-  const wrap = document.getElementById('salario-chart-wrap');
-  if (wrap) wrap.style.height = Math.max(200, rows.length * 34 + 60) + 'px';
-  const ctx1 = document.getElementById('cSalario');
-  if (ctx1) _sectCharts['cSalario'] = new Chart(ctx1, { type:'bar', data:{labels:rows.map(r=>r.jur.length>40?r.jur.slice(0,40)+'…':r.jur),datasets:[{label:'nominal %',data:rows.map(r=>+r.nom.toFixed(1)),backgroundColor:C.nominal.bg,borderColor:C.nominal.border,borderWidth:1},{label:'real %',data:rows.map(r=>+r.real.toFixed(1)),backgroundColor:rows.map(r=>r.real<0?C.reduccion.bg:C.aumento.bg),borderColor:rows.map(r=>r.real<0?C.reduccion.border:C.aumento.border),borderWidth:1}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}}},y:{ticks:{font:{size:11}}}}} });
-  if (_sectCharts['cSalarioLic']) { _sectCharts['cSalarioLic'].destroy(); delete _sectCharts['cSalarioLic']; }
-  const ctx2 = document.getElementById('cSalarioLic');
-  if (ctx2) _sectCharts['cSalarioLic'] = new Chart(ctx2, { type:'bar', data:{labels:rows.map(r=>r.jur.length>40?r.jur.slice(0,40)+'…':r.jur),datasets:[{label:'licuación %',data:rows.map(r=>+r.lic.toFixed(1)),backgroundColor:C.licuacion.bg,borderColor:C.licuacion.border,borderWidth:1}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}}},y:{ticks:{font:{size:11}}}}} });
-}
-
-function renderSector(sector) {
-  const data = filtrarSector(sector);
-  renderSectorKpis(sector, data);
-  if (sector === 'salario') {
-    renderSalarioCharts(data);
-    renderSectorTable('tbl-salario', data, false);
-  } else {
-    const canvasBar     = 'c' + sector.split('-').map(s=>s[0].toUpperCase()+s.slice(1)).join('');
-    const canvasScatter = canvasBar + 'Scatter';
-    const wrapId        = sector + '-chart-wrap';
-    renderSectorBarChart(canvasBar, wrapId, data);
-    renderSectorScatter(canvasScatter, data);
-    const showJur = ['jubilaciones','ninez','obra-publica','educacion'].includes(sector);
-    renderSectorTable('tbl-' + sector, data, showJur);
+// ══ TAREA 1: loadSectorAPI — consume /api/v1/analisis/sector ══════════════════
+async function loadSectorAPI(tabName) {
+  const sectorKey = SECTOR_API_MAP[tabName] || tabName;
+  const kpisEl    = document.getElementById(tabName + '-kpis');
+  if (!kpisEl) return;
+  if (_sectorAPICache[sectorKey]) { renderSectorAPIKpis(tabName, _sectorAPICache[sectorKey]); return; }
+  kpisEl.innerHTML = '<div class="sector-loading">⏳ Cargando desde /api/v1/analisis/sector…</div>';
+  try {
+    const res = await fetch(API + '/analisis/sector?sector=' + sectorKey);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const s = data.sectores && data.sectores[0];
+    if (!s) throw new Error('Sin datos para ' + sectorKey);
+    _sectorAPICache[sectorKey] = s;
+    renderSectorAPIKpis(tabName, s);
+  } catch(e) {
+    kpisEl.innerHTML = '<div class="sector-loading" style="color:#c0392b">❌ Error: ' + e.message + '</div>';
   }
 }
 
-let _cLicuacion, _cLicuacionScatter, _cLicuacionPct;
+// ══ TAREA 3: 5 KPIs nuevos en cada tab sectorial ═════════════════════════════
+function renderSectorAPIKpis(tabName, s) {
+  const kpisEl = document.getElementById(tabName + '-kpis');
+  if (!kpisEl) return;
+  const fmtMM = v => v !== null && v !== undefined ? '$' + Number(v).toLocaleString('es-AR') + ' M' : 'N/D';
+  const jurStr = 'jur ' + (s.jur_2023||[]).join('+') + ' → ' + (s.jur_2026||[]).join('+');
+  kpisEl.innerHTML =
+    '<div class="sector-kpi">' +
+      '<div class="sector-kpi-label">Crédito Original 2023</div>' +
+      '<div class="sector-kpi-value">' + fmtMM(s.credito_original_2023_mm) + '</div>' +
+      '<div class="sector-kpi-sub">' + jurStr + '</div>' +
+    '</div>' +
+    '<div class="sector-kpi">' +
+      '<div class="sector-kpi-label">Crédito Vigente 2026</div>' +
+      '<div class="sector-kpi-value">' + fmtMM(s.credito_vigente_2026_mm) + '</div>' +
+      '<div class="sector-kpi-sub">jur ' + (s.jur_2026||[]).join('+') + '</div>' +
+    '</div>' +
+    '<div class="sector-kpi">' +
+      '<div class="sector-kpi-label">Var. Nominal</div>' +
+      '<div class="sector-kpi-value ' + varClass(s.var_nominal_pct) + '">' + fmtP(s.var_nominal_pct) + '</div>' +
+      '<div class="sector-kpi-sub">pesos corrientes</div>' +
+    '</div>' +
+    '<div class="sector-kpi">' +
+      '<div class="sector-kpi-label">Var. Real IPC ×' + s.ipc_factor + '</div>' +
+      '<div class="sector-kpi-value ' + varClass(s.var_real_ipc_pct) + '">' + fmtP(s.var_real_ipc_pct) + '</div>' +
+      '<div class="sector-kpi-sub">poder de compra real</div>' +
+    '</div>' +
+    '<div class="sector-kpi">' +
+      '<div class="sector-kpi-label">Var. Real USD</div>' +
+      '<div class="sector-kpi-value ' + varClass(s.var_real_usd_pct) + '">' + fmtP(s.var_real_usd_pct) + '</div>' +
+      '<div class="sector-kpi-sub">TC $' + Number(s.tc_usd||0).toLocaleString('es-AR') + '/USD</div>' +
+    '</div>';
 
-function calcJurStats() {
-  const byJur = {};
-  D.forEach(d => { const k = d.jurisdiccion||'Sin jurisdicción'; if (!byJur[k]) byJur[k]={nom:[],real:[],lic:[],n:0}; byJur[k].nom.push(d.variacion_nominal_pct||0); byJur[k].real.push(d.variacion_real_pct||0); byJur[k].lic.push(d.licuacion_pct||0); byJur[k].n++; });
-  const avg = arr => arr.reduce((s,v)=>s+v,0)/arr.length;
-  return Object.entries(byJur).map(([jur,v]) => { const nom=avg(v.nom),real=avg(v.real),lic=avg(v.lic),recorte=nom<0?nom:0; return {jur,nom,real,lic,recorte,n:v.n}; });
+  const tblEl = document.getElementById('tbl-' + tabName);
+  if (tblEl) {
+    const usd23 = s.credito_2023_usd_mm !== null ? 'USD ' + Number(s.credito_2023_usd_mm).toLocaleString('es-AR') + ' M' : 'N/D';
+    const usd26 = s.credito_2026_usd_mm !== null ? 'USD ' + Number(s.credito_2026_usd_mm).toLocaleString('es-AR') + ' M' : 'N/D';
+    tblEl.innerHTML =
+      '<div class="sector-usd-row">' +
+        '<span>USD 2023: <strong>' + usd23 + '</strong></span>' +
+        '<span>USD 2026: <strong>' + usd26 + '</strong></span>' +
+        '<span style="color:#aaa">Fuente: Presupuesto Abierto · Mapeo por jurisdicción · IPC ×' + s.ipc_factor + '</span>' +
+      '</div>' +
+      '<div class="sector-empty" style="margin-top:16px;">Detalle por programa: endpoint <code>/api/v1/partidas/?jurisdiccion_id=' + (s.jur_2026||[]).join(',') + '</code></div>';
+  }
 }
 
-function renderLicuacion() {
-  if (!D.length) return;
-  const rows  = calcJurStats();
-  const orden = document.getElementById('lv-orden')?.value || 'lic';
-  const top   = parseInt(document.getElementById('lv-top')?.value || '25');
-  const sorted = [...rows].sort((a,b) => orden==='lic'?a.lic-b.lic:orden==='recorte'?a.real-b.real:a.nom-b.nom).slice(0,top);
-  const avgNom = rows.reduce((s,r)=>s+r.nom,0)/rows.length;
-  const avgReal= rows.reduce((s,r)=>s+r.real,0)/rows.length;
-  const avgLic = rows.reduce((s,r)=>s+r.lic,0)/rows.length;
-  document.getElementById('lv-kpi-nom').textContent     = fmtP(avgNom);
-  document.getElementById('lv-kpi-recorte').textContent = fmtP(avgReal);
-  document.getElementById('lv-kpi-lic').textContent     = avgLic.toFixed(1)+'%';
-  document.getElementById('lv-kpi-jur').textContent     = rows.length;
-  const wrap = document.getElementById('lv-chart-wrap');
-  if (wrap) wrap.style.height = Math.max(240, sorted.length * 32 + 80) + 'px';
-  const labs = sorted.map(r => r.jur.length>48?r.jur.slice(0,48)+'…':r.jur);
-  if (_cLicuacion) _cLicuacion.destroy();
-  _cLicuacion = new Chart(document.getElementById('cLicuacion'), { type:'bar', data:{labels:labs,datasets:[{label:'licuación %',data:sorted.map(r=>+Math.max(0,r.lic).toFixed(1)),backgroundColor:C.licuacion.bg,borderColor:C.licuacion.border,borderWidth:1},{label:'recorte real %',data:sorted.map(r=>+Math.min(0,r.real).toFixed(1)),backgroundColor:C.reduccion.bg,borderColor:C.reduccion.border,borderWidth:1},{label:'ganancia real %',data:sorted.map(r=>+(r.real>0?r.real:0).toFixed(1)),backgroundColor:C.aumento.bg,borderColor:C.aumento.border,borderWidth:1}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{afterBody:items=>{const r=sorted[items[0].dataIndex];return[`nominal: ${fmtP(r.nom)}`,`real: ${fmtP(r.real)}`,`licuación: ${r.lic.toFixed(1)}%`,`programas: ${r.n}`];}}}},scales:{x:{stacked:false,ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{font:{size:11}},grid:{display:false}}}} });
-  if (_cLicuacionScatter) _cLicuacionScatter.destroy();
-  const pts = rows.map(r => ({x:+r.lic.toFixed(1),y:+r.real.toFixed(1),label:r.jur}));
-  _cLicuacionScatter = new Chart(document.getElementById('cLicuacionScatter'), { type:'scatter', data:{datasets:[{label:'jurisdicciones',data:pts,backgroundColor:pts.map(p=>p.y<-20?C.reduccion.bg:p.y<0?C.licuacion.bg:C.aumento.bg),pointRadius:6}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${(c.raw.label||'').slice(0,35)}: lic ${c.raw.x}%, real ${c.raw.y}%`}}},scales:{x:{title:{display:true,text:'licuación %',font:{size:11}},ticks:{callback:v=>v+'%'},grid:{color:'#f0f0ea'}},y:{title:{display:true,text:'variación real %',font:{size:11}},ticks:{callback:v=>v+'%'},grid:{color:'#f0f0ea'}}}} });
-  const conAjuste = [...rows].filter(r=>r.real<0).sort((a,b)=>a.real-b.real).slice(0,15);
-  const pctLic = conAjuste.map(r => { const t=Math.abs(r.lic)+Math.abs(r.recorte)||1; return +((Math.abs(r.lic)/t)*100).toFixed(1); });
-  const pctRecorte = pctLic.map(v=>+(100-v).toFixed(1));
-  if (_cLicuacionPct) _cLicuacionPct.destroy();
-  _cLicuacionPct = new Chart(document.getElementById('cLicuacionPct'), { type:'bar', data:{labels:conAjuste.map(r=>r.jur.length>30?r.jur.slice(0,30)+'…':r.jur),datasets:[{label:'licuación %',data:pctLic,backgroundColor:C.licuacion.bg,borderColor:C.licuacion.border,borderWidth:1},{label:'recorte %',data:pctRecorte,backgroundColor:C.reduccion.bg,borderColor:C.reduccion.border,borderWidth:1}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw}%`}}},scales:{x:{stacked:true,max:100,ticks:{callback:v=>v+'%',font:{size:11}}},y:{stacked:true,ticks:{font:{size:10}},grid:{display:false}}}} });
-  const tablaSorted = [...rows].sort((a,b)=>a.real-b.real);
-  document.getElementById('tbl-licuacion').innerHTML = tablaSorted.map(r => {
-    const tipo = r.nom<-5?{txt:'recorte duro',cls:'pill-red'}:r.real<-10?{txt:'licuado',cls:'pill-red'}:r.real<0?{txt:'leve caída',cls:'',style:'background:#fff3e0;color:#7a4500;'}:{txt:'incremento',cls:'pill-green'};
-    return `<div class="tr" style="grid-template-columns:2fr 80px 80px 90px 90px 80px;"><span><div class="prog-name">${r.jur}</div><div class="prog-jur">${r.n} programas</div></span><span class="nr ${r.nom<0?'red':'green'}">${fmtP(r.nom)}</span><span class="nr ${r.real<0?'red':'green'}" style="font-weight:600;">${fmtP(r.real)}</span><span class="nr amber">${r.lic.toFixed(1)}%</span><span class="nr red">${r.recorte<0?r.recorte.toFixed(1)+'%':'—'}</span><span><span class="pill ${tipo.cls}" ${tipo.style?'style="'+tipo.style+'"':''}>${tipo.txt}</span></span></div>`;
-  }).join('');
-}
+// ══ TAREA 3: Resumen con tabla de 5 KPIs desde /api/v1/analisis/sector ═══════
+let _resumenAPICache = null, _cResumenComp, _cResumenTimeline;
 
-const SECTORES_META = [
-  { id:'salud',        icon:'🏥', name:'Salud',           color:'#145a2a', bg:'#f0f9f4' },
-  { id:'jubilaciones', icon:'👴', name:'Jubilaciones',    color:'#3d1e6e', bg:'#f3f0fb' },
-  { id:'ninez',        icon:'👶', name:'Niñez',           color:'#7a4500', bg:'#fff8ec' },
-  { id:'obra-publica', icon:'🏗️', name:'Obra Pública',    color:'#1a3a6e', bg:'#f0f4fb' },
-  { id:'salario',      icon:'💼', name:'Salario Público', color:'#6e1a1a', bg:'#fdf0f0' },
-  { id:'educacion',    icon:'📚', name:'Educación',       color:'#1a4a6e', bg:'#f0f8fb' },
-];
-
-let _cResumenComp, _cResumenTimeline;
-
-function calcSectorStats(sector) {
-  const data = filtrarSector(sector.id);
-  if (!data.length) return {n:0,nom:0,real:0,lic:0,reds:0,data:[]};
-  const totalOrig = data.reduce((s,d)=>s+(d.monto_original||0),0)||1;
-  const wavg = key => data.reduce((s,d)=>s+(d[key]||0)*(d.monto_original||0),0)/totalOrig;
-  return { n:data.length, nom:wavg('variacion_nominal_pct'), real:wavg('variacion_real_pct'), lic:wavg('licuacion_pct'), reds:data.filter(d=>d.variacion_real_pct<0).length, data };
-}
-
-function renderResumen() {
-  if (!D.length) return;
-  const stats  = SECTORES_META.map(s => ({...s, ...calcSectorStats(s)}));
-  const sorted = [...stats].sort((a,b) => a.real - b.real);
+async function loadResumenAPI() {
   const grid = document.getElementById('resumen-sector-grid');
-  grid.innerHTML = stats.map(s => {
-    const barW = Math.min(100, Math.abs(s.real));
-    const barColor = s.real < 0 ? C.reduccion.border : C.aumento.border;
-    return `<div class="resumen-sector-card" style="border-left:4px solid ${s.color};background:${s.bg}08;">
-      <div class="resumen-sector-icon">${s.icon}</div>
-      <div class="resumen-sector-info">
-        <div class="resumen-sector-name">${s.name}</div>
-        <div class="resumen-sector-jur">${s.n} programas</div>
-        <div class="resumen-sector-metrics">
-          <div class="resumen-metric"><div class="resumen-metric-val ${s.real<0?'red':'green'}">${s.real.toFixed(1)}%</div><div class="resumen-metric-lbl">real</div></div>
-          <div class="resumen-metric"><div class="resumen-metric-val" style="color:#3478C8">${s.nom>=0?'+':''}${s.nom.toFixed(1)}%</div><div class="resumen-metric-lbl">nominal</div></div>
-          <div class="resumen-metric"><div class="resumen-metric-val amber">${s.lic.toFixed(1)}%</div><div class="resumen-metric-lbl">licuación</div></div>
-          <div class="resumen-metric"><div class="resumen-metric-val red">${s.reds}</div><div class="resumen-metric-lbl">c/ reducción</div></div>
-        </div>
-        <div class="resumen-bar-bg"><div class="resumen-bar-fill" style="width:${barW}%;background:${barColor};"></div></div>
-      </div>
-    </div>`;
+  if (_resumenAPICache) { renderResumenAPIData(_resumenAPICache); return; }
+  grid.innerHTML = '<div class="sector-loading">⏳ Cargando resumen sectorial…</div>';
+  try {
+    const res = await fetch(API + '/analisis/sector');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    _resumenAPICache = await res.json();
+    renderResumenAPIData(_resumenAPICache);
+  } catch(e) {
+    grid.innerHTML = '<div class="sector-loading" style="color:#c0392b">❌ Error: ' + e.message + '</div>';
+  }
+}
+
+function renderResumenAPIData(data) {
+  const sectores = data.sectores || [];
+  const grid = document.getElementById('resumen-sector-grid');
+  const wrap = document.getElementById('resumen-tabla-wrap');
+
+  // Cards resumen
+  grid.innerHTML = sectores.map(s => {
+    const barW = Math.min(100, Math.abs(s.var_real_ipc_pct||0));
+    const barColor = (s.var_real_ipc_pct||0) < 0 ? '#991b1b' : '#14532d';
+    return '<div class="resumen-sector-card" style="border-left:4px solid ' + (s.color||'#5b2d8e') + ';">' +
+      '<div class="resumen-sector-icon">' + s.icon + '</div>' +
+      '<div class="resumen-sector-info">' +
+        '<div class="resumen-sector-name">' + s.label + '</div>' +
+        '<div class="resumen-sector-jur">jur ' + (s.jur_2023||[]).join('+') + ' → ' + (s.jur_2026||[]).join('+') + '</div>' +
+        '<div class="resumen-sector-metrics">' +
+          '<div class="resumen-metric"><div class="resumen-metric-val ' + varClass(s.var_real_ipc_pct) + '">' + fmtP(s.var_real_ipc_pct) + '</div><div class="resumen-metric-lbl">real IPC</div></div>' +
+          '<div class="resumen-metric"><div class="resumen-metric-val" style="color:#3478C8">' + fmtP(s.var_nominal_pct) + '</div><div class="resumen-metric-lbl">nominal</div></div>' +
+          '<div class="resumen-metric"><div class="resumen-metric-val ' + varClass(s.var_real_usd_pct) + '">' + fmtP(s.var_real_usd_pct) + '</div><div class="resumen-metric-lbl">USD</div></div>' +
+        '</div>' +
+        '<div class="resumen-bar-bg"><div class="resumen-bar-fill" style="width:' + barW + '%;background:' + barColor + ';"></div></div>' +
+      '</div></div>';
   }).join('');
+
+  // TAREA 3: Tabla con los 5 KPIs
+  const filas = sectores.map(s =>
+    '<tr>' +
+      '<td>' + s.icon + ' ' + s.label + '</td>' +
+      '<td style="font-size:11px;color:#888;">jur ' + (s.jur_2023||[]).join('+') + ' → ' + (s.jur_2026||[]).join('+') + '</td>' +
+      '<td class="nr">' + (s.credito_original_2023_mm !== null ? '$' + Number(s.credito_original_2023_mm).toLocaleString('es-AR') + ' M' : '—') + '</td>' +
+      '<td class="nr">' + (s.credito_vigente_2026_mm !== null ? '$' + Number(s.credito_vigente_2026_mm).toLocaleString('es-AR') + ' M' : '—') + '</td>' +
+      '<td class="nr ' + varClass(s.var_nominal_pct) + '">' + fmtP(s.var_nominal_pct) + '</td>' +
+      '<td class="nr ' + varClass(s.var_real_ipc_pct) + '" style="font-weight:700;">' + fmtP(s.var_real_ipc_pct) + '</td>' +
+      '<td class="nr ' + varClass(s.var_real_usd_pct) + '">' + fmtP(s.var_real_usd_pct) + '</td>' +
+    '</tr>'
+  ).join('');
+
+  wrap.innerHTML =
+    '<div class="resumen-meta">IPC acumulado: ×' + data.ipc_factor_acumulado + ' · TC: $' + Number(data.tc_usd_vigente||0).toLocaleString('es-AR') + '/USD</div>' +
+    '<table class="resumen-table">' +
+      '<thead><tr>' +
+        '<th>Sector</th><th>Jurisdicciones</th>' +
+        '<th class="nr">Original 2023 (M)</th><th class="nr">Vigente 2026 (M)</th>' +
+        '<th class="nr">Var. Nominal</th><th class="nr">Var. Real IPC</th><th class="nr">Var. Real USD</th>' +
+      '</tr></thead>' +
+      '<tbody>' + filas + '</tbody>' +
+    '</table>' +
+    '<p style="font-size:11px;color:#aaa;margin-top:10px;padding:0 4px;">Fuente: Presupuesto Abierto · Mapeo por jurisdicción · Deflactado IPC INDEC</p>';
+
+  // Gráfico comparativo
+  const sorted = [...sectores].sort((a,b) => (a.var_real_ipc_pct||0) - (b.var_real_ipc_pct||0));
   if (_cResumenComp) _cResumenComp.destroy();
-  _cResumenComp = new Chart(document.getElementById('cResumenComp'), { type:'bar', data:{labels:sorted.map(s=>s.icon+' '+s.name),datasets:[{label:'nominal %',data:sorted.map(s=>+s.nom.toFixed(1)),backgroundColor:C.nominal.bg,borderColor:C.nominal.border,borderWidth:1},{label:'real %',data:sorted.map(s=>+s.real.toFixed(1)),backgroundColor:sorted.map(s=>s.real<0?C.reduccion.bg:C.aumento.bg),borderColor:sorted.map(s=>s.real<0?C.reduccion.border:C.aumento.border),borderWidth:1},{label:'licuación %',data:sorted.map(s=>+s.lic.toFixed(1)),backgroundColor:C.licuacion.bg,borderColor:C.licuacion.border,borderWidth:1}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw}%`}}},scales:{x:{ticks:{font:{size:12}},grid:{color:'#f0f0ea'}},y:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}}}} });
-  document.getElementById('tbl-resumen-ranking').innerHTML = sorted.map((s,i) => `
-    <div class="tr" style="grid-template-columns:32px 2fr 80px 80px 90px 80px 90px;">
-      <span style="font-weight:700;color:#aaa;font-size:13px;">${i+1}</span>
-      <span style="display:flex;align-items:center;gap:8px;"><span>${s.icon}</span><span><div style="font-weight:600;color:#2a1a4e;">${s.name}</div></span></span>
-      <span class="nr" style="color:#555;">${s.n}</span>
-      <span class="nr" style="color:#3478C8;font-weight:600;">${s.nom>=0?'+':''}${s.nom.toFixed(1)}%</span>
-      <span class="nr ${s.real<0?'red':'green'}" style="font-weight:700;">${s.real>=0?'+':''}${s.real.toFixed(1)}%</span>
-      <span class="nr amber">${s.lic.toFixed(1)}%</span>
-      <span class="nr"><span class="pill pill-red">${s.reds} / ${s.n}</span></span>
-    </div>`).join('');
-  const ipcFactor = 8.5;
-  const meses = ['ene-23','mar-23','jun-23','sep-23','dic-23','mar-24','jun-24','sep-24','dic-24','mar-25','may-25'];
+  const ctx1 = document.getElementById('cResumenComp');
+  if (ctx1) _cResumenComp = new Chart(ctx1, {
+    type:'bar',
+    data:{
+      labels: sorted.map(s => s.icon + ' ' + s.label.split('(')[0].trim().slice(0,22)),
+      datasets:[
+        {label:'nominal %',  data:sorted.map(s=>s.var_nominal_pct),  backgroundColor:'rgba(37,99,235,0.6)', borderWidth:1},
+        {label:'real IPC %', data:sorted.map(s=>s.var_real_ipc_pct), backgroundColor:sorted.map(s=>(s.var_real_ipc_pct||0)<0?'rgba(185,28,28,0.85)':'rgba(21,128,61,0.85)'), borderWidth:1},
+        {label:'real USD %', data:sorted.map(s=>s.var_real_usd_pct), backgroundColor:'rgba(180,83,9,0.6)', borderWidth:1},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}}}}
+  });
+
+  // Gráfico timeline
+  const meses = ['ene-23','jun-23','dic-23','jun-24','dic-24','jun-25','dic-25'];
   const nM = meses.length;
-  const ipcMes = meses.map((_,i) => Math.pow(ipcFactor, i/(nM-1)));
-  const colores = ['#145a2a','#3d1e6e',C.licuacion.border,'#1a3a6e','#9b1c1c','#1a4a6e'];
-  const datasets = SECTORES_META.map((s,si) => {
-    const st = stats.find(x=>x.id===s.id);
-    const realTotal = 1 + (st.real||0)/100;
-    const data = ipcMes.map((_,i) => +((Math.pow(realTotal,i/(nM-1))-1)*100).toFixed(1));
-    return { label:s.icon+' '+s.name, data, borderColor:colores[si], backgroundColor:colores[si]+'18', borderWidth:2.5, pointRadius:3, fill:false, tension:0.35 };
+  const cols = ['#145a2a','#3d1e6e','#b46414','#1a3a6e','#9b1c1c','#1a4a6e'];
+  const datasets = sectores.map((s,si) => {
+    const r = 1 + ((s.var_real_ipc_pct||0)/100);
+    return {label:s.icon+' '+s.label.split('(')[0].trim().slice(0,18), data:meses.map((_,i)=>+((Math.pow(r,i/(nM-1))-1)*100).toFixed(1)), borderColor:cols[si%cols.length], backgroundColor:cols[si%cols.length]+'18', borderWidth:2.5, pointRadius:3, fill:false, tension:0.35};
   });
   if (_cResumenTimeline) _cResumenTimeline.destroy();
-  _cResumenTimeline = new Chart(document.getElementById('cResumenTimeline'), { type:'line', data:{labels:meses,datasets}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'right',labels:{font:{size:11},boxWidth:14,padding:10}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw>=0?'+':''}${c.raw}%`}}},scales:{x:{ticks:{font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'},title:{display:true,text:'variación real acumulada %',font:{size:11}}}}} });
+  const ctx2 = document.getElementById('cResumenTimeline');
+  if (ctx2) _cResumenTimeline = new Chart(ctx2, {
+    type:'line', data:{labels:meses, datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'right',labels:{font:{size:11},boxWidth:14,padding:10}}},scales:{x:{ticks:{font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}}}}
+  });
 }
 
-async function init() {
-  try {
-    const [root, rank, inc] = await Promise.all([
-      fetch('/', {headers:{'Accept':'application/json'}}).then(r => r.json()),
-      fetch(`${API}/analisis/ranking?top_n=500`).then(r => r.json()),
-      fetch(`${API}/analisis/por-inciso`).then(r => r.json()),
-    ]);
-    D = rank; I = inc;
-    document.getElementById('kpi-total').textContent = D.length;
-    document.getElementById('kpi-ipc').textContent = (root.factor_ipc_acumulado || 8.5).toFixed(2) + '×';
-    document.getElementById('last-update').textContent = new Date(root.servidor_tiempo).toLocaleString('es-AR');
-    const reds = D.filter(d => d.variacion_real_pct < 0);
-    const avg  = reds.reduce((s,d) => s + d.variacion_real_pct, 0) / (reds.length || 1);
-    document.getElementById('kpi-avg').textContent    = avg.toFixed(1) + '%';
-    document.getElementById('kpi-cut50').textContent  = D.filter(d => d.variacion_real_pct < -50).length;
-    const jurs = [...new Set(D.map(d => d.jurisdiccion))].sort();
-    ['rjur','djur'].forEach(id => {
-      const s = document.getElementById(id);
-      jurs.forEach(j => { const o = document.createElement('option'); o.value = j; o.textContent = j.length > 45 ? j.slice(0,45)+'…' : j; s.appendChild(o); });
-    });
-    renderRanking(); renderInciso(); renderScatter(); renderDetalle(); renderResumen(); renderLicuacion();
-  } catch(e) {
-    document.querySelector('.main').innerHTML = `<div style="padding:40px;text-align:center;color:#aaa;">⚠️ No se pudo conectar con la API en localhost:8000<br><small>${e.message}</small><br><br>Asegurate de que uvicorn esté corriendo.</div>`;
+// ══ SALARIO PÚBLICO — usa datos locales (inciso 1) ════════════════════════════
+function renderSector(sector) {
+  if (sector !== 'salario') return;
+  const data = D.filter(d => String(d.inciso_id) === '1');
+  const el = document.getElementById('salario-kpis');
+  if (el && data.length) {
+    const tot = data.reduce((s,d)=>s+(d.monto_original||0),0)||1;
+    const avgR = data.reduce((s,d)=>s+(d.variacion_real_pct||0)*(d.monto_original||0),0)/tot;
+    const avgL = data.reduce((s,d)=>s+(d.licuacion_pct||0)*(d.monto_original||0),0)/tot;
+    el.innerHTML =
+      '<div class="sector-kpi"><div class="sector-kpi-label">programas</div><div class="sector-kpi-value">'+data.length+'</div><div class="sector-kpi-sub">inciso 1 personal</div></div>' +
+      '<div class="sector-kpi"><div class="sector-kpi-label">var. real pond.</div><div class="sector-kpi-value '+(avgR<0?'red':'green')+'">'+fmtP(avgR)+'</div><div class="sector-kpi-sub">deflactado IPC</div></div>' +
+      '<div class="sector-kpi"><div class="sector-kpi-label">con reducción real</div><div class="sector-kpi-value red">'+data.filter(d=>d.variacion_real_pct<0).length+'</div></div>' +
+      '<div class="sector-kpi"><div class="sector-kpi-label">licuación pond.</div><div class="sector-kpi-value amber">'+avgL.toFixed(1)+'%</div></div>';
   }
+  // Charts salario
+  const byJur = {};
+  data.forEach(d=>{const k=d.jurisdiccion||'N/D';if(!byJur[k])byJur[k]={nom:[],real:[],lic:[]};byJur[k].nom.push(d.variacion_nominal_pct);byJur[k].real.push(d.variacion_real_pct);byJur[k].lic.push(d.licuacion_pct||0);});
+  const avg = arr=>arr.reduce((s,v)=>s+v,0)/arr.length;
+  const rows = Object.entries(byJur).map(([jur,v])=>({jur,real:avg(v.real),nom:avg(v.nom),lic:avg(v.lic)})).sort((a,b)=>a.real-b.real).slice(0,20);
+  ['cSalario','cSalarioLic'].forEach(id=>{if(_sectCharts[id]){_sectCharts[id].destroy();delete _sectCharts[id];}});
+  const wrap=document.getElementById('salario-chart-wrap');if(wrap)wrap.style.height=Math.max(200,rows.length*34+60)+'px';
+  const c1=document.getElementById('cSalario');
+  if(c1)_sectCharts['cSalario']=new Chart(c1,{type:'bar',data:{labels:rows.map(r=>r.jur.slice(0,40)),datasets:[{label:'nominal %',data:rows.map(r=>+r.nom.toFixed(1)),backgroundColor:'rgba(37,99,235,0.6)',borderWidth:1},{label:'real %',data:rows.map(r=>+r.real.toFixed(1)),backgroundColor:rows.map(r=>r.real<0?'rgba(185,28,28,0.85)':'rgba(21,128,61,0.85)'),borderWidth:1}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}}},y:{ticks:{font:{size:11}}}}}});
+  const c2=document.getElementById('cSalarioLic');
+  if(c2)_sectCharts['cSalarioLic']=new Chart(c2,{type:'bar',data:{labels:rows.map(r=>r.jur.slice(0,40)),datasets:[{data:rows.map(r=>+r.lic.toFixed(1)),backgroundColor:'rgba(180,83,9,0.6)',borderWidth:1}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}}},y:{ticks:{font:{size:11}}}}}});
+  const tbl=document.getElementById('tbl-salario');
+  if(tbl)tbl.innerHTML=[...data].sort((a,b)=>a.variacion_real_pct-b.variacion_real_pct).map(d=>'<div class="tr" style="grid-template-columns:2fr 90px 90px 100px 90px;"><span><div class="prog-name">'+(d.programa_desc||d.programa_id||'—')+'</div></span><span class="nr '+(d.variacion_nominal_pct<0?'red':'green')+'">'+fmtP(d.variacion_nominal_pct)+'</span><span class="nr '+(d.variacion_real_pct<0?'red':'green')+'">'+fmtP(d.variacion_real_pct)+'</span><span class="nr amber">'+((d.licuacion_pct||0).toFixed(1))+'%</span><span><span class="pill '+(d.estado_ajuste==='REDUCCIÓN'?'pill-red':'pill-green')+'">'+(d.estado_ajuste||'—')+'</span></span></div>').join('');
 }
 
-function renderRanking() {
-  const jur = document.getElementById('rjur').value;
-  const n   = parseInt(document.getElementById('rn').value);
-  let d = D.filter(x => !jur || x.jurisdiccion === jur).sort((a,b) => a.variacion_real_pct - b.variacion_real_pct).slice(0, n);
-  document.getElementById('rwrap').style.height = (d.length * 38 + 80) + 'px';
-  const labs = d.map(x => { const s = x.programa_desc || x.programa_id; return s.length > 55 ? s.slice(0,55)+'…' : s; });
-  if (cRI) cRI.destroy();
-  cRI = new Chart(document.getElementById('cR'), { type:'bar', data:{labels:labs,datasets:[{label:'nominal %',data:d.map(x=>+x.variacion_nominal_pct.toFixed(1)),backgroundColor:C.nominal.bg,borderColor:C.nominal.border,borderWidth:1},{label:'real %',data:d.map(x=>+x.variacion_real_pct.toFixed(1)),backgroundColor:d.map(x=>x.variacion_real_pct<0?C.reduccion.bg:C.aumento.bg),borderColor:d.map(x=>x.variacion_real_pct<0?C.reduccion.border:C.aumento.border),borderWidth:1}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{afterBody:items=>{const x=d[items[0].dataIndex];return[`nominal: ${fmtP(x.variacion_nominal_pct)}`,`real: ${fmtP(x.variacion_real_pct)}`,`licuación: ${x.licuacion_pct.toFixed(1)}%`,`modificaciones: ${x.cantidad_modificaciones}`];}}}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{font:{size:11}},grid:{display:false}}}} });
+// ══ LICUACIÓN VS RECORTE ══════════════════════════════════════════════════════
+let _cLicuacion, _cLicuacionScatter, _cLicuacionPct;
+function calcJurStats(){
+  const byJur={};
+  D.forEach(d=>{const k=d.jurisdiccion||'Sin jurisdicción';if(!byJur[k])byJur[k]={nom:[],real:[],lic:[],n:0};byJur[k].nom.push(d.variacion_nominal_pct||0);byJur[k].real.push(d.variacion_real_pct||0);byJur[k].lic.push(d.licuacion_pct||0);byJur[k].n++;});
+  const avg=arr=>arr.reduce((s,v)=>s+v,0)/arr.length;
+  return Object.entries(byJur).map(([jur,v])=>{const nom=avg(v.nom),real=avg(v.real),lic=avg(v.lic),recorte=nom<0?nom:0;return{jur,nom,real,lic,recorte,n:v.n};});
 }
-
-function renderInciso() {
-  const labs = I.map(d => `${d.inciso_id} – ${(d.inciso_desc||'').slice(0,20)}`);
-  const vr   = I.map(d => +d.variacion_real_pct.toFixed(1));
-  const lic  = I.map(d => +((d.variacion_nominal_pct||0)-(d.variacion_real_pct||0)).toFixed(1));
-  if (cII) cII.destroy();
-  cII = new Chart(document.getElementById('cI'), { type:'bar', data:{labels:labs,datasets:[{label:'var. real %',data:vr,backgroundColor:vr.map(v=>v<0?C.reduccion.bg:C.aumento.bg),borderColor:vr.map(v=>v<0?C.reduccion.border:C.aumento.border),borderWidth:1}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}} });
-  if (cLI) cLI.destroy();
-  cLI = new Chart(document.getElementById('cL'), { type:'bar', data:{labels:labs,datasets:[{label:'licuación %',data:lic,backgroundColor:C.licuacion.bg,borderColor:C.licuacion.border,borderWidth:1}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}} });
-  document.getElementById('tbl-inciso').innerHTML = I.map(d => `<div class="tr" style="grid-template-columns:2fr 1fr 1fr 1fr 80px;"><span>${d.inciso_id} — ${d.inciso_desc||''}</span><span class="nr">${fmtM(d.total_original)}</span><span class="nr">${fmtM(d.total_vigente)}</span><span class="nr">${fmtM(d.total_real_moneda_2023)}</span><span class="nr ${d.variacion_real_pct<0?'red':'green'}">${d.variacion_real_pct.toFixed(1)}%</span></div>`).join('');
-}
-
-function renderScatter() {
-  const pts = D.map(d => ({x:+d.variacion_nominal_pct.toFixed(1),y:+d.variacion_real_pct.toFixed(1),label:d.programa_desc}));
-  const mn = Math.min(...pts.map(p=>p.x),...pts.map(p=>p.y))-20;
-  const mx = Math.max(...pts.map(p=>p.x),...pts.map(p=>p.y))+20;
-  if (cSI) cSI.destroy();
-  cSI = new Chart(document.getElementById('cS'), { type:'scatter', data:{datasets:[{label:'programas',data:pts,backgroundColor:pts.map(p=>p.y<0?C.scatter_r:C.scatter_g),pointRadius:6,pointHoverRadius:9},{label:'diagonal',data:[{x:mn,y:mn},{x:mx,y:mx}],type:'line',borderColor:'#94a3b8',borderDash:[5,5],pointRadius:0,fill:false,borderWidth:1.5}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const p=ctx.raw;return`${(p.label||'').slice(0,40)}: nom ${p.x}%, real ${p.y}%`;}}}},scales:{x:{title:{display:true,text:'① ajuste nominal %',font:{size:12}},ticks:{callback:v=>v+'%'}},y:{title:{display:true,text:'② ajuste real %',font:{size:12}},ticks:{callback:v=>v+'%'}}}} });
-}
-
-function renderDetalle() {
-  const jur  = document.getElementById('djur').value;
-  const est  = document.getElementById('dest').value;
-  const q    = document.getElementById('dsrch').value.toLowerCase();
-  const data = D.filter(d=>(!jur||d.jurisdiccion===jur)&&(!est||d.estado_ajuste===est)&&(!q||(d.programa_desc||'').toLowerCase().includes(q)||(d.jurisdiccion||'').toLowerCase().includes(q))).sort((a,b)=>a.variacion_real_pct-b.variacion_real_pct);
-  document.getElementById('tbl-detalle').innerHTML = data.map(d => {
-    const nomPct=d.ajuste_nominal_pct??d.variacion_nominal_pct??0;
-    const realPct=d.ajuste_real_pct??d.variacion_real_pct??0;
-    const usdPct=d.ajuste_usd_pct, nomAbs=d.ajuste_nominal_abs, realAbs=d.ajuste_real_abs, usdAbs=d.ajuste_usd_abs, lic=d.licuacion_pct??0;
-    return `<div class="tr" style="grid-template-columns:2fr 90px 90px 90px 90px 80px;">
-      <span><div class="prog-name">${d.programa_desc||d.programa_id}</div><div class="prog-jur">${d.jurisdiccion||''}</div></span>
-      <span class="nr ${nomPct<0?'red':'green'}" data-tt="① Ajuste nominal: ${fmtP(nomPct)} | Absoluto: ${fmtAbs(nomAbs)}">${fmtP(nomPct)}<br><small style="color:#aaa;font-size:10px;">${fmtAbs(nomAbs)}</small></span>
-      <span class="nr ${realPct<0?'red':'green'}" data-tt="② Ajuste real (pesos ene-2023): ${fmtP(realPct)} | Absoluto: ${fmtAbs(realAbs)}">${fmtP(realPct)}<br><small style="color:#aaa;font-size:10px;">${fmtAbs(realAbs)}</small></span>
-      <span class="nr ${usdPct!==null&&usdPct<0?'red':usdPct!==null?'green':''}" data-tt="③ Ajuste USD constantes | Absoluto: ${fmtUSD(usdAbs)}">${usdPct!==null?fmtP(usdPct):'—'}<br><small style="color:#aaa;font-size:10px;">${fmtUSD(usdAbs)}</small></span>
-      <span class="nr amber" data-tt="Licuación: parte del ajuste absorbida por inflación">${lic.toFixed(1)}%</span>
-      <span><span class="pill ${d.estado_ajuste==='REDUCCIÓN'?'pill-red':'pill-green'}">${d.estado_ajuste}</span></span>
-    </div>`;
+function renderLicuacion(){
+  if(!D.length)return;
+  const rows=calcJurStats();
+  const orden=document.getElementById('lv-orden')?.value||'lic';
+  const top=parseInt(document.getElementById('lv-top')?.value||'25');
+  const sorted=[...rows].sort((a,b)=>orden==='lic'?a.lic-b.lic:orden==='recorte'?a.real-b.real:a.nom-b.nom).slice(0,top);
+  const avgNom=rows.reduce((s,r)=>s+r.nom,0)/rows.length;
+  const avgReal=rows.reduce((s,r)=>s+r.real,0)/rows.length;
+  const avgLic=rows.reduce((s,r)=>s+r.lic,0)/rows.length;
+  document.getElementById('lv-kpi-nom').textContent=fmtP(avgNom);
+  document.getElementById('lv-kpi-recorte').textContent=fmtP(avgReal);
+  document.getElementById('lv-kpi-lic').textContent=avgLic.toFixed(1)+'%';
+  document.getElementById('lv-kpi-jur').textContent=rows.length;
+  const wrap=document.getElementById('lv-chart-wrap');if(wrap)wrap.style.height=Math.max(240,sorted.length*32+80)+'px';
+  const labs=sorted.map(r=>r.jur.length>48?r.jur.slice(0,48)+'…':r.jur);
+  if(_cLicuacion)_cLicuacion.destroy();
+  _cLicuacion=new Chart(document.getElementById('cLicuacion'),{type:'bar',data:{labels:labs,datasets:[{label:'licuación %',data:sorted.map(r=>+Math.max(0,r.lic).toFixed(1)),backgroundColor:'rgba(180,83,9,0.6)',borderWidth:1},{label:'recorte real %',data:sorted.map(r=>+Math.min(0,r.real).toFixed(1)),backgroundColor:'rgba(185,28,28,0.85)',borderWidth:1},{label:'ganancia real %',data:sorted.map(r=>+(r.real>0?r.real:0).toFixed(1)),backgroundColor:'rgba(21,128,61,0.85)',borderWidth:1}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
+  if(_cLicuacionScatter)_cLicuacionScatter.destroy();
+  const pts=rows.map(r=>({x:+r.lic.toFixed(1),y:+r.real.toFixed(1),label:r.jur}));
+  _cLicuacionScatter=new Chart(document.getElementById('cLicuacionScatter'),{type:'scatter',data:{datasets:[{data:pts,backgroundColor:pts.map(p=>p.y<-20?'rgba(185,28,28,0.8)':p.y<0?'rgba(180,83,9,0.6)':'rgba(21,128,61,0.8)'),pointRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${(c.raw.label||'').slice(0,35)}: lic ${c.raw.x}%, real ${c.raw.y}%`}}},scales:{x:{title:{display:true,text:'licuación %',font:{size:11}},ticks:{callback:v=>v+'%'},grid:{color:'#f0f0ea'}},y:{title:{display:true,text:'var. real %',font:{size:11}},ticks:{callback:v=>v+'%'},grid:{color:'#f0f0ea'}}}}});
+  const conAjuste=[...rows].filter(r=>r.real<0).sort((a,b)=>a.real-b.real).slice(0,15);
+  const pctLic=conAjuste.map(r=>{const t=Math.abs(r.lic)+Math.abs(r.recorte)||1;return+((Math.abs(r.lic)/t)*100).toFixed(1);});
+  if(_cLicuacionPct)_cLicuacionPct.destroy();
+  _cLicuacionPct=new Chart(document.getElementById('cLicuacionPct'),{type:'bar',data:{labels:conAjuste.map(r=>r.jur.slice(0,30)),datasets:[{label:'licuación %',data:pctLic,backgroundColor:'rgba(180,83,9,0.6)',borderWidth:1},{label:'recorte %',data:pctLic.map(v=>+(100-v).toFixed(1)),backgroundColor:'rgba(185,28,28,0.85)',borderWidth:1}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}}},scales:{x:{stacked:true,max:100,ticks:{callback:v=>v+'%',font:{size:11}}},y:{stacked:true,ticks:{font:{size:10}},grid:{display:false}}}}});
+  document.getElementById('tbl-licuacion').innerHTML=[...rows].sort((a,b)=>a.real-b.real).map(r=>{
+    const tipo=r.nom<-5?{txt:'recorte duro',cls:'pill-red'}:r.real<-10?{txt:'licuado',cls:'pill-red'}:r.real<0?{txt:'leve caída',cls:'',style:'background:#fff3e0;color:#7a4500;'}:{txt:'incremento',cls:'pill-green'};
+    return '<div class="tr" style="grid-template-columns:2fr 80px 80px 90px 90px 80px;"><span><div class="prog-name">'+r.jur+'</div><div class="prog-jur">'+r.n+' programas</div></span><span class="nr '+(r.nom<0?'red':'green')+'">'+fmtP(r.nom)+'</span><span class="nr '+(r.real<0?'red':'green')+'" style="font-weight:600;">'+fmtP(r.real)+'</span><span class="nr amber">'+r.lic.toFixed(1)+'%</span><span class="nr red">'+(r.recorte<0?r.recorte.toFixed(1)+'%':'—')+'</span><span><span class="pill '+tipo.cls+'"'+(tipo.style?' style="'+tipo.style+'"':'')+'>'+tipo.txt+'</span></span></div>';
   }).join('');
 }
 
-async function cargarBaseMonetaria() {
-  try {
-    const res = await fetch('/api/v1/macro/base-monetaria');
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const d = await res.json();
-    document.getElementById('bm-inicio').textContent = '$ ' + d.inicio.bm_billones.toFixed(1).replace('.',',') + ' B';
-    document.getElementById('bm-actual').textContent = '$ ' + d.actual.bm_billones.toFixed(1).replace('.',',') + ' B';
-    document.getElementById('bm-fecha-actual').textContent = d.actual.label;
-    document.getElementById('bm-pct').textContent = '+' + d.variacion_pct.toFixed(1).replace('.',',') + '%';
-    document.getElementById('bm-mult').textContent = '× ' + d.multiplicador.toFixed(2).replace('.',',');
-    document.getElementById('bm-usd').textContent = d.actual.bm_usd_mm ? 'USD ' + Number(d.actual.bm_usd_mm).toLocaleString('es-AR') + ' M' : 'N/D';
-    document.getElementById('bm-nota').innerHTML = d.nota.replace(/(\d+,\d+x|\d+\.\d+x)/g, '<strong>$1</strong>');
-    const labels = d.serie_mensual.map(s => s.label);
-    const vals   = d.serie_mensual.map(s => s.bm_bill);
-    const ctx    = document.getElementById('bmChart').getContext('2d');
-    if (_bmChart) _bmChart.destroy();
-    _bmChart = new Chart(ctx, { type:'bar', data:{labels,datasets:[{label:'Base Monetaria (B$)',data:vals,backgroundColor:vals.map((_,i)=>i===vals.length-1?'rgba(220,53,69,.85)':'rgba(91,45,142,.65)'),borderRadius:4}]}, options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$ '+c.raw.toFixed(1).replace('.',',')+' B'}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'$'+v+'B'},grid:{color:'#f0f2f8'}},x:{grid:{display:false}}}} });
-    const tbody = document.getElementById('bm-tbody');
-    tbody.innerHTML = '';
-    d.serie_mensual.forEach(row => { tbody.innerHTML += `<tr><td>${row.label}</td><td>$ ${row.bm_bill.toFixed(1).replace('.',',')} B</td><td style="color:#dc3545;font-weight:600">+${row.var_pct.toFixed(1).replace('.',',')}%</td><td style="color:#fd7e14;font-weight:600">× ${row.mult.toFixed(2).replace('.',',')}</td></tr>`; });
-  } catch(e) {
-    document.getElementById('bm-nota').textContent = 'Error cargando datos del BCRA: ' + e.message;
-  }
+// ══ RANKING ═══════════════════════════════════════════════════════════════════
+function renderRanking(){
+  const jur=document.getElementById('rjur').value;
+  const n=parseInt(document.getElementById('rn').value);
+  let d=D.filter(x=>!jur||x.jurisdiccion===jur).sort((a,b)=>a.variacion_real_pct-b.variacion_real_pct).slice(0,n);
+  document.getElementById('rwrap').style.height=(d.length*38+80)+'px';
+  const labs=d.map(x=>{const s=x.programa_desc||x.programa_id;return s.length>55?s.slice(0,55)+'…':s;});
+  if(cRI)cRI.destroy();
+  cRI=new Chart(document.getElementById('cR'),{type:'bar',data:{labels:labs,datasets:[{label:'nominal %',data:d.map(x=>+x.variacion_nominal_pct.toFixed(1)),backgroundColor:'rgba(37,99,235,0.85)',borderWidth:1},{label:'real %',data:d.map(x=>+x.variacion_real_pct.toFixed(1)),backgroundColor:d.map(x=>x.variacion_real_pct<0?'rgba(185,28,28,0.90)':'rgba(21,128,61,0.90)'),borderWidth:1}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{afterBody:items=>{const x=d[items[0].dataIndex];return['nominal: '+fmtP(x.variacion_nominal_pct),'real: '+fmtP(x.variacion_real_pct),'licuación: '+x.licuacion_pct.toFixed(1)+'%'];}}}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
 }
 
-let socialLoaded = false;
-let _evolCargado = false;
-let _cEvolucion = null;
+function renderInciso(){
+  const labs=I.map(d=>d.inciso_id+' – '+(d.inciso_desc||'').slice(0,20));
+  const vr=I.map(d=>+d.variacion_real_pct.toFixed(1));
+  const lic=I.map(d=>+((d.variacion_nominal_pct||0)-(d.variacion_real_pct||0)).toFixed(1));
+  if(cII)cII.destroy();
+  cII=new Chart(document.getElementById('cI'),{type:'bar',data:{labels:labs,datasets:[{data:vr,backgroundColor:vr.map(v=>v<0?'rgba(185,28,28,0.90)':'rgba(21,128,61,0.90)'),borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}}});
+  if(cLI)cLI.destroy();
+  cLI=new Chart(document.getElementById('cL'),{type:'bar',data:{labels:labs,datasets:[{data:lic,backgroundColor:'rgba(180,83,9,0.6)',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:35}},y:{ticks:{callback:v=>v+'%',font:{size:11}}}}}});
+  document.getElementById('tbl-inciso').innerHTML=I.map(d=>'<div class="tr" style="grid-template-columns:2fr 1fr 1fr 1fr 80px;"><span>'+d.inciso_id+' — '+(d.inciso_desc||'')+'</span><span class="nr">'+fmtM(d.total_original)+'</span><span class="nr">'+fmtM(d.total_vigente)+'</span><span class="nr">'+fmtM(d.total_real_moneda_2023)+'</span><span class="nr '+(d.variacion_real_pct<0?'red':'green')+'">'+d.variacion_real_pct.toFixed(1)+'%</span></div>').join('');
+}
 
-async function loadEvolucion() {
-  if (_evolCargado) return;
-  _evolCargado = true;
-  try {
-    const data = await fetch('/api/v1/evolucion-real').then(r => r.json());
-    // KPIs
-    const kpisEl = document.getElementById('evol-kpis');
-    const anios = data.map(d => d.ejercicio);
-    const reales = data.map(d => d.total_real);
-    const nominales = data.map(d => d.total_nominal);
+function renderScatter(){
+  const pts=D.map(d=>({x:+d.variacion_nominal_pct.toFixed(1),y:+d.variacion_real_pct.toFixed(1),label:d.programa_desc}));
+  const mn=Math.min(...pts.map(p=>p.x),...pts.map(p=>p.y))-20;
+  const mx=Math.max(...pts.map(p=>p.x),...pts.map(p=>p.y))+20;
+  if(cSI)cSI.destroy();
+  cSI=new Chart(document.getElementById('cS'),{type:'scatter',data:{datasets:[{data:pts,backgroundColor:pts.map(p=>p.y<0?'rgba(185,28,28,0.80)':'rgba(21,128,61,0.80)'),pointRadius:6},{data:[{x:mn,y:mn},{x:mx,y:mx}],type:'line',borderColor:'#94a3b8',borderDash:[5,5],pointRadius:0,fill:false,borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const p=ctx.raw;return(p.label||'').slice(0,40)+': nom '+p.x+'%, real '+p.y+'%';}}}},scales:{x:{title:{display:true,text:'① ajuste nominal %',font:{size:12}},ticks:{callback:v=>v+'%'}},y:{title:{display:true,text:'② ajuste real %',font:{size:12}},ticks:{callback:v=>v+'%'}}}}});
+}
 
-    const base2023 = data.find(d => d.ejercicio === 2023);
-    const ultimo   = data[data.length - 1];
-    const varTotal = base2023 && base2023.total_real > 0
-      ? ((ultimo.total_real / base2023.total_real) - 1) * 100 : null;
+function renderDetalle(){
+  const jur=document.getElementById('djur').value;
+  const est=document.getElementById('dest').value;
+  const q=document.getElementById('dsrch').value.toLowerCase();
+  const data=D.filter(d=>(!jur||d.jurisdiccion===jur)&&(!est||d.estado_ajuste===est)&&(!q||(d.programa_desc||'').toLowerCase().includes(q)||(d.jurisdiccion||'').toLowerCase().includes(q))).sort((a,b)=>a.variacion_real_pct-b.variacion_real_pct);
+  document.getElementById('tbl-detalle').innerHTML=data.map(d=>{
+    const nom=d.variacion_nominal_pct||0,real=d.variacion_real_pct||0,usd=d.ajuste_usd_pct,lic=d.licuacion_pct||0;
+    return '<div class="tr" style="grid-template-columns:2fr 90px 90px 90px 90px 80px;"><span><div class="prog-name">'+(d.programa_desc||d.programa_id)+'</div><div class="prog-jur">'+(d.jurisdiccion||'')+'</div></span><span class="nr '+(nom<0?'red':'green')+'">'+fmtP(nom)+'<br><small style="color:#aaa;font-size:10px;">'+fmtAbs(d.ajuste_nominal_abs)+'</small></span><span class="nr '+(real<0?'red':'green')+'">'+fmtP(real)+'<br><small style="color:#aaa;font-size:10px;">'+fmtAbs(d.ajuste_real_abs)+'</small></span><span class="nr '+(usd!=null&&usd<0?'red':usd!=null?'green':'')+'">'+( usd!=null?fmtP(usd):'—')+'<br><small style="color:#aaa;font-size:10px;">'+fmtUSD(d.ajuste_usd_abs)+'</small></span><span class="nr amber">'+lic.toFixed(1)+'%</span><span><span class="pill '+(d.estado_ajuste==='REDUCCIÓN'?'pill-red':'pill-green')+'">'+(d.estado_ajuste)+'</span></span></div>';
+  }).join('');
+}
 
-    kpisEl.innerHTML = data.map(d => {
-      const varY = d.variacion_real_pct_yoy;
-      const color = varY === null ? '' : varY < 0 ? 'red' : 'green';
-      const varStr = varY !== null ? `<div class="kpi-sub ${color}">${varY > 0 ? '+' : ''}${varY.toFixed(1)}% vs año anterior</div>` : '<div class="kpi-sub">base</div>';
-      return `<div class="kpi">
-        <div class="kpi-label">${d.ejercicio} — gasto real</div>
-        <div class="kpi-value" style="font-size:20px;">${fmtM(d.total_real)}</div>
-        ${varStr}
-        <div class="kpi-sub" style="color:#bbb;">pesos ene-2023 · IPC ×${d.factor_ipc.toFixed(1)}</div>
-      </div>`;
+// ══ BASE MONETARIA ════════════════════════════════════════════════════════════
+async function cargarBaseMonetaria(){
+  try{
+    const res=await fetch('/api/v1/macro/base-monetaria');
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const d=await res.json();
+    document.getElementById('bm-inicio').textContent='$ '+(d.inicio?.bm_billones||0).toFixed(1).replace('.',',')+' B';
+    document.getElementById('bm-actual').textContent='$ '+(d.actual?.bm_billones||0).toFixed(1).replace('.',',')+' B';
+    document.getElementById('bm-fecha-actual').textContent=d.actual?.label||'hoy';
+    document.getElementById('bm-pct').textContent='+'+(d.variacion_pct||0).toFixed(1).replace('.',',')+' %';
+    document.getElementById('bm-mult').textContent='× '+(d.multiplicador||0).toFixed(2).replace('.',',');
+    document.getElementById('bm-usd').textContent=d.actual?.bm_usd_mm?'USD '+Number(d.actual.bm_usd_mm).toLocaleString('es-AR')+' M':'N/D';
+    document.getElementById('bm-nota').innerHTML=(d.nota||'').replace(/(\d+,\d+x|\d+\.\d+x)/g,'<strong>$1</strong>');
+    const labels=(d.serie_mensual||[]).map(s=>s.label);
+    const vals=(d.serie_mensual||[]).map(s=>s.bm_bill);
+    if(_bmChart)_bmChart.destroy();
+    _bmChart=new Chart(document.getElementById('bmChart'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:vals.map((_,i)=>i===vals.length-1?'rgba(220,53,69,.85)':'rgba(91,45,142,.65)'),borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'$'+v+'B'},grid:{color:'#f0f2f8'}},x:{grid:{display:false}}}}});
+    document.getElementById('bm-tbody').innerHTML=(d.serie_mensual||[]).map(row=>'<tr><td>'+row.label+'</td><td>$ '+row.bm_bill.toFixed(1).replace('.',',')+' B</td><td style="color:#dc3545;font-weight:600">+'+row.var_pct.toFixed(1).replace('.',',')+' %</td><td style="color:#fd7e14;font-weight:600">× '+row.mult.toFixed(2).replace('.',',')+'</td></tr>').join('');
+  }catch(e){document.getElementById('bm-nota').textContent='Error cargando datos del BCRA: '+e.message;}
+}
+
+// ══ EVOLUCIÓN REAL ════════════════════════════════════════════════════════════
+let _evolCargado=false,_cEvolucion=null;
+async function loadEvolucion(){
+  if(_evolCargado)return;_evolCargado=true;
+  try{
+    const data=await fetch('/api/v1/analisis/evolucion-real').then(r=>r.json());
+    document.getElementById('evol-kpis').innerHTML=data.map(d=>{
+      const varY=d.variacion_real_pct_yoy;
+      return '<div class="kpi"><div class="kpi-label">'+d.ejercicio+' — gasto real</div><div class="kpi-value" style="font-size:20px;">'+fmtM(d.total_real)+'</div>'+(varY!==null?'<div class="kpi-sub '+(varY<0?'red':'green')+'">'+(varY>0?'+':'')+varY.toFixed(1)+'% vs año anterior</div>':'<div class="kpi-sub">base</div>')+'<div class="kpi-sub" style="color:#bbb;">IPC ×'+d.factor_ipc.toFixed(1)+'</div></div>';
     }).join('');
-
-    // Gráfico
-    const ctx = document.getElementById('cEvolucion').getContext('2d');
-    _cEvolucion = new Chart(ctx, {
-      data: {
-        labels: anios.map(String),
-        datasets: [
-          {
-            type: 'bar',
-            label: 'Nominal (pesos corrientes)',
-            data: nominales.map(v => v / 1e12),
-            backgroundColor: 'rgba(91,45,142,0.25)',
-            borderColor: 'rgba(91,45,142,0.6)',
-            borderWidth: 1,
-            yAxisID: 'yNom',
-            order: 2,
-          },
-          {
-            type: 'line',
-            label: 'Real (pesos ene-2023)',
-            data: reales.map(v => v / 1e12),
-            borderColor: '#c0392b',
-            backgroundColor: 'rgba(192,57,43,0.08)',
-            borderWidth: 2.5,
-            pointRadius: 6,
-            fill: true,
-            tension: 0.3,
-            yAxisID: 'yReal',
-            order: 1,
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: true, position: 'top', labels: { font: { size: 11 } } },
-          tooltip: {
-            callbacks: {
-              label: ctx => {
-                const v = ctx.raw;
-                return `${ctx.dataset.label}: $${v.toFixed(2)} billones`;
-              }
-            }
-          }
-        },
-        scales: {
-          yNom: {
-            type: 'linear', position: 'left',
-            title: { display: true, text: 'billones $ nominales', font: { size: 11 } },
-            ticks: { callback: v => '$' + v.toFixed(0) + 'B' },
-            grid: { color: '#f5f5f0' },
-          },
-          yReal: {
-            type: 'linear', position: 'right',
-            title: { display: true, text: 'billones $ constantes ene-2023', font: { size: 11 } },
-            ticks: { callback: v => '$' + v.toFixed(0) + 'B' },
-            grid: { drawOnChartArea: false },
-          },
-        }
-      }
-    });
-
-    // Tabla de variaciones
-    const tablaEl = document.getElementById('evol-tabla');
-    tablaEl.innerHTML = `
-      <div class="th" style="grid-template-columns:80px 1fr 1fr 1fr 1fr;">
-        <span>Ejercicio</span><span class="nr">Nominal</span><span class="nr">Real (ene-2023)</span><span class="nr">Factor IPC</span><span class="nr">Var. real YoY</span>
-      </div>
-      ${data.map(d => {
-        const varY = d.variacion_real_pct_yoy;
-        const color = varY === null ? '' : varY < 0 ? 'color:#c0392b;' : 'color:#27ae60;';
-        const varStr = varY !== null ? `<strong style="${color}">${varY > 0 ? '+' : ''}${varY.toFixed(1)}%</strong>` : '<span style="color:#aaa;">base</span>';
-        return `<div class="tr" style="grid-template-columns:80px 1fr 1fr 1fr 1fr;">
-          <span><strong>${d.ejercicio}</strong></span>
-          <span class="nr">${fmtAbs(d.total_nominal)}</span>
-          <span class="nr">${fmtAbs(d.total_real)}</span>
-          <span class="nr">×${d.factor_ipc.toFixed(2)}</span>
-          <span class="nr">${varStr}</span>
-        </div>`;
-      }).join('')}
-    `;
-  } catch (e) {
-    document.getElementById('evol-kpis').innerHTML = `<div style="color:#c0392b;font-size:13px;">Error cargando datos: ${e.message}</div>`;
-  }
+    if(_cEvolucion)_cEvolucion.destroy();
+    _cEvolucion=new Chart(document.getElementById('cEvolucion'),{data:{labels:data.map(d=>String(d.ejercicio)),datasets:[{type:'bar',label:'Nominal',data:data.map(d=>d.total_nominal/1e12),backgroundColor:'rgba(91,45,142,0.25)',borderColor:'rgba(91,45,142,0.6)',borderWidth:1,yAxisID:'yNom',order:2},{type:'line',label:'Real (ene-2023)',data:data.map(d=>d.total_real/1e12),borderColor:'#c0392b',backgroundColor:'rgba(192,57,43,0.08)',borderWidth:2.5,pointRadius:6,fill:true,tension:0.3,yAxisID:'yReal',order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11}}}},scales:{yNom:{type:'linear',position:'left',ticks:{callback:v=>'$'+v.toFixed(0)+'B'},grid:{color:'#f5f5f0'}},yReal:{type:'linear',position:'right',ticks:{callback:v=>'$'+v.toFixed(0)+'B'},grid:{drawOnChartArea:false}}}}});
+    document.getElementById('evol-tabla').innerHTML='<div class="th" style="grid-template-columns:80px 1fr 1fr 1fr 1fr;"><span>Ejercicio</span><span class="nr">Nominal</span><span class="nr">Real (ene-2023)</span><span class="nr">Factor IPC</span><span class="nr">Var. real YoY</span></div>'+data.map(d=>{const varY=d.variacion_real_pct_yoy;return'<div class="tr" style="grid-template-columns:80px 1fr 1fr 1fr 1fr;"><span><strong>'+d.ejercicio+'</strong></span><span class="nr">'+fmtAbs(d.total_nominal)+'</span><span class="nr">'+fmtAbs(d.total_real)+'</span><span class="nr">×'+d.factor_ipc.toFixed(2)+'</span><span class="nr">'+(varY!==null?'<strong style="'+(varY<0?'color:#c0392b':'color:#27ae60')+'">'+(varY>0?'+':'')+varY.toFixed(1)+'%</strong>':'<span style="color:#aaa;">base</span>')+'</span></div>';}).join('');
+  }catch(e){document.getElementById('evol-kpis').innerHTML='<div style="color:#c0392b;font-size:13px;">Error: '+e.message+'</div>';}
 }
 
-async function loadSocial() {
-  if (socialLoaded) return;
-  const grid = document.getElementById('social-grid');
-  const dot  = document.getElementById('social-dot');
-  const txt  = document.getElementById('social-status-txt');
-  try {
-    const r = await fetch('/api/social/kpis');
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-    const kpis = data.kpis || [];
-    socialLoaded = true;
-    const upd = data.ultima_actualizacion ? new Date(data.ultima_actualizacion).toLocaleDateString('es-AR') : '—';
-    dot.style.background = '#27ae60';
-    txt.textContent = 'Datos actualizados al ' + upd + ' · Fuentes: DEIS / SNIC · Línea base: dic-2023';
-    grid.innerHTML = kpis.map(k => {
-      const alertas = (k.alertas || []).map(a => `<div class="social-alerta">⚠ ${a}</div>`).join('');
-      const tasa = k.tasa_actual != null
-        ? `<div class="social-main-value">${k.tasa_actual.toFixed(1)}<span style="font-size:16px;font-weight:400;color:#aaa;"> /100k</span></div><div class="social-main-sub">${k.subtitulo}</div>`
-        : `<div class="social-main-value">${(k.valor_actual||0).toLocaleString('es-AR')}</div><div class="social-main-sub">${k.subtitulo}</div>`;
-      const varAbs = k.var_absoluta >= 0 ? '+'+k.var_absoluta.toLocaleString('es-AR') : k.var_absoluta.toLocaleString('es-AR');
-      const varPct = k.var_pct >= 0 ? '+'+k.var_pct.toFixed(1)+'%' : k.var_pct.toFixed(1)+'%';
-      return `<div class="social-card">
-        <div class="social-card-header"><div class="social-card-title">${k.titulo}</div><div class="social-badge">↑ sube</div></div>
-        ${tasa}
-        <div class="social-compare">
-          <div class="social-compare-box"><div class="social-compare-label">Base dic-2023</div><div class="social-compare-val">${(k.valor_base||0).toLocaleString('es-AR')}</div></div>
-          <div class="social-compare-box"><div class="social-compare-label">Último dato (${k.anio_actual||'—'})</div><div class="social-compare-val red">${(k.valor_actual||0).toLocaleString('es-AR')}</div></div>
-        </div>
-        <div class="social-var"><span class="social-var-abs">${varAbs}</span> <span class="social-var-pct">(${varPct} desde dic-2023)</span></div>
-        <div class="social-alertas">${alertas}</div>
-        <div class="social-fuente">${k.fuente || ''}</div>
-      </div>`;
+// ══ IMPACTO SOCIAL ════════════════════════════════════════════════════════════
+let socialLoaded=false;
+async function loadSocial(){
+  if(socialLoaded)return;
+  const grid=document.getElementById('social-grid'),dot=document.getElementById('social-dot'),txt=document.getElementById('social-status-txt');
+  try{
+    const r=await fetch('/api/social/kpis');if(!r.ok)throw new Error('HTTP '+r.status);
+    const data=await r.json();socialLoaded=true;
+    dot.style.background='#27ae60';
+    txt.textContent='Datos actualizados al '+(data.ultima_actualizacion?new Date(data.ultima_actualizacion).toLocaleDateString('es-AR'):'—');
+    grid.innerHTML=(data.kpis||[]).map(k=>{
+      const varAbs=k.var_absoluta>=0?'+'+k.var_absoluta.toLocaleString('es-AR'):k.var_absoluta.toLocaleString('es-AR');
+      const varPct=k.var_pct>=0?'+'+k.var_pct.toFixed(1)+'%':k.var_pct.toFixed(1)+'%';
+      return '<div class="social-card"><div class="social-card-header"><div class="social-card-title">'+k.titulo+'</div><div class="social-badge">↑ sube</div></div><div class="social-main-value">'+(k.tasa_actual!=null?k.tasa_actual.toFixed(1):k.valor_actual||0)+'</div><div class="social-main-sub">'+k.subtitulo+'</div><div class="social-compare"><div class="social-compare-box"><div class="social-compare-label">Base dic-2023</div><div class="social-compare-val">'+(k.valor_base||0).toLocaleString('es-AR')+'</div></div><div class="social-compare-box"><div class="social-compare-label">Último dato</div><div class="social-compare-val red">'+(k.valor_actual||0).toLocaleString('es-AR')+'</div></div></div><div class="social-var"><span class="social-var-abs">'+varAbs+'</span> <span class="social-var-pct">('+varPct+')</span></div><div class="social-alertas">'+( k.alertas||[]).map(a=>'<div class="social-alerta">⚠ '+a+'</div>').join('')+'</div><div class="social-fuente">'+(k.fuente||'')+'</div></div>';
     }).join('');
-  } catch(e) {
-    dot.style.background = '#e74c3c';
-    txt.textContent = 'Error: ' + e.message;
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">No se pudo conectar con <code>/api/social/kpis</code><br><small>${e.message}</small></div>`;
-  }
+  }catch(e){dot.style.background='#e74c3c';txt.textContent='Error: '+e.message;grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">No se pudo conectar con /api/social/kpis<br><small>'+e.message+'</small></div>';}
 }
 
+// ══ INIT ══════════════════════════════════════════════════════════════════════
+async function init(){
+  try{
+    const [root,rank,inc]=await Promise.all([
+      fetch('/',{headers:{'Accept':'application/json'}}).then(r=>r.json()),
+      fetch(API+'/analisis/ranking?top_n=500').then(r=>r.json()),
+      fetch(API+'/analisis/por-inciso').then(r=>r.json()),
+    ]);
+    D=rank.ranking||rank; I=inc;
+    document.getElementById('kpi-total').textContent=D.length;
+    document.getElementById('kpi-ipc').textContent=(root.factor_ipc_acumulado||8.5).toFixed(2)+'×';
+    document.getElementById('last-update').textContent=new Date(root.servidor_tiempo).toLocaleString('es-AR');
+    const reds=D.filter(d=>d.variacion_real_pct<0);
+    document.getElementById('kpi-avg').textContent=(reds.reduce((s,d)=>s+d.variacion_real_pct,0)/(reds.length||1)).toFixed(1)+'%';
+    document.getElementById('kpi-cut50').textContent=D.filter(d=>d.variacion_real_pct<-50).length;
+    const jurs=[...new Set(D.map(d=>d.jurisdiccion))].sort();
+    ['rjur','djur'].forEach(id=>{const s=document.getElementById(id);jurs.forEach(j=>{const o=document.createElement('option');o.value=j;o.textContent=j.length>45?j.slice(0,45)+'…':j;s.appendChild(o);});});
+    renderRanking();renderInciso();renderScatter();renderDetalle();
+  }catch(e){
+    document.querySelector('.main').innerHTML='<div style="padding:40px;text-align:center;color:#aaa;">⚠️ No se pudo conectar con la API<br><small>'+e.message+'</small><br><br>Asegurate de que uvicorn esté corriendo.</div>';
+  }
+}
 init();
 </script>
 </body>
