@@ -1,0 +1,607 @@
+jur_id,jur_desc,prg_id,en_2023,en_2024,en_2025,en_2026,monto_2023,monto_2024,monto_2025,monto_2026,nombre_estable,nombres_distintos,alerta,desc_2023,desc_2026
+1,Poder Legislativo Nacional,16,✓,✓,✓,✓,35099310655.0,160016786585.0,190730669717.0,194118720000.0,SI,,,Formacion y Sancion de Leyes Nacionales,Formacion y Sancion de Leyes Nacionales
+1,Poder Legislativo Nacional,17,✓,✓,✓,✓,47998120140.0,188176613620.0,215586613778.0,212866016696.0,SI,,,Formacion y Sancion Legislativa,Formacion y Sancion Legislativa
+1,Poder Legislativo Nacional,18,✓,✓,✓,✓,12730402880.0,40765190680.0,49714496193.0,52295000000.0,SI,,,Asistencia Bibliografica,Asistencia Bibliografica
+1,Poder Legislativo Nacional,19,✓,✓,✓,✓,3002838025.0,11597910022.0,13503999640.0,13953564278.0,SI,,,Impresiones y Publicaciones Parlamentarias,Impresiones y Publicaciones Parlamentarias
+1,Poder Legislativo Nacional,20,✓,✓,✓,✓,8614794615.0,49788057475.0,73182963937.0,60004800000.0,SI,,,Asistencia Social Integral al Personal del Congreso de la Nacion,Asistencia Social Integral al Personal del Congreso de la Nacion
+1,Poder Legislativo Nacional,21,✓,✓,✓,✓,3447569448.0,10768496000.0,13312451000.0,14916895001.0,SI,,,Defensa de los Derechos de los Ciudadanos,Defensa de los Derechos de los Ciudadanos
+1,Poder Legislativo Nacional,22,✓,✓,✓,✓,92377246.0,92377154.0,92377154.0,104000000.0,SI,,,Revision de Cuentas Nacionales,Revision de Cuentas Nacionales
+1,Poder Legislativo Nacional,23,✓,✓,✓,✓,179200179.0,179200000.0,179200000.0,202000000.0,SI,,,Revision de Cuentas Nacionales,Revision de Cuentas Nacionales
+1,Poder Legislativo Nacional,25,✓,✓,✓,✓,114803269.0,114803154.0,114803154.0,129000000.0,SI,,,Control Parlamentario sobre el Funcionamiento del Sistema de Inteligencia,Control Parlamentario sobre el Funcionamiento del Sistema de Inteligencia
+1,Poder Legislativo Nacional,26,✓,✓,✓,✓,3175365175.0,13416322736.0,17042232736.0,19243000000.0,SI,,,Proteccion de los Derechos del Interno Penitenciario,Proteccion de los Derechos del Interno Penitenciario
+1,Poder Legislativo Nacional,27,✓,✓,✓,✓,83551661.0,83551577.0,0.0,95000000.0,SI,,,Monitoreo e Implementacion del Nuevo Codigo Procesal Penal de la Nacion,Monitoreo e Implementacion del Nuevo Codigo Procesal Penal de la Nacion
+1,Poder Legislativo Nacional,31,✓,✓,✓,✓,29217606.0,189217577.0,189217577.0,213000000.0,SI,,,Control Parlamentario de Seguimiento de Tramite Legislativo,Control Parlamentario de Seguimiento de Tramite Legislativo
+1,Poder Legislativo Nacional,32,✓,✓,✓,✓,68990646.0,138990577.0,138990577.0,157000000.0,SI,,,Control Parlamentario de los Fondos de la Seguridad Social,Control Parlamentario de los Fondos de la Seguridad Social
+1,Poder Legislativo Nacional,33,✓,✓,✓,✓,31586609.0,31586577.0,1080000.0,36000000.0,SI,,,Promocion y Seguimiento de la Comunicacion Audiovisual,Promocion y Seguimiento de la Comunicacion Audiovisual
+1,Poder Legislativo Nacional,36,✓,✓,✓,✓,902389532.0,3836306797.0,5562406797.0,4020396548.0,SI,,,Defensa del Publico de Servicios de Comunicacion Audiovisual,Defensa del Publico de Servicios de Comunicacion Audiovisual
+1,Poder Legislativo Nacional,40,✓,✓,✓,✓,33800034.0,33800000.0,0.0,38000000.0,NO,"Seguimiento y Control del Ministerio Publico de la Nacion (Ley N° 24.946 ,27.148 y 27.149) | Seguimiento y Control del Ministerio Publico de la Nacion (Ley N° 24.946,27.148 y 27.149)",NOMBRE_CAMBIA,"Seguimiento y Control del Ministerio Publico de la Nacion (Ley N° 24.946,27.148 y 27.149)","Seguimiento y Control del Ministerio Publico de la Nacion (Ley N° 24.946 ,27.148 y 27.149)"
+1,Poder Legislativo Nacional,41,✓,✓,✓,✓,57945058.0,151545000.0,151545000.0,171000000.0,NO,"Control Parlamentario de los Derechos de las Niñas, Niños y Adolescentes | Control Parlamentario de los Derechos de las Niñas, Niños y Adolescentes (NNA)",NOMBRE_CAMBIA,"Control Parlamentario de los Derechos de las Niñas, Niños y Adolescentes (NNA)","Control Parlamentario de los Derechos de las Niñas, Niños y Adolescentes"
+1,Poder Legislativo Nacional,42,✓,✓,✓,✓,222930223.0,1073908000.0,1386908000.0,1296800000.0,SI,,,Apoyo al Congreso Nacional en Materia Fiscal,Apoyo al Congreso Nacional en Materia Fiscal
+1,Poder Legislativo Nacional,43,✓,✓,✓,✓,534148534.0,3404735590.0,5269594065.0,5407570000.0,SI,,,"Sistema Nacional de Prevencion de la Tortura y Otros Tratos o Penas Crueles, Inhumanos o Degradantes","Sistema Nacional de Prevencion de la Tortura y Otros Tratos o Penas Crueles, Inhumanos o Degradantes"
+1,Poder Legislativo Nacional,44,✓,✓,✓,✓,2057112441.0,7254943914.0,8405783916.0,8769000000.0,NO,"Defensa de los Derechos de las Niñas, Niños y Adolescentes (NNA) | Defensa de los Derechos de las Niñas, Niños y Adolescentes",NOMBRE_CAMBIA,"Defensa de los Derechos de las Niñas, Niños y Adolescentes (NNA)","Defensa de los Derechos de las Niñas, Niños y Adolescentes"
+1,Poder Legislativo Nacional,45,✓,✓,✓,✓,20928021.0,20928000.0,0.0,24000000.0,SI,,,Seguimiento de Contratos de Participacion Publico-Privada,Seguimiento de Contratos de Participacion Publico-Privada
+1,Poder Legislativo Nacional,46,✓,✓,✓,✓,61173638.0,61173577.0,0.0,69000000.0,SI,,,Seguimiento y Control de la Gestion de Contratacion y Pago de la Deuda Exterior de la Nacion,Seguimiento y Control de la Gestion de Contratacion y Pago de la Deuda Exterior de la Nacion
+1,Poder Legislativo Nacional,48,✓,✓,✓,✓,770000770.0,1185000000.0,1185000000.0,1253000000.0,SI,,,Administracion del Edificio del Molino,Administracion del Edificio del Molino
+1,Poder Legislativo Nacional,49,✓,✓,✓,✓,30506608.0,30506577.0,15253289.0,35000000.0,SI,,,Control Parlamentario sobre Organos y Actividades de Seguridad Interior,Control Parlamentario sobre Organos y Actividades de Seguridad Interior
+10,Ministerio Público,16,✓,✓,✓,✓,76247870948.0,372913487397.0,515913755933.0,539546299994.0,SI,,,Ejercicio de la Accion Publica y Defensa de la Legalidad,Ejercicio de la Accion Publica y Defensa de la Legalidad
+10,Ministerio Público,17,✓,✓,✓,✓,45039186198.0,203529418772.0,287907092389.0,295846000000.0,SI,,,"Representacion, Defensa y Curatela Publica Oficial","Representacion, Defensa y Curatela Publica Oficial"
+20,Presidencia de la Nación,1,✓,✗,✓,✓,1733184968.0,0,33588725136.0,22080713408.0,SI,,,Actividades Centrales,Actividades Centrales
+20,Presidencia de la Nación,16,✓,✓,✓,✓,3383324047.0,15301712592.0,23500023816.0,25197987161.0,SI,,,Regulacion y Fiscalizacion de las Actividades Nucleares,Regulacion y Fiscalizacion de las Actividades Nucleares
+20,Presidencia de la Nación,17,✓,✗,✗,✗,59000059.0,0,0,0,SI,,SOLO_2023,Abordaje Territorial,
+20,Presidencia de la Nación,18,✓,✗,✗,✗,56580057.0,0,0,0,SI,,SOLO_2023,Promocion del Modelo Social de la Discapacidad en Municipios,
+20,Presidencia de la Nación,20,✓,✓,✓,✓,2600619291.0,9941497069.0,13143997279.0,13196407328.0,SI,,,Asistencia Legal y Tecnica,Asistencia Legal y Tecnica
+20,Presidencia de la Nación,21,✓,✗,✗,✗,2279950267.0,0,0,0,SI,,SOLO_2023,Asistencia y Coordinacion de Politicas Sociales,
+20,Presidencia de la Nación,22,✗,✓,✓,✓,0,4437005420.0,9781454741.0,8110979751.0,NO,Acciones de Prensa Institucional | Promocion y Desarrollo Artistico Cultural y de las Economias Creativas,NOMBRE_CAMBIA | NUEVO_POST2023,,Promocion y Desarrollo Artistico Cultural y de las Economias Creativas
+20,Presidencia de la Nación,23,✓,✗,✓,✓,381217883037.0,0,12948372472.0,24439842932.0,NO,Gestion de Organismos Estables | Pensiones no Contributivas por Invalidez Laborativa,NOMBRE_CAMBIA,Pensiones no Contributivas por Invalidez Laborativa,Gestion de Organismos Estables
+20,Presidencia de la Nación,24,✗,✗,✓,✓,0,0,25169541344.0,36839283462.0,SI,,NUEVO_POST2023,,Gestion de Museos Nacionales
+20,Presidencia de la Nación,25,✗,✗,✓,✓,0,0,8071289543.0,6457270963.0,SI,,NUEVO_POST2023,,Difusion y Fortalecimiento del Patrimonio Cultural
+20,Presidencia de la Nación,26,✗,✗,✓,✗,0,0,3473906269.0,0,SI,,NUEVO_POST2023,,
+20,Presidencia de la Nación,27,✗,✗,✓,✓,0,0,37344544771.0,23111730827.0,SI,,NUEVO_POST2023,,Gestion de Espacios Culturales y Proyectos Especiales
+20,Presidencia de la Nación,28,✗,✗,✓,✓,0,0,4762546749.0,5643850257.0,SI,,NUEVO_POST2023,,Fomento y Apoyo Economico a Bibliotecas Populares
+20,Presidencia de la Nación,30,✗,✗,✓,✗,0,0,428987534.0,0,SI,,NUEVO_POST2023,,
+20,Presidencia de la Nación,36,✓,✗,✗,✗,116910460895.0,0,0,0,SI,,SOLO_2023,Atencion Medica a los Beneficiarios de Pensiones no Contributivas,
+20,Presidencia de la Nación,62,✓,✗,✗,✗,1590088592.0,0,0,0,SI,,SOLO_2023,Prevencion y Control de Discapacidades,
+25,Jefatura de Gabinete de Ministros,1,✓,✓,✓,✓,18183564081.0,123480276042.0,275908901043.0,160742600577.0,SI,,,Actividades Centrales,Actividades Centrales
+25,Jefatura de Gabinete de Ministros,10,✗,✗,✗,✓,0,0,0,1032050000.0,SI,,NUEVO_POST2023,,Gestion del  Financiamiento Externo en Ciencia y Gestion Gubernamental
+25,Jefatura de Gabinete de Ministros,11,✗,✗,✓,✗,0,0,1466627875.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,12,✗,✗,✓,✗,0,0,12415995547.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,13,✗,✗,✗,✓,0,0,0,5776201495.0,SI,,NUEVO_POST2023,,Actividades Comunes a los Programas de Turismo
+25,Jefatura de Gabinete de Ministros,14,✗,✗,✗,✓,0,0,0,12774452650.0,SI,,NUEVO_POST2023,,Actividades Comunes a los programas de Ambiente
+25,Jefatura de Gabinete de Ministros,16,✓,✓,✓,✓,519032725.0,45537007709.0,12881492651.0,13568400000.0,NO,"Generacion de Ciclos de Informacion Espacial Completos | Promocion del Turismo Receptivo Internacional | Prevencion, Estadisticas e Investigacion sobre Consumos Problematicos",NOMBRE_CAMBIA,"Prevencion, Estadisticas e Investigacion sobre Consumos Problematicos",Promocion del Turismo Receptivo Internacional
+25,Jefatura de Gabinete de Ministros,17,✓,✓,✓,✓,8688751017.0,11441793648.0,7445798504.0,326392831.0,NO,Investigacion y Desarrollo de Medios de Acceso al Espacio | Atencion y Acompañamiento a Personas con Consumos Problematicos,NOMBRE_CAMBIA,Atencion y Acompañamiento a Personas con Consumos Problematicos,Investigacion y Desarrollo de Medios de Acceso al Espacio
+25,Jefatura de Gabinete de Ministros,18,✓,✓,✓,✓,1142800901.0,29556037179.0,40572989500.0,43375434487.0,NO,"Administracion de Servicios de Tecnologias de la Informacion y las Comunicaciones | Promocion, Investigacion, Financiamiento, Innovacion y Divulgacion en Ciencia y Tecnica",NOMBRE_CAMBIA,Administracion de Servicios de Tecnologias de la Informacion y las Comunicaciones,"Promocion, Investigacion, Financiamiento, Innovacion y Divulgacion en Ciencia y Tecnica"
+25,Jefatura de Gabinete de Ministros,19,✗,✓,✓,✓,0,215430665.0,229706157516.0,3793596574.0,NO,Formacion y Capacitacion | Investigaciones en Ciencia y Tecnica en el Atlantico Sur: Pampa Azul | Relaciones con las Provincias y Desarrollo Regional,NOMBRE_CAMBIA | NUEVO_POST2023,,Formacion y Capacitacion
+25,Jefatura de Gabinete de Ministros,20,✓,✓,✓,✓,398489807.0,283014409.0,113040019639.0,2199648203.0,NO,Control de Servicios Postales | Desarrollos y Suministros para la Energia Nuclear | Desarrollo de Politicas de Vinculacion Tecnologica y Social,NOMBRE_CAMBIA,Control de Servicios Postales,Desarrollo de Politicas de Vinculacion Tecnologica y Social
+25,Jefatura de Gabinete de Ministros,21,✗,✗,✓,✗,0,0,19076480827.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,22,✓,✓,✓,✓,1557783173.0,5768597965.0,6107097965.0,9303372784.0,SI,,,Control y Fiscalizacion de los Servicios de Comunicacion Audiovisual,Control y Fiscalizacion de los Servicios de Comunicacion Audiovisual
+25,Jefatura de Gabinete de Ministros,23,✓,✓,✓,✓,731864625.0,3165104583670.0,11904613991.0,4183806296.0,NO,"Investigacion y Aplicaciones no Nucleares | Enseñanza, Capacitacion y Habilitacion | Pensiones no Contributivas por Invalidez Laborativa",NOMBRE_CAMBIA,"Enseñanza, Capacitacion y Habilitacion","Enseñanza, Capacitacion y Habilitacion"
+25,Jefatura de Gabinete de Ministros,24,✓,✓,✓,✓,2253037748.0,11381176121.0,14542274608.0,3596818482.0,NO,Gobierno Abierto y Pais Digital | Infraestructura en Areas Naturales Protegidas | Suministros y Tecnologia del Ciclo de Combustible Nuclear,NOMBRE_CAMBIA,Gobierno Abierto y Pais Digital,Infraestructura en Areas Naturales Protegidas
+25,Jefatura de Gabinete de Ministros,25,✓,✓,✓,✓,1902237540.0,9769617697.0,715774172.0,806774560.0,NO,Innovacion Administrativa | Sistema de Areas Marinas Protegidas,NOMBRE_CAMBIA,Innovacion Administrativa,Sistema de Areas Marinas Protegidas
+25,Jefatura de Gabinete de Ministros,26,✓,✓,✓,✓,316219736.0,1337455014.0,1986990186.0,8231979805.0,NO,"Gestion y Organizacion del Sistema de Contrataciones de la Administracion Publica Nacional | Planificacion, Formulacion y Ejecucion de Politicas de Conservacion en Areas Naturales Protegidas",NOMBRE_CAMBIA,Gestion y Organizacion del Sistema de Contrataciones de la Administracion Publica Nacional,"Planificacion, Formulacion y Ejecucion de Politicas de Conservacion en Areas Naturales Protegidas"
+25,Jefatura de Gabinete de Ministros,27,✓,✓,✓,✓,3287326546.0,12402990509.0,4764983898.0,5385000000.0,NO,Desarrollo de los Recursos Humanos del Sector Publico | Recuperacion Sustentable de Paisajes y Medios de Vida en Argentina (BIRF N° 9335-AR y PROGREEN Nº TF0B7681),NOMBRE_CAMBIA,Desarrollo de los Recursos Humanos del Sector Publico,Recuperacion Sustentable de Paisajes y Medios de Vida en Argentina (BIRF N° 9335-AR y PROGREEN Nº TF0B7681)
+25,Jefatura de Gabinete de Ministros,28,✓,✓,✗,✗,508349181.0,1222162704.0,0,0,SI,,,Fortalecimiento de la Gestion Publica,
+25,Jefatura de Gabinete de Ministros,29,✓,✓,✓,✗,25084176.0,965168399.0,5344798499.0,0,SI,,,Acciones para Potenciar Tecnologias del Estado,
+25,Jefatura de Gabinete de Ministros,3,✗,✗,✓,✗,0,0,19541633.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,34,✓,✓,✓,✓,3139585910.0,11141499786.0,17382400969.0,15573214830.0,NO,Iniciativas Complementarias de Interior | Administracion de Bienes del Estado,NOMBRE_CAMBIA,Administracion de Bienes del Estado,Administracion de Bienes del Estado
+25,Jefatura de Gabinete de Ministros,36,✗,✓,✗,✗,0,552553357969.0,0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,4,✗,✗,✗,✓,0,0,0,12248751343.0,SI,,NUEVO_POST2023,,Actividades Comunes a los Programas de Turismo y Ambiente
+25,Jefatura de Gabinete de Ministros,44,✗,✓,✓,✓,0,27829408366.0,23638632675.0,28431600000.0,SI,,NUEVO_POST2023,,"Promocion  y  Financiamiento  de  Actividades  de  Ciencia, Tecnologia e Innovacion"
+25,Jefatura de Gabinete de Ministros,45,✗,✓,✓,✗,0,2198448291.0,397818265.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,46,✗,✓,✓,✗,0,3967210235.0,9732326225.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,47,✗,✓,✓,✗,0,11948148870.0,11188747210.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,48,✗,✓,✓,✗,0,27071975187.0,14952736832.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,49,✗,✗,✓,✗,0,0,7868823895.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,50,✓,✗,✓,✓,499335917.0,0,2714921666.0,22918575881.0,NO,Coordinacion de Proyectos Sociocomunitarios | Desarrollo del Turismo Nacional | Formulacion y Ejecucion de Politica en Ciencia y Tecnica,NOMBRE_CAMBIA,Coordinacion de Proyectos Sociocomunitarios,Formulacion y Ejecucion de Politica en Ciencia y Tecnica
+25,Jefatura de Gabinete de Ministros,51,✓,✗,✓,✗,1440789440.0,0,6313570514.0,0,NO,Plan Federal de Turismo Social Responsable | Legitimar y Reconstruir Juventudes,NOMBRE_CAMBIA,Legitimar y Reconstruir Juventudes,
+25,Jefatura de Gabinete de Ministros,52,✓,✗,✓,✗,32333288.0,0,1733408092.0,0,NO,Inversiones con Financiamiento Internacional | Argentina Futura,NOMBRE_CAMBIA,Argentina Futura,
+25,Jefatura de Gabinete de Ministros,53,✗,✗,✓,✓,0,0,540878441.0,3445956862.0,NO,Calidad y Formacion Turistica | Calidad Turistica,NOMBRE_CAMBIA | NUEVO_POST2023,,Calidad Turistica
+25,Jefatura de Gabinete de Ministros,54,✗,✗,✓,✗,0,0,21247369416.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,55,✗,✗,✓,✓,0,0,12263886529.0,11036712137.0,NO,"Deporte Federado e Iniciacion Deportiva | Estrategia, Coordinacion y Priorizacion de las Politicas Publicas",NOMBRE_CAMBIA | NUEVO_POST2023,,"Estrategia, Coordinacion y Priorizacion de las Politicas Publicas"
+25,Jefatura de Gabinete de Ministros,56,✗,✗,✗,✓,0,0,0,7234170602.0,SI,,NUEVO_POST2023,,Desarrollo y Promocion Turistica
+25,Jefatura de Gabinete de Ministros,57,✗,✗,✓,✗,0,0,81000000.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,58,✓,✓,✓,✗,755232613.0,4085594688.0,16488394948.0,0,SI,,,"Conectividad, Inclusion Digital y Formulacion de Politicas de TICs",
+25,Jefatura de Gabinete de Ministros,62,✓,✓,✗,✗,33440053.0,3501598955.0,0,0,NO,Prevencion y Control de Discapacidades | Coordinacion de Iniciativas bajo la Modalidad de Contratos de Participacion Publica - Privada,NOMBRE_CAMBIA,Coordinacion de Iniciativas bajo la Modalidad de Contratos de Participacion Publica - Privada,
+25,Jefatura de Gabinete de Ministros,68,✓,✓,✓,✗,2500002500.0,5421290.0,0.0,0,SI,,,Relaciones con la Sociedad Civil y Desarrollo Comunitario,
+25,Jefatura de Gabinete de Ministros,74,✓,✗,✓,✗,20520458835.0,0,13454259852.0,0,NO,Politica Ambiental en Recursos Naturales | Prensa y Difusion de Actos de Gobierno,NOMBRE_CAMBIA,Prensa y Difusion de Actos de Gobierno,
+25,Jefatura de Gabinete de Ministros,75,✓,✗,✓,✗,806947224.0,0,2549009848.0,0,NO,Promocion y Gestion del Cambio Climatico y el Desarrollo Sostenible | Acciones para la Federalizacion de la Comunicacion Publica y de los Contenidos,NOMBRE_CAMBIA,Acciones para la Federalizacion de la Comunicacion Publica y de los Contenidos,
+25,Jefatura de Gabinete de Ministros,76,✗,✗,✓,✗,0,0,771644852.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,77,✗,✗,✓,✗,0,0,23601068325.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,79,✗,✗,✓,✗,0,0,3983851034.0,0,SI,,NUEVO_POST2023,,
+25,Jefatura de Gabinete de Ministros,8,✓,✗,✓,✗,1225306274.0,0,7323407957.0,0,NO,Actividades Comun de Programas de Turismo y Deporte | Actividad Comun a los Programas 74 y 75,NOMBRE_CAMBIA,Actividad Comun a los Programas 74 y 75,
+25,Jefatura de Gabinete de Ministros,80,✗,✗,✗,✓,0,0,0,22761436652.0,SI,,NUEVO_POST2023,,Politica Ambiental en Recursos Naturales
+25,Jefatura de Gabinete de Ministros,81,✗,✗,✗,✓,0,0,0,2496644873.0,SI,,NUEVO_POST2023,,Promocion y Gestion del Impacto Climatico y el Desarrollo Sostenible
+25,Jefatura de Gabinete de Ministros,82,✗,✗,✗,✓,0,0,0,586735780.0,SI,,NUEVO_POST2023,,Articulacion y Educacion Ambiental
+25,Jefatura de Gabinete de Ministros,83,✗,✗,✗,✓,0,0,0,11077761924.0,SI,,NUEVO_POST2023,,Evaluacion y Control Ambiental
+25,Jefatura de Gabinete de Ministros,9,✓,✓,✓,✗,5178100178.0,5797518071.0,1117294268.0,0,NO,"Actividades Comunes a los Programas 24, 25 y 26 | Actividades Comunes a los Programas 24 y 25 | Actividades Comunes a los Programas 24, 25, 26 y 58",NOMBRE_CAMBIA,"Actividades Comunes a los Programas 24, 25, 26 y 58",
+25,Jefatura de Gabinete de Ministros,94,✓,✓,✓,✓,5000005000.0,29313219984.0,24020648577.0,12552000000.0,SI,,,Asistencia Financiera a Empresas Publicas,Asistencia Financiera a Empresas Publicas
+30,Ministerio del Interior,1,✓,✓,✗,✓,4459391031.0,34599495619.0,0,22745152128.0,SI,,,Actividades Centrales,Actividades Centrales
+30,Ministerio del Interior,11,✗,✓,✗,✓,0,1489548823.0,0,408696357.0,NO,Actividades Comunes a los Programas de Deporte | Actividad Comun a Programas 54 y 55 Deportes,NOMBRE_CAMBIA | NUEVO_POST2023,,Actividades Comunes a los Programas de Deporte
+30,Ministerio del Interior,12,✗,✓,✗,✗,0,12199352226.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,16,✓,✓,✗,✓,56361336715.0,12143423207.0,0,3680214457.0,NO,Promocion del Turismo Receptivo Internacional | Impulso al Desarrollo del Sistema Democratico y Relaciones con la Comunidad,NOMBRE_CAMBIA,Impulso al Desarrollo del Sistema Democratico y Relaciones con la Comunidad,Impulso al Desarrollo del Sistema Democratico y Relaciones con la Comunidad
+30,Ministerio del Interior,17,✓,✓,✗,✓,6003997230.0,17898401388.0,0,1415500351.0,SI,,,"Cooperacion, Asistencia Tecnica y Capacitacion a Municipios","Cooperacion, Asistencia Tecnica y Capacitacion a Municipios"
+30,Ministerio del Interior,18,✗,✓,✗,✗,0,3006521574.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,19,✓,✓,✗,✓,71814830865.0,323395412990.0,0,257578413991.0,SI,,,Relaciones con las Provincias y Desarrollo Regional,Relaciones con las Provincias y Desarrollo Regional
+30,Ministerio del Interior,23,✗,✓,✗,✗,0,40000.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,24,✗,✓,✗,✗,0,3282196278.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,25,✗,✓,✗,✗,0,578180938.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,26,✗,✓,✗,✗,0,1419855429.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,27,✗,✓,✗,✗,0,7219090760.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,3,✓,✓,✗,✗,19541653.0,19541633.0,0,0,SI,,,Actividad Comun a Programas con Financiamiento Externo,
+30,Ministerio del Interior,34,✓,✓,✗,✓,3083039975.0,14890867305.0,0,10511479685.0,SI,,,Iniciativas Complementarias de Interior,Iniciativas Complementarias de Interior
+30,Ministerio del Interior,49,✗,✓,✗,✗,0,6891015498.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,50,✗,✓,✗,✗,0,4028553538.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,51,✗,✓,✗,✗,0,7149933043.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,52,✗,✓,✗,✗,0,2780433760.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,53,✗,✓,✗,✗,0,540878441.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,54,✗,✓,✗,✓,0,25056114500.0,0,17959783880.0,NO,"Deporte Comunitario y Competencias | Deporte Comunitario, Infraestructura Deportiva y Predios Deportivos Nacionales",NOMBRE_CAMBIA | NUEVO_POST2023,,"Deporte Comunitario, Infraestructura Deportiva y Predios Deportivos Nacionales"
+30,Ministerio del Interior,55,✗,✓,✗,✓,0,11418885757.0,0,16333031236.0,NO,Deporte Federado e Iniciacion Deportiva | Deporte Federado y Representacion Nacional,NOMBRE_CAMBIA | NUEVO_POST2023,,Deporte Federado y Representacion Nacional
+30,Ministerio del Interior,57,✗,✓,✗,✓,0,776402205.0,0,40500000.0,NO,Programa Federal de Infraestrutura Deportiva | Programa Federal de Infraestructura Deportiva,NOMBRE_CAMBIA | NUEVO_POST2023,,Programa Federal de Infraestrutura Deportiva
+30,Ministerio del Interior,74,✗,✓,✗,✗,0,13747778252.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,75,✗,✓,✗,✗,0,2872689326.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,76,✗,✓,✗,✗,0,777405943.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,77,✗,✓,✗,✗,0,51999192919.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,79,✗,✓,✗,✗,0,2252156529.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,8,✗,✓,✗,✗,0,7410590757.0,0,0,SI,,NUEVO_POST2023,,
+30,Ministerio del Interior,84,✗,✗,✗,✓,0,0,0,4719961926.0,SI,,NUEVO_POST2023,,Atencion y Desarrollo de Poblaciones Indigenas
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",1,✓,✓,✓,✓,13010276015.0,50051634949.0,65711313888.0,86429520582.0,SI,,,Actividades Centrales,Actividades Centrales
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",16,✓,✓,✓,✓,6353171124.0,26777311928.0,28343102580.0,29369280015.0,SI,,,Acciones Diplomaticas de Politica Exterior,Acciones Diplomaticas de Politica Exterior
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",17,✓,✓,✓,✓,481438016.0,1920254899.0,2424058934.0,3339814358.0,SI,,,Registro y Sostenimiento de Cultos,Registro y Sostenimiento de Cultos
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",18,✓,✓,✓,✓,391956135.0,1261322676.0,1070251006.0,1077070476.0,SI,,,Cascos Blancos,Cascos Blancos
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",19,✓,✓,✓,✓,5160538434.0,17471840394.0,25576660920.0,27742350986.0,SI,,,Mantenimiento y Promocion de las Relaciones Economicas Internacionales,Mantenimiento y Promocion de las Relaciones Economicas Internacionales
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",2,✓,✓,✓,✓,56036195755.0,266268212997.0,334808771391.0,343742761541.0,SI,,,"Actividades Comunes a los Programas 16, 19  y 23","Actividades Comunes a los Programas 16, 19  y 23"
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",20,✓,✓,✓,✓,1897197679.0,5820258350.0,7139791951.0,9453065409.0,SI,,,Desarrollo del Plan Antartico,Desarrollo del Plan Antartico
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",22,✓,✓,✓,✓,376179584.0,1743626509.0,2997522055.0,3074941562.0,SI,,,Promocion de la Cooperacion Internacional,Promocion de la Cooperacion Internacional
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",23,✓,✓,✓,✓,755342260.0,3452799880.0,4429977655.0,4575344263.0,NO,"Acciones Diplomaticas para la Promocion del Reclamo Argentino de Reconocimiento de la Soberania Nacional de las Islas Malvinas, | Acciones Diplomaticas asociadas a la Cuestion Malvinas, Antartida, Politica Oceanica y Atlantico Sur",NOMBRE_CAMBIA,"Acciones Diplomaticas para la Promocion del Reclamo Argentino de Reconocimiento de la Soberania Nacional de las Islas Malvinas,","Acciones Diplomaticas asociadas a la Cuestion Malvinas, Antartida, Politica Oceanica y Atlantico Sur"
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",3,✓,✓,✗,✗,31857864.0,3640000.0,0,0,SI,,,Actividades Comunes a los Programas 18 y 22,
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",92,✓,✓,✓,✓,16420134233.0,145946937808.0,132395612981.0,129822566408.0,SI,,,Cuotas y Contribuciones a Organismos Internacionales,Cuotas y Contribuciones a Organismos Internacionales
+40,Ministerio de Justicia y Derechos Humanos,1,✓,✓,✓,✓,11552452699.0,15074003718.0,28835966224.0,49664638234.0,SI,,,Actividades Centrales,Actividades Centrales
+40,Ministerio de Justicia y Derechos Humanos,16,✓,✓,✓,✓,58736113971.0,1147520180.0,1754590852.0,1762457217.0,NO,Seguridad y Rehabilitacion del Interno | Promocion Internacional de los Derechos Humanos,NOMBRE_CAMBIA,Seguridad y Rehabilitacion del Interno,Promocion Internacional de los Derechos Humanos
+40,Ministerio de Justicia y Derechos Humanos,18,✓,✗,✗,✗,4672747469.0,0,0,0,SI,,SOLO_2023,Politica Criminal y Asuntos Penitenciarios,
+40,Ministerio de Justicia y Derechos Humanos,19,✓,✓,✓,✓,1390969298.0,6596563397.0,12961074646.0,85074741032.0,SI,,MONTO_X50,Regulacion y Control Registral,Regulacion y Control Registral
+40,Ministerio de Justicia y Derechos Humanos,2,✓,✓,✓,✓,248213979.0,1660628628.0,8412842494.0,2812751508.0,SI,,,Actividades Comunes a los Programas de la Secretaria de Justicia,Actividades Comunes a los Programas de la Secretaria de Justicia
+40,Ministerio de Justicia y Derechos Humanos,21,✓,✓,✓,✓,82535769.0,85726047.0,85726047.0,1304929424.0,SI,,,Representacion Notarial del Estado,Representacion Notarial del Estado
+40,Ministerio de Justicia y Derechos Humanos,24,✓,✗,✗,✗,5391589067.0,0,0,0,SI,,SOLO_2023,Cooperacion Tecnica y Financiera para la Laborterapia de Internos,
+40,Ministerio de Justicia y Derechos Humanos,25,✓,✗,✗,✗,1378081882.0,0,0,0,SI,,SOLO_2023,Formacion y Capacitacion,
+40,Ministerio de Justicia y Derechos Humanos,26,✓,✓,✓,✓,4558918266.0,63103752534.0,86245619782.0,21575447795.0,SI,,,Promocion y Defensa de los Derechos Humanos,Promocion y Defensa de los Derechos Humanos
+40,Ministerio de Justicia y Derechos Humanos,27,✓,✓,✓,✓,281206482.0,308922235.0,308922235.0,3016484434.0,SI,,,Controles Anticorrupcion,Controles Anticorrupcion
+40,Ministerio de Justicia,37,✗,✓,✓,✓,0,8182486403.0,13797063054.0,13791360000.0,SI,,NUEVO_POST2023,,Prevencion del Lavado de Activos
+40,Ministerio de Justicia y Derechos Humanos,38,✓,✓,✗,✗,234726110.0,1027061438.0,0,0,SI,,,Formacion Universitaria en Derechos Humanos,
+40,Ministerio de Justicia y Derechos Humanos,43,✓,✓,✓,✓,2931317188.0,17760001178.0,23247268303.0,52298402815.0,SI,,,Afianzamiento de la Justicia,Afianzamiento de la Justicia
+40,Ministerio de Justicia,46,✗,✓,✓,✓,0,8689769275.0,7552814347.0,8404127819.0,SI,,NUEVO_POST2023,,Politica Criminal
+40,Ministerio de Justicia,47,✗,✗,✓,✓,0,0,1250000000.0,1250000000.0,SI,,NUEVO_POST2023,,"Conservacion, Administracion y Disposicion de Bienes Cautelados y Recuperados por Proceso Judicial"
+40,Ministerio de Justicia,6,✗,✓,✓,✓,0,7785686914.0,12354236367.0,5442555914.0,SI,,NUEVO_POST2023,,Actividades Comunes a los Programas 26 y 43
+41,Ministerio de Seguridad,1,✓,✓,✓,✓,99776769341.0,476004293758.0,648155170095.0,731529804161.0,SI,,,Actividades Centrales,Actividades Centrales
+41,Ministerio de Seguridad,16,✗,✓,✓,✓,0,270885544905.0,388461840284.0,426821914903.0,SI,,NUEVO_POST2023,,Seguridad y Rehabilitacion del Interno
+41,Ministerio de Seguridad,18,✓,✓,✓,✓,240631359269.0,1069249317150.0,1464088822282.0,1598643035632.0,SI,,,"Administracion de Beneficios Previsionales Policia Federal, Policia de Seguridad Aeroportuaria y otros","Administracion de Beneficios Previsionales Policia Federal, Policia de Seguridad Aeroportuaria y otros"
+41,Ministerio de Seguridad,19,✓,✓,✓,✓,94191996133.0,386076245697.0,517191403304.0,564932017903.0,SI,,,Administracion de Beneficios Previsionales Gendarmeria Nacional,Administracion de Beneficios Previsionales Gendarmeria Nacional
+41,Ministerio de Seguridad,20,✓,✓,✓,✓,75058848893.0,305125264086.0,403050286192.0,445938828169.0,SI,,,Administracion de Beneficios Previsionales Prefectura Naval Argentina,Administracion de Beneficios Previsionales Prefectura Naval Argentina
+41,Ministerio de Seguridad,21,✓,✓,✓,✓,44615212045.0,243667596831.0,373898851363.0,420540567014.0,SI,,,Administracion de Beneficios Previsionales Servicio Penitenciario Federal,Administracion de Beneficios Previsionales Servicio Penitenciario Federal
+41,Ministerio de Seguridad,22,✓,✓,✓,✓,11877204877.0,45642798627.0,54996798627.0,60928295610.0,SI,,,Asistencia Sanitaria de la Policia Federal Argentina,Asistencia Sanitaria de la Policia Federal Argentina
+41,Ministerio de Seguridad,23,✓,✓,✓,✓,23288641987.0,113179732224.0,156975547092.0,163370620461.0,SI,,,Seguridad Aeroportuaria,Seguridad Aeroportuaria
+41,Ministerio de Seguridad,24,✓,✓,✓,✓,995707958.0,2167907480.0,2485021349.0,8328822736.0,SI,,,Formacion y Capacitacion en Seguridad Aeroportuaria,Formacion y Capacitacion en Seguridad Aeroportuaria
+41,Ministerio de Seguridad,25,✗,✓,✓,✓,0,8475935972.0,13451343220.0,22448159249.0,SI,,NUEVO_POST2023,,Formacion y Capacitacion
+41,Ministerio de Seguridad,28,✓,✓,✓,✓,114658876138.0,430791767764.0,575801140863.0,645673957001.0,SI,,,Seguridad Federal,Seguridad Federal
+41,Ministerio de Seguridad,30,✓,✓,✓,✓,9226971867.0,32414997064.0,41904381464.0,48104901416.0,SI,,,Servicio de Bomberos,Servicio de Bomberos
+41,Ministerio de Seguridad,31,✓,✓,✓,✓,7131301793.0,24516611145.0,31914459853.0,36198900121.0,SI,,,Servicios de Informatica y Comunicaciones,Servicios de Informatica y Comunicaciones
+41,Ministerio de Seguridad,36,✓,✓,✓,✓,4258148871.0,15889660975.0,20172745242.0,24016346913.0,SI,,,Atencion Sanitaria de la Prefectura Naval Argentina,Atencion Sanitaria de la Prefectura Naval Argentina
+41,Ministerio de Seguridad,37,✓,✓,✓,✓,12384729106.0,37180070847.0,47535085533.0,55377843771.0,SI,,,Formacion y Capacitacion Profesional de la Prefectura Naval Argentina,Formacion y Capacitacion Profesional de la Prefectura Naval Argentina
+41,Ministerio de Seguridad,39,✓,✓,✓,✓,105189616.0,465676232.0,6999643426.0,7504565311.0,NO,Control y Servicio Tecnico de Seguridad de la Navegacion | Seguridad en Eventos Deportivos,NOMBRE_CAMBIA | MONTO_X50,Seguridad en Eventos Deportivos,Control y Servicio Tecnico de Seguridad de la Navegacion
+41,Ministerio de Seguridad,40,✓,✓,✓,✓,6810016275.0,22442020455.0,23010550049.0,10452970054.0,SI,,,Operaciones de Seguridad Interior,Operaciones de Seguridad Interior
+41,Ministerio de Seguridad,41,✓,✓,✓,✓,1979532015.0,8384548027.0,9121155045.0,10153012431.0,SI,,,Servicio de Informatica y Comunicaciones para la Navegacion,Servicio de Informatica y Comunicaciones para la Navegacion
+41,Ministerio de Seguridad,42,✓,✓,✓,✓,6412450809.0,28868495239.0,35628882218.0,88063772990.0,NO,Asistencia Sanitaria de la Gendarmeria Nacional Argentina | Asistencia Sanitaria de la Gendarmeria Nacional,NOMBRE_CAMBIA,Asistencia Sanitaria de la Gendarmeria Nacional,Asistencia Sanitaria de la Gendarmeria Nacional Argentina
+41,Ministerio de Seguridad,44,✓,✓,✓,✓,1284918157.0,4980382787.0,7163235946.0,9887261087.0,SI,,,Misiones Humanitarias y de Paz para Organismos Internacionales,Misiones Humanitarias y de Paz para Organismos Internacionales
+41,Ministerio de Seguridad Nacional,47,✗,✗,✓,✓,0,0,4504275894.0,4276002278.0,SI,,NUEVO_POST2023,,Politicas de Lucha contra el Narcotrafico y la Criminalidad Organizada
+41,Ministerio de Seguridad,48,✓,✓,✓,✓,78575049493.0,317634613675.0,425886186330.0,415658280454.0,SI,,,Seguridad en Fronteras,Seguridad en Fronteras
+41,Ministerio de Seguridad,49,✓,✓,✓,✓,72634607418.0,303353526116.0,401254110607.0,468582578014.0,SI,,,Operaciones Complementarias de Seguridad Interior,Operaciones Complementarias de Seguridad Interior
+41,Ministerio de Seguridad,50,✓,✓,✓,✓,22574517699.0,78000852968.0,106477552119.0,82605948092.0,SI,,,Servicio de Investigacion de Delitos Complejos y Operaciones Antidrogas,Servicio de Investigacion de Delitos Complejos y Operaciones Antidrogas
+41,Ministerio de Seguridad,51,✓,✓,✓,✓,1420360343.0,5851921347.0,4082394727.0,3713121410.0,SI,,,Acciones de Seguridad y Politica Criminal,Acciones de Seguridad y Politica Criminal
+41,Ministerio de Seguridad,52,✓,✓,✗,✗,272000408.0,740515774.0,0,0,SI,,,"Fortalecimiento de Integridad Publica y Proteccion de Derechos, Bienestar y Genero en el ambito de la Seguridad",
+41,Ministerio de Seguridad,53,✗,✓,✓,✓,0,3928713618.0,25893105201.0,48864883790.0,SI,,NUEVO_POST2023,,Asuntos Penitenciarios
+41,Ministerio de Seguridad Nacional,54,✗,✗,✓,✓,0,0,399073543.0,705104260.0,SI,,NUEVO_POST2023,,"Fondos para la atencion de Recompensas, Informantes y Proteccion de Testigos"
+41,Ministerio de Seguridad Nacional,55,✗,✗,✓,✗,0,0,100000000000.0,0,SI,,NUEVO_POST2023,,
+41,Ministerio de Seguridad Nacional,56,✗,✗,✓,✓,0,0,1600095565.0,959881488.0,SI,,NUEVO_POST2023,,Articulacion Federal de la Seguridad
+41,Ministerio de Seguridad Nacional,57,✗,✗,✗,✓,0,0,0,7484485023.0,SI,,NUEVO_POST2023,,"Control, Fiscalizacion y Trazabilidad de Armas y Materiales Regulados"
+45,Ministerio de Defensa,1,✓,✓,✓,✓,79881897294.0,546699048983.0,997207642434.0,567203102284.0,SI,,,Actividades Centrales,Actividades Centrales
+45,Ministerio de Defensa,16,✓,✓,✓,✓,4379449569.0,21994737985.0,27314073904.0,29140072259.0,SI,,,Servicios de Meteorologia Nacional,Servicios de Meteorologia Nacional
+45,Ministerio de Defensa,17,✓,✓,✓,✓,1433823209.0,8744425343.0,10153072297.0,8953364467.0,SI,,,Transporte Aereo de Fomento,Transporte Aereo de Fomento
+45,Ministerio de Defensa,18,✓,✓,✓,✓,88502845.0,305284212.0,380159038.0,1410951646.0,SI,,,Sanidad Militar Conjunta,Sanidad Militar Conjunta
+45,Ministerio de Defensa,19,✓,✓,✓,✓,3292447967.0,19250589442.0,23247853157.0,27549404213.0,SI,,,Remonta y Veterinaria,Remonta y Veterinaria
+45,Ministerio de Defensa,20,✓,✓,✓,✓,704027200.0,4972284995.0,5411255392.0,4265081331.0,SI,,,Transportes Navales,Transportes Navales
+45,Ministerio de Defensa,21,✓,✓,✓,✓,2819118379.0,3425039129.0,749069110.0,10161902645.0,SI,,,Planeamiento y Conduccion de Operaciones y de Adiestramiento Militar Conjunto,Planeamiento y Conduccion de Operaciones y de Adiestramiento Militar Conjunto
+45,Ministerio de Defensa,22,✓,✓,✓,✓,1485336791.0,4600666932.0,5343117774.0,10765119624.0,SI,,,Servicios  de Hidrografia,Servicios  de Hidrografia
+45,Ministerio de Defensa,23,✓,✓,✓,✓,1220231926.0,3546069082.0,4768515994.0,5870602828.0,SI,,,Servicio Meteorologico Nacional,Servicio Meteorologico Nacional
+45,Ministerio de Defensa,24,✓,✓,✓,✓,644119100.0,7639236654.0,10792493955.0,7484346998.0,SI,,,Sostenimiento Operacional,Sostenimiento Operacional
+45,Ministerio de Defensa,98,✓,✓,✓,✓,37238037.0,87985310.0,27346447259.0,26825000000.0,SI,,MONTO_X50,Transferencias Varias,Transferencias Varias
+5,Poder Judicial de la Nación,1,✓,✓,✓,✓,32642968447.0,269602684506.0,301245997160.0,299047813960.0,SI,,,Actividades Centrales,Actividades Centrales
+5,Poder Judicial de la Nación,21,✓,✓,✓,✓,11139609744.0,51462454836.0,76869350048.0,102425111526.0,SI,,,Justicia de Maxima Instancia,Justicia de Maxima Instancia
+5,Poder Judicial de la Nación,22,✓,✓,✓,✓,12728749055.0,42494646934.0,61245238404.0,70929172208.0,SI,,,Justicia de Casacion,Justicia de Casacion
+5,Poder Judicial de la Nación,23,✓,✓,✓,✓,90694161378.0,362475401638.0,509315493825.0,606036504550.0,SI,,,Justicia Ordinaria de la Ciudad Autonoma de Buenos Aires,Justicia Ordinaria de la Ciudad Autonoma de Buenos Aires
+5,Poder Judicial de la Nación,24,✓,✓,✓,✓,161050777225.0,564153153291.0,806278415082.0,925673359998.0,SI,,,Justicia Federal,Justicia Federal
+5,Poder Judicial de la Nación,25,✓,✓,✓,✓,3301509371.0,11442006069.0,17537006069.0,16522965374.0,SI,,,Asistencia Social,Asistencia Social
+5,Poder Judicial de la Nación,26,✓,✓,✓,✓,1086203306.0,3906748010.0,5671748010.0,5841000000.0,SI,,,Atencion de Pasividades,Atencion de Pasividades
+5,Poder Judicial de la Nación,27,✓,✓,✓,✓,3192510193.0,15915603936.0,24297303936.0,27026886630.0,SI,,,Interceptacion y Captacion de las Comunicaciones,Interceptacion y Captacion de las Comunicaciones
+5,Poder Judicial de la Nación,4,✓,✓,✓,✓,3629827981.0,24660255168.0,34339035121.0,30954764676.0,SI,,,Mandamientos y Notificaciones,Mandamientos y Notificaciones
+5,Poder Judicial de la Nación,5,✓,✓,✓,✓,6100754592.0,39565720751.0,55623196294.0,53295460885.0,SI,,,Pericias Judiciales,Pericias Judiciales
+5,Poder Judicial de la Nación,6,✓,✓,✓,✓,1708622886.0,3913553047.0,6021483243.0,4353704383.0,SI,,,Biblioteca y Jurisprudencia,Biblioteca y Jurisprudencia
+5,Poder Judicial de la Nación,7,✓,✓,✓,✓,2667983132.0,6529091884.0,10170710980.0,9127253097.0,SI,,,Archivo General,Archivo General
+5,Poder Judicial de la Nación,8,✓,✓,✓,✓,7909836754.0,33959868935.0,52405468935.0,49475002708.0,SI,,,Administracion General de la Corte Suprema de Justicia de la Nacion,Administracion General de la Corte Suprema de Justicia de la Nacion
+50,Ministerio de Economía,1,✓,✓,✓,✓,82938380496.0,357776129401.0,376596464305.0,493195230860.0,SI,,,Actividades Centrales,Actividades Centrales
+50,Ministerio de Economía,10,✗,✓,✓,✗,0,26693957292.0,96925330275.0,0,NO,Actividades Comunes de los Programas de la Secretaria de Bioeconomia | Actividades Comunes a los Programas de la Secretaria de Industria y Desarrollo Productivo,NOMBRE_CAMBIA | NUEVO_POST2023,,
+50,Ministerio de Economía,11,✗,✗,✗,✓,0,0,0,1951224262.0,SI,,NUEVO_POST2023,,Actividades Comunes a los Programas de Industria y Comercio
+50,Ministerio de Economía,12,✓,✓,✓,✗,1591654083.0,12761372605.0,13690598975.0,0,SI,,,Actividades Comunes a los Programas de la Secretaria de Hacienda,
+50,Ministerio de Economía,13,✓,✓,✓,✗,10980702696.0,55050730137.0,4503623668.0,0,SI,,,Actividades Comunes a los Programas de Industria y Desarrollo Productivo,
+50,Ministerio de Economía,15,✗,✗,✓,✓,0,0,8852999672.0,7931489123.0,SI,,NUEVO_POST2023,,Actividades Comunes a los Programas de la Secretaria de Obras Publicas
+50,Ministerio de Economía,16,✓,✓,✓,✓,1844872445.0,10565821251.0,13681760929.0,14097926571.0,SI,,,Resolucion de Cuestiones Dudosas y Litigiosas,Resolucion de Cuestiones Dudosas y Litigiosas
+50,Ministerio de Economía,17,✓,✓,✓,✓,33956468443.0,152181146539.0,153247534956.0,59654265600.0,NO,"Regulacion del Transporte y Distribucion de Gas | Investigacion Aplicada, Innovacion, Transferencias de Tecnologias, Extension y Apoyo al Desarrollo Rural - AITTE",NOMBRE_CAMBIA,"Investigacion Aplicada, Innovacion, Transferencias de Tecnologias, Extension y Apoyo al Desarrollo Rural - AITTE",Regulacion del Transporte y Distribucion de Gas
+50,Ministerio de Economía,18,✓,✓,✓,✓,2755762481.0,12432536494.0,14729251494.0,20403524400.0,NO,Regulacion y Contralor del Mercado Electrico | Proteccion de los Derechos de la Propiedad Industrial,NOMBRE_CAMBIA,Proteccion de los Derechos de la Propiedad Industrial,Regulacion y Contralor del Mercado Electrico
+50,Ministerio de Economía,19,✓,✓,✓,✓,3887111262.0,14900965888.0,17213991946.0,19092963375.0,SI,,,Servicio Estadistico,Servicio Estadistico
+50,Ministerio de Economía,2,✓,✓,✓,✓,4577276095.0,17835092588.0,21639430648.0,22751536625.0,SI,,,Actividades Comunes del INDEC,Actividades Comunes del INDEC
+50,Ministerio de Economía,20,✓,✓,✓,✓,15039688952.0,68024614638.0,807756615.0,1937700283.0,NO,Desarrollos y Suministros para la Energia Nuclear | Prevencion Sismica,NOMBRE_CAMBIA,Desarrollos y Suministros para la Energia Nuclear,Prevencion Sismica
+50,Ministerio de Economía,21,✓,✓,✗,✓,5194902869.0,16553006460.0,0,15451585340.0,SI,,,Aplicaciones de la Tecnologia Nuclear,Aplicaciones de la Tecnologia Nuclear
+50,Ministerio de Economía,22,✓,✓,✓,✓,822628916.0,2968788024.0,3240850714.0,6148879190.0,SI,,,"Finanzas, Bancos y Seguros","Finanzas, Bancos y Seguros"
+50,Ministerio de Economía,23,✓,✓,✗,✓,4232805146.0,11375860140.0,0,12671017784.0,SI,,,Investigacion y Aplicaciones no Nucleares,Investigacion y Aplicaciones no Nucleares
+50,Ministerio de Economía,24,✓,✓,✓,✓,3401810638.0,14670931379.0,32565196761.0,19575257458.0,NO,Acciones para la Sanidad Animal | Suministros y Tecnologia del Ciclo de Combustible Nuclear,NOMBRE_CAMBIA,Suministros y Tecnologia del Ciclo de Combustible Nuclear,Suministros y Tecnologia del Ciclo de Combustible Nuclear
+50,Ministerio de Economía,25,✓,✓,✓,✓,233000233.0,651087204.0,30539619300.0,1124205147.0,NO,Acciones para la Proteccion Vegetal | Coordinacion del Plan Nacional de Medicina,NOMBRE_CAMBIA,Coordinacion del Plan Nacional de Medicina,Coordinacion del Plan Nacional de Medicina
+50,Ministerio de Economía,26,✓,✓,✓,✓,2699475872.0,23699893556.0,41502744906.0,51166861673.0,NO,Administracion Financiera | Acciones para la Inocuidad y Calidad Agroalimentaria | Ejecucion Obras de Rehabilitacion y Mantenimiento en Red por Sistema de Gestion Integral,NOMBRE_CAMBIA,Administracion Financiera,Acciones para la Inocuidad y Calidad Agroalimentaria
+50,Ministerio de Economía,27,✓,✓,✓,✗,581344719.0,1905214097.0,2408196781.0,0,SI,,,Administracion de Ingresos Publicos y Politica Tributaria,
+50,Ministerio de Economía,28,✓,✗,✗,✗,3415445027.0,0,0,0,SI,,SOLO_2023,Definicion de Politicas de Comercio Interior,
+50,Ministerio de Economía,3,✓,✓,✗,✓,6440382232.0,8144852410.0,0,237915941.0,NO,"Actividades Comunes de los Programas de la Secretaria de Bioeconomia | Actividades Comunes de los Programas de la Secretaria de Agricultura, Ganaderia y Pesca | Actividades Comunes a los Programas de las Secretarias de Energia y de Mineria",NOMBRE_CAMBIA,"Actividades Comunes de los Programas de la Secretaria de Agricultura, Ganaderia y Pesca",Actividades Comunes a los Programas de las Secretarias de Energia y de Mineria
+50,Ministerio de Economía,31,✓,✓,✓,✓,466773248.0,3097029390.0,4140573827.0,2467732494.0,SI,,,Defensa de la Libre Competencia,Defensa de la Libre Competencia
+50,Ministerio de Economía,32,✓,✓,✓,✓,2139853029.0,4965999613.0,5382089294.0,5337340136.0,SI,,,Formulacion y Ejecucion de la Politica Geologico - Minera,Formulacion y Ejecucion de la Politica Geologico - Minera
+50,Ministerio de Economía,33,✓,✓,✓,✓,307789075.0,1072798137.0,1453888668.0,1293720445.0,SI,,,Analisis y Regulacion de la Competencia Comercial Internacional,Analisis y Regulacion de la Competencia Comercial Internacional
+50,Ministerio de Economía,34,✗,✗,✓,✗,0,0,86809906555.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,36,✓,✓,✓,✓,9289152351.0,47839100197.0,96567773832.0,103015777338.0,SI,,,Politicas para el Aumento de la Produccion y Productividad en las Cadenas Agroindustriales en Forma Sostenible,Politicas para el Aumento de la Produccion y Productividad en las Cadenas Agroindustriales en Forma Sostenible
+50,Ministerio de Economía,37,✓,✗,✓,✓,1833847655.0,0,29465790.0,25938190720.0,NO,"Prevencion del Lavado de Activos | Fiscalizacion, Regulacion y Control del Servicio de Transporte Terrestre | Planificacion Territorial de la Inversion Publica",NOMBRE_CAMBIA,Prevencion del Lavado de Activos,"Fiscalizacion, Regulacion y Control del Servicio de Transporte Terrestre"
+50,Ministerio de Economía,38,✓,✓,✓,✗,965000965.0,7000000000.0,0.0,0,SI,,,Programa Federal de Reconversion Productiva y Apoyo a la Actividad Ganadera,
+50,Ministerio de Economía,39,✓,✗,✓,✗,5486746801.0,0,1693576629.0,0,NO,Planificacion y Desarrollo Territorial | Formulacion de Politicas para la Agricultura Familiar y Desarrollo Productivo,NOMBRE_CAMBIA,Formulacion de Politicas para la Agricultura Familiar y Desarrollo Productivo,
+50,Ministerio de Economía,4,✓,✓,✓,✓,1892306595.0,4431774433.0,5952012894.0,2680685676.0,NO,Actividades Comunes de la Secretaria de Energia | Actividades Comunes de los Programas de la Secretaria de Energia | Actividad Comun de la Secretaria de Energia,NOMBRE_CAMBIA,Actividad Comun de la Secretaria de Energia,Actividades Comunes de los Programas de la Secretaria de Energia
+50,Ministerio de Economía,40,✓,✓,✓,✓,2561789572.0,21280458420.0,21280458420.0,20767780000.0,SI,,,Promocion del Comercio y Produccion de Semillas,Promocion del Comercio y Produccion de Semillas
+50,Ministerio de Economía,41,✓,✓,✓,✗,2125630028.0,1083482573.0,692593128.0,0,SI,,,Acciones Censales,
+50,Ministerio de Economía,42,✗,✗,✓,✗,0,0,205867751768.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,43,✗,✗,✓,✗,0,0,6111693703.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,44,✗,✗,✓,✓,0,0,15340560551.0,3911400585.0,SI,,NUEVO_POST2023,,Desarrollo Sustentable de la Cuenca Matanza - Riachuelo
+50,Ministerio de Economía,45,✓,✓,✓,✓,4754624851.0,3889897608.0,0.0,481434996418.0,NO,Administracion Financiera | Promocion de la Productividad y Competitividad PyME y el Desarrollo de los Emprendedores,NOMBRE_CAMBIA | MONTO_X50,Promocion de la Productividad y Competitividad PyME y el Desarrollo de los Emprendedores,Administracion Financiera
+50,Ministerio de Economía,46,✗,✗,✓,✗,0,0,54126566.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,47,✓,✓,✓,✗,221602717.0,906802312.0,1169547768.0,0,SI,,,Coordinacion Fiscal con las Provincias,
+50,Ministerio de Economía,48,✓,✓,✓,✓,90601612.0,382416982.0,1814276268.0,191718165.0,NO,Administracion de los Asuntos Economicos y Financieros  Internacionales | Ejecucion Obras de Seguridad en Rutas Nacionales,NOMBRE_CAMBIA,Administracion de los Asuntos Economicos y Financieros  Internacionales,Ejecucion Obras de Seguridad en Rutas Nacionales
+50,Ministerio de Economía,49,✗,✗,✓,✓,0,0,4708327727.0,27271101676.0,NO,"Consolidacion Urbana, Mejoramiento de Barrios y Puesta en Valor de Centralidades | Reparacion y Construccion de Puentes y Alcantarillas",NOMBRE_CAMBIA | NUEVO_POST2023,,"Consolidacion Urbana, Mejoramiento de Barrios y Puesta en Valor de Centralidades"
+50,Ministerio de Economía,5,✗,✗,✓,✓,0,0,3257493482.0,8556701103.0,SI,,NUEVO_POST2023,,Actividades Comunes a los Programas de la Secretaria de Transporte
+50,Ministerio de Economía,50,✗,✗,✓,✗,0,0,9179757879.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,51,✗,✗,✓,✓,0,0,15734725590.0,5283277071.0,SI,,NUEVO_POST2023,,Apoyo para el Desarrollo de Obra Publica
+50,Ministerio de Economía,52,✓,✓,✓,✓,107368842.0,187987589.0,61483358.0,0.0,NO,Mantenimiento y Reparacion de Obras de Arte | Formulacion y Ejecucion de Politicas de Desarrollo y Competitividad Federal,NOMBRE_CAMBIA | CASI_ELIMINADO,Formulacion y Ejecucion de Politicas de Desarrollo y Competitividad Federal,Mantenimiento y Reparacion de Obras de Arte
+50,Ministerio de Economía,53,✓,✓,✓,✗,11526500051.0,47429503607.0,9324487581.0,0,NO,"Coordinacion de Financiamientos Transversales y Federales y de la Asistencia a la Produccion | Ejecucion de Infraestructura Vial para el Desarrollo Economico, Social y Productivo",NOMBRE_CAMBIA,Coordinacion de Financiamientos Transversales y Federales y de la Asistencia a la Produccion,
+50,Ministerio de Economía,54,✗,✗,✓,✓,0,0,3409317296.0,3678000000.0,SI,,NUEVO_POST2023,,Tasacion de Bienes
+50,Ministerio de Economía,55,✗,✗,✓,✗,0,0,0.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,57,✗,✗,✓,✓,0,0,60950000.0,83876397.0,SI,,NUEVO_POST2023,,Coordinacion de Politicas de Transporte Aereo
+50,Ministerio de Economía,58,✗,✗,✓,✓,0,0,62155896023.0,39719762171.0,SI,,NUEVO_POST2023,,Gestion de la Produccion Industrial y del Comercio
+50,Ministerio de Economía,59,✓,✓,✓,✓,8840286063.0,15984494315.0,10024059295.0,12604435007.0,SI,,,Politicas para la Gestion del Riesgo Agropecuario,Politicas para la Gestion del Riesgo Agropecuario
+50,Ministerio de Economía,6,✗,✗,✓,✗,0,0,33133826715.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,60,✗,✗,✗,✓,0,0,0,270164132.0,SI,,NUEVO_POST2023,,Formulacion y Ejecucion de las Politicas de Asuntos Nucleares
+50,Ministerio de Economía,61,✓,✓,✓,✓,1193335270.0,146600000.0,762124816.0,1814324476.0,SI,,,Administracion y Control Comercial Agropecuario,Administracion y Control Comercial Agropecuario
+50,Ministerio de Economía,62,✓,✓,✓,✓,1419466604.0,21031943452.0,0.0,218798873168.0,NO,Fortalecimiento del Desarrollo Regional de Alimentos y Bioeconomia | Construcciones Viales,NOMBRE_CAMBIA | MONTO_X50,Fortalecimiento del Desarrollo Regional de Alimentos y Bioeconomia,Construcciones Viales
+50,Ministerio de Economía,63,✓,✓,✓,✓,1496496759.0,3319762869.0,2190645016.0,53048111942.0,NO,Rehabilitacion y Repavimentacion Viales | Coordinacion de Relaciones Financieras Internacionales,NOMBRE_CAMBIA,Coordinacion de Relaciones Financieras Internacionales,Rehabilitacion y Repavimentacion Viales
+50,Ministerio de Economía,64,✓,✓,✓,✗,88830089.0,12000000.0,0.0,0,SI,,,Politicas de Instrumento de Financiamiento para el Sector Agropecuario,
+50,Ministerio de Economía,65,✓,✓,✓,✗,14380308917.0,20095857995.0,0.0,0,SI,,,Gestion Productiva,
+50,Ministerio de Economía,66,✓,✓,✓,✓,11682127933.0,16562000847.0,24031020636.0,9155159859.0,NO,"Promocion de la Competitividad Pyme, el Desarrollo de los Emprendedores y la Economia del Conocimiento | Fomento al Desarrollo Tecnologico",NOMBRE_CAMBIA,Fomento al Desarrollo Tecnologico,"Promocion de la Competitividad Pyme, el Desarrollo de los Emprendedores y la Economia del Conocimiento"
+50,Ministerio de Economía,67,✓,✓,✓,✗,109848740383.0,74496314398.0,0.0,0,SI,,,Financiamiento de la Produccion,
+50,Ministerio de Economía,68,✓,✓,✓,✗,2273634082.0,2977405394.0,102894314.0,0,SI,,,Acciones para la Transformacion e Integracion Productiva,
+50,Ministerio de Economía,69,✗,✗,✓,✓,0,0,29033991165.0,25101083591.0,SI,,NUEVO_POST2023,,Fortalecimiento Movilidad Sostenible
+50,Ministerio de Economía,70,✓,✓,✓,✗,618498075.0,310861377.0,0.0,0,SI,,,Formulacion de Politicas de Desarrollo de Mercados Agroindustriales Nacionales e Internacionales,
+50,Ministerio de Economía,71,✓,✓,✓,✗,0.0,17484582605.0,0.0,0,SI,,,Definicion de Politicas de Comercio Interior,
+50,Ministerio de Economía,72,✗,✗,✓,✓,0,0,2493862877.0,1095158800.0,SI,,NUEVO_POST2023,,"Fortalecimiento de la Infraestructura Social, del Cuidado y Sanitaria"
+50,Ministerio de Economía,73,✓,✓,✓,✓,287806922727.0,634673172646.0,491488502113.0,895041272161.0,SI,,,Formulacion y Ejecucion de Politica de Hidrocarburos,Formulacion y Ejecucion de Politica de Hidrocarburos
+50,Ministerio de Economía,74,✓,✓,✓,✓,1439694725368.0,3620482476809.0,3593690563919.0,2706254059848.0,SI,,,Formulacion y Ejecucion de la Politica de Energia Electrica,Formulacion y Ejecucion de la Politica de Energia Electrica
+50,Ministerio de Economía,75,✓,✓,✓,✓,1092001092.0,7069809231.0,9109916468.0,263567827545.0,SI,,MONTO_X50,Acciones para el Uso Racional y Eficiente de la Energia,Acciones para el Uso Racional y Eficiente de la Energia
+50,Ministerio de Economía,77,✓,✓,✗,✗,3306000310.0,11093000000.0,0,0,SI,,,Acciones para la Ampliacion de las Redes Electricas de Alta Tension,
+50,Ministerio de Economía,79,✓,✗,✗,✗,178013950.0,0,0,0,SI,,SOLO_2023,Federalizacion del Desarrollo Energetico Sostenible y Seguro y Transicion Energetica Justa,
+50,Ministerio de Economía,80,✗,✓,✓,✗,0,9615172941.0,0.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,81,✗,✗,✓,✗,0,0,1355947222.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,82,✗,✗,✓,✓,0,0,70864568203.0,145868165634.0,SI,,NUEVO_POST2023,,Desarrollo de la Infraestructura Hidraulica
+50,Ministerio de Economía,83,✗,✗,✓,✓,0,0,7976666846.0,7116879098.0,SI,,NUEVO_POST2023,,Integracion Socio Urbana
+50,Ministerio de Economía,84,✗,✗,✓,✗,0,0,4042059092.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,85,✗,✗,✓,✗,0,0,13525574615.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,86,✗,✗,✓,✗,0,0,0.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,87,✓,✓,✓,✓,165020103130.0,564309859466.0,286346120000.0,200000000000.0,SI,,,Asistencia Financiera a Empresas Publicas,Asistencia Financiera a Empresas Publicas
+50,Ministerio de Economía,91,✗,✗,✓,✗,0,0,6162358483.0,0,SI,,NUEVO_POST2023,,
+50,Ministerio de Economía,93,✗,✗,✓,✓,0,0,126647490010.0,123464000000.0,SI,,NUEVO_POST2023,,Asistencia Financiera a Empresas Publicas
+53,Ministerio de Turismo y Deportes,1,✓,✗,✗,✗,3163396084.0,0,0,0,SI,,SOLO_2023,Actividades Centrales,
+53,Ministerio de Turismo y Deportes,16,✓,✗,✗,✗,2987637296.0,0,0,0,SI,,SOLO_2023,Promocion del Turismo Receptivo Internacional,
+53,Ministerio de Turismo y Deportes,17,✓,✗,✗,✗,3789880828.0,0,0,0,SI,,SOLO_2023,Desarrollo del Turismo Nacional,
+53,Ministerio de Turismo y Deportes,18,✓,✗,✗,✗,1737486441.0,0,0,0,SI,,SOLO_2023,Plan Federal de Turismo Social,
+53,Ministerio de Turismo y Deportes,22,✓,✗,✗,✗,1737756042.0,0,0,0,SI,,SOLO_2023,Inversiones con Financiamiento Internacional,
+53,Ministerio de Turismo y Deportes,24,✓,✗,✗,✗,503071540.0,0,0,0,SI,,SOLO_2023,Calidad y Formacion Turistica,
+53,Ministerio de Turismo y Deportes,26,✓,✗,✗,✗,14692218299.0,0,0,0,SI,,SOLO_2023,Deporte Comunitario y Competencias,
+53,Ministerio de Turismo y Deportes,27,✓,✗,✗,✗,1622932620.0,0,0,0,SI,,SOLO_2023,Deporte Federado e Iniciacion Deportiva,
+53,Ministerio de Turismo y Deportes,28,✓,✗,✗,✗,208885178.0,0,0,0,SI,,SOLO_2023,Programa Federal de Infraestructura Deportiva,
+53,Ministerio de Turismo y Deportes,4,✓,✗,✗,✗,514637667.0,0,0,0,SI,,SOLO_2023,Actividad Comun a Programas 26 y 27 Deportes,
+57,Ministerio de Transporte,1,✓,✗,✗,✗,6984877433.0,0,0,0,SI,,SOLO_2023,Actividades Centrales,
+57,Ministerio de Transporte,16,✓,✗,✗,✗,10486100841.0,0,0,0,SI,,SOLO_2023,"Regulacion, Fiscalizacion  y Administracion de la Aviacion Civil",
+57,Ministerio de Transporte,37,✓,✗,✗,✗,4066016782.0,0,0,0,SI,,SOLO_2023,"Fiscalizacion, Regulacion y Control del Servicio de Transporte Terrestre",
+57,Ministerio de Transporte,4,✓,✗,✗,✗,230368875.0,0,0,0,SI,,SOLO_2023,Actividades Comunes a los Programas 69 y 91,
+57,Ministerio de Transporte,67,✓,✗,✗,✗,73706905505.0,0,0,0,SI,,SOLO_2023,"Ejecucion de Planes, Programas y Proyectos para el Mejoramiento del Transporte",
+57,Ministerio de Transporte,68,✓,✗,✗,✗,181236052423.0,0,0,0,SI,,SOLO_2023,Formulacion y Ejecucion de Politicas de Movilidad Integral de Transporte,
+57,Ministerio de Transporte,69,✓,✗,✗,✗,665104718.0,0,0,0,SI,,SOLO_2023,Formulacion y Ejecucion de Politicas de Gestion de Transporte,
+57,Ministerio de Transporte,91,✓,✗,✗,✗,13659148314.0,0,0,0,SI,,SOLO_2023,Coordinacion de Politicas de Transporte Fluvial y Maritimo,
+64,Ministerio de Obras Públicas,1,✓,✗,✗,✗,39754728155.0,0,0,0,SI,,SOLO_2023,Actividades Centrales,
+64,Ministerio de Obras Públicas,10,✓,✗,✗,✗,780380618.0,0,0,0,SI,,SOLO_2023,Actividades Comunes a los Programas de la Secretaria de Obras Publicas,
+64,Ministerio de Obras Públicas,11,✓,✗,✗,✗,362950041.0,0,0,0,SI,,SOLO_2023,Actividades Comunes a los Programas de la Secretaria de Infraestructura y Politica Hidrica,
+64,Ministerio de Obras Públicas,16,✓,✗,✗,✗,74230821177.0,0,0,0,SI,,SOLO_2023,Ejecucion Obras de Mantenimiento y Rehabilitacion en Red por Administracion,
+64,Ministerio de Obras Públicas,17,✓,✗,✗,✗,486818815.0,0,0,0,SI,,SOLO_2023,Control de Seguridad de Presas,
+64,Ministerio de Obras Públicas,20,✓,✗,✗,✗,252558069.0,0,0,0,SI,,SOLO_2023,Planificacion Territorial de la Inversion Publica,
+64,Ministerio de Obras Públicas,22,✓,✗,✗,✗,14424659119.0,0,0,0,SI,,SOLO_2023,Construcciones de Obras Viales fuera de la Red Vial Nacional,
+64,Ministerio de Obras Públicas,26,✓,✗,✗,✗,18574334725.0,0,0,0,SI,,SOLO_2023,Ejecucion Obras de Rehabilitacion y Mantenimiento en Red por Sistema de Gestion Integral,
+64,Ministerio de Obras Públicas,37,✓,✗,✗,✗,3467970.0,0,0,0,SI,,SOLO_2023,Infraestructura en Concesiones Viales,
+64,Ministerio de Obras Públicas,40,✓,✗,✗,✗,8736818576.0,0,0,0,SI,,SOLO_2023,"Ejecucion de Obras, Operacion y Mantenimiento en Corredores Viales",
+64,Ministerio de Obras Públicas,42,✓,✗,✗,✗,104406174760.0,0,0,0,SI,,SOLO_2023,Construccion de Autopistas y Autovias,
+64,Ministerio de Obras Públicas,43,✓,✗,✗,✗,11693616523.0,0,0,0,SI,,SOLO_2023,Construccion de Rutas Seguras,
+64,Ministerio de Obras Públicas,44,✓,✗,✗,✗,16006788093.0,0,0,0,SI,,SOLO_2023,Desarrollo Sustentable de la Cuenca Matanza - Riachuelo,
+64,Ministerio de Obras Públicas,45,✓,✗,✗,✗,19710148623.0,0,0,0,SI,,SOLO_2023,Construccion de Rutas Nuevas y Obras de Pavimentacion,
+64,Ministerio de Obras Públicas,47,✓,✗,✗,✗,306871157.0,0,0,0,SI,,SOLO_2023,Construccion y Puesta en Valor de Infraestructura de Apoyo y Soporte al Plan Vial Nacional,
+64,Ministerio de Obras Públicas,48,✓,✗,✗,✗,5825914303.0,0,0,0,SI,,SOLO_2023,Ejecucion Obras de Seguridad en Rutas Nacionales,
+64,Ministerio de Obras Públicas,49,✓,✗,✗,✗,822383939.0,0,0,0,SI,,SOLO_2023,Reparacion y Construccion de Puentes y Alcantarillas,
+64,Ministerio de Obras Públicas,50,✓,✗,✗,✗,15665566715.0,0,0,0,SI,,SOLO_2023,Repavimentacion de Rutas Nacionales,
+64,Ministerio de Obras Públicas,51,✓,✗,✗,✗,23783608.0,0,0,0,SI,,SOLO_2023,Ejecucion de Obras Menores para el  Fortalecimiento de la Red Vial,
+64,Ministerio de Obras Públicas,52,✓,✗,✗,✗,828080077.0,0,0,0,SI,,SOLO_2023,Mantenimiento y Reparacion de Obras de Arte,
+64,Ministerio de Obras Públicas,53,✓,✗,✗,✗,6145105781.0,0,0,0,SI,,SOLO_2023,"Ejecucion de Infraestructura Vial para el Desarrollo Economico, Social y Productivo",
+64,Ministerio de Obras Públicas,54,✓,✗,✗,✗,483191183.0,0,0,0,SI,,SOLO_2023,Tasacion de Bienes,
+64,Ministerio de Obras Públicas,66,✓,✗,✗,✗,264994962.0,0,0,0,SI,,SOLO_2023,Prevencion Sismica,
+64,Ministerio de Obras Públicas,68,✓,✗,✗,✗,55000055000.0,0,0,0,SI,,SOLO_2023,Fortalecimiento de la Infraestructura para el Transporte y la Movilidad Sostenible,
+64,Ministerio de Obras Públicas,74,✓,✗,✗,✗,19375489107.0,0,0,0,SI,,SOLO_2023,"Fortalecimiento de la Infraestructura Social, del Cuidado y Sanitaria",
+64,Ministerio de Obras Públicas,75,✓,✗,✗,✗,1537665602.0,0,0,0,SI,,SOLO_2023,Desarrollo de la Infraestructura Ambiental,
+64,Ministerio de Obras Públicas,76,✓,✗,✗,✗,57292985654.0,0,0,0,SI,,SOLO_2023,Desarrollo de la Infraestructura Hidraulica,
+64,Ministerio de Obras Públicas,77,✓,✗,✗,✗,421823241.0,0,0,0,SI,,SOLO_2023,Desarrollo de la Infraestructura Productiva,
+64,Ministerio de Obras Públicas,78,✓,✗,✗,✗,12261884569.0,0,0,0,SI,,SOLO_2023,"Consolidacion Urbana, Mejoramiento de Barrios y Puesta en Valor de Centralidades",
+64,Ministerio de Obras Públicas,79,✓,✗,✗,✗,31066593933.0,0,0,0,SI,,SOLO_2023,Apoyo para el Desarrollo de Obra Publica,
+64,Ministerio de Obras Públicas,80,✓,✗,✗,✗,3075342761.0,0,0,0,SI,,SOLO_2023,Apoyo para el Desarrollo de la Infraestructura Hidraulica,
+64,Ministerio de Obras Públicas,86,✓,✗,✗,✗,107908977.0,0,0,0,SI,,SOLO_2023,Apoyo para el Desarrollo de Infraestructura Urbana en Municipios,
+64,Ministerio de Obras Públicas,87,✓,✗,✗,✗,23166536662.0,0,0,0,SI,,SOLO_2023,Desarrollo de la Infraestructura del Conocimiento,
+64,Ministerio de Obras Públicas,92,✓,✗,✗,✗,1366905608.0,0,0,0,SI,,SOLO_2023,Servicios de la Deuda,
+64,Ministerio de Obras Públicas,94,✓,✗,✗,✗,66622588128.0,0,0,0,SI,,SOLO_2023,Asistencia Financiera a Empresas Publicas,
+65,Ministerio de Desarrollo Territorial y Hábitat,1,✓,✗,✗,✗,2887614210.0,0,0,0,SI,,SOLO_2023,Actividades Centrales,
+65,Ministerio de Desarrollo Territorial y Hábitat,39,✓,✗,✗,✗,198576650807.0,0,0,0,SI,,SOLO_2023,Planificacion y Desarrollo Territorial,
+65,Ministerio de Desarrollo Territorial y Hábitat,40,✓,✗,✗,✗,185282726106.0,0,0,0,SI,,SOLO_2023,Produccion Integral y Acceso al Habitat,
+70,Ministerio de Educación,1,✓,✗,✗,✗,4372006081.0,0,0,0,SI,,SOLO_2023,Actividades Centrales,
+70,Ministerio de Educación,16,✓,✗,✗,✗,1800876513.0,0,0,0,SI,,SOLO_2023,"Investigacion de la Flora, Fauna y Gea",
+70,Ministerio de Educación,26,✓,✗,✗,✗,770756762903.0,0,0,0,SI,,SOLO_2023,Desarrollo de la Educacion Superior,
+70,Ministerio de Educación,29,✓,✗,✗,✗,45672502365.0,0,0,0,SI,,SOLO_2023,Gestion Educativa y Politicas Socioeducativas,
+70,Ministerio de Educación,30,✓,✗,✗,✗,569775449.0,0,0,0,SI,,SOLO_2023,Cooperacion e Integracion Educativa Internacional,
+70,Ministerio de Educación,32,✓,✗,✗,✗,2344757238.0,0,0,0,SI,,SOLO_2023,Informacion y Evaluacion de la Calidad Educativa,
+70,Ministerio de Educación,37,✓,✗,✗,✗,25014970733.0,0,0,0,SI,,SOLO_2023,Infraestructura y Equipamiento,
+70,Ministerio de Educación,39,✓,✗,✗,✗,26555644073.0,0,0,0,SI,,SOLO_2023,Innovacion y Desarrollo de la Formacion Tecnologica,
+70,Ministerio de Educación,44,✓,✗,✗,✗,34466699048.0,0,0,0,SI,,SOLO_2023,Mejoramiento de la Calidad Educativa,
+70,Ministerio de Educación,45,✓,✗,✗,✗,8129557544.0,0,0,0,SI,,SOLO_2023,Acciones de Formacion Docente,
+70,Ministerio de Educación,46,✓,✗,✗,✗,33786442972.0,0,0,0,SI,,SOLO_2023,Fortalecimiento Edilicio de Jardines Infantiles,
+70,Ministerio de Educación,47,✓,✗,✗,✗,121098598130.0,0,0,0,SI,,SOLO_2023,Conectar Igualdad,
+70,Ministerio de Educación,48,✓,✗,✗,✗,2532389766.0,0,0,0,SI,,SOLO_2023,Fortalecimiento Territorial y Acompañamiento de Organizaciones Educativas,
+70,Ministerio de Educación,49,✓,✗,✗,✗,140509083032.0,0,0,0,SI,,SOLO_2023,Gestion y Asignacion de Becas a Estudiantes,
+70,Ministerio de Educación,98,✓,✗,✗,✗,125372142372.0,0,0,0,SI,,SOLO_2023,Fondo Nacional de Incentivo Docente,
+70,Ministerio de Educación,99,✓,✗,✗,✗,744134944.0,0,0,0,SI,,SOLO_2023,Transferencias Varias,
+71,"Ministerio de Ciencia, Tecnología e Innovación",1,✓,✗,✗,✗,13049008975.0,0,0,0,SI,,SOLO_2023,Actividades Centrales,
+71,"Ministerio de Ciencia, Tecnología e Innovación",16,✓,✗,✗,✗,6355835356.0,0,0,0,SI,,SOLO_2023,Generacion de Ciclos de Informacion Espacial Completos,
+71,"Ministerio de Ciencia, Tecnología e Innovación",17,✓,✗,✗,✗,4387556388.0,0,0,0,SI,,SOLO_2023,Investigacion y Desarrollo de Medios de Acceso al Espacio,
+71,"Ministerio de Ciencia, Tecnología e Innovación",18,✓,✗,✗,✗,8480032439.0,0,0,0,SI,,SOLO_2023,"Promocion, Investigacion, Financiamiento, Innovacion y Divulgacion en Ciencia y Tecnica",
+71,"Ministerio de Ciencia, Tecnología e Innovación",19,✓,✗,✗,✗,375000375.0,0,0,0,SI,,SOLO_2023,Investigaciones en Ciencia y Tecnica en el Atlantico Sur: Pampa Azul,
+71,"Ministerio de Ciencia, Tecnología e Innovación",20,✓,✗,✗,✗,150943905.0,0,0,0,SI,,SOLO_2023,Desarrollo de Politicas de Vinculacion Tecnologica y Social,
+71,"Ministerio de Ciencia, Tecnología e Innovación",44,✓,✗,✗,✗,13268295995.0,0,0,0,SI,,SOLO_2023,"Promocion  y  Financiamiento  de  Actividades  de  Ciencia, Tecnologia e Innovacion",
+71,"Ministerio de Ciencia, Tecnología e Innovación",45,✓,✗,✗,✗,2197973478.0,0,0,0,SI,,SOLO_2023,Planeamiento y Politicas en Ciencia Tecnologia e Innovacion,
+71,"Ministerio de Ciencia, Tecnología e Innovación",46,✓,✗,✗,✗,4843615858.0,0,0,0,SI,,SOLO_2023,"Formulacion, Coordinacion e Implementacion de Acciones de Articulacion en Ciencia y Tecnologia",
+71,"Ministerio de Ciencia, Tecnología e Innovación",47,✓,✗,✗,✗,4129501169.0,0,0,0,SI,,SOLO_2023,Financiamiento de Organismos Internacionales para Desarrollo Cientifico - Tecnologico,
+71,"Ministerio de Ciencia, Tecnología e Innovación",48,✓,✗,✗,✗,50762110300.0,0,0,0,SI,,SOLO_2023,"Federalizacion de las Politicas en Ciencia, Tecnologia e Innovacion",
+72,Ministerio de Cultura,1,✓,✗,✗,✗,8510237467.0,0,0,0,SI,,SOLO_2023,Actividades Centrales,
+72,Ministerio de Cultura,16,✓,✗,✗,✗,2456128843.0,0,0,0,SI,,SOLO_2023,Promocion e Integracion Cultural,
+72,Ministerio de Cultura,17,✓,✗,✗,✗,1954374168.0,0,0,0,SI,,SOLO_2023,Gestion de Organismos Estables,
+72,Ministerio de Cultura,18,✓,✗,✗,✗,5528376274.0,0,0,0,SI,,SOLO_2023,Gestion de Museos Nacionales,
+72,Ministerio de Cultura,19,✓,✗,✗,✗,2102852021.0,0,0,0,SI,,SOLO_2023,Difusion y Fortalecimiento del Patrimonio Cultural,
+72,Ministerio de Cultura,21,✓,✗,✗,✗,2121247282.0,0,0,0,SI,,SOLO_2023,Desarrollo y Fomento de la Cultura Ciudadana y la Economia Creativa,
+72,Ministerio de Cultura,25,✓,✗,✗,✗,6827883225.0,0,0,0,SI,,SOLO_2023,Servicios de la Biblioteca Nacional,
+72,Ministerio de Cultura,26,✓,✗,✗,✗,4661825994.0,0,0,0,SI,,SOLO_2023,Gestion de Espacios Culturales y Proyectos Especiales,
+72,Ministerio de Cultura,40,✓,✗,✗,✗,1131527479.0,0,0,0,SI,,SOLO_2023,Fomento y Apoyo Economico a Bibliotecas Populares,
+72,Ministerio de Cultura,41,✓,✗,✗,✗,77625678.0,0,0,0,SI,,SOLO_2023,Estudios e Investigaciones Historicas sobre Juan Domingo Peron,
+72,Ministerio de Cultura,54,✓,✗,✗,✗,2743384083.0,0,0,0,SI,,SOLO_2023,"Fomento, Promocion y Apoyo a la Cultura",
+72,Ministerio de Cultura,55,✓,✗,✗,✗,87389687.0,0,0,0,SI,,SOLO_2023,Estudios e Investigaciones Historicas sobre Maria Eva Duarte de Peron,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",1,✓,✗,✗,✗,219122810251.0,0,0,0,SI,,SOLO_2023,Actividades Centrales,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",16,✓,✗,✗,✗,8789351197671.0,0,0,0,SI,,SOLO_2023,Prestaciones Previsionales,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",17,✓,✗,✗,✗,3101503713.0,0,0,0,SI,,SOLO_2023,Complementos a las Prestaciones Previsionales,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",18,✓,✗,✗,✗,15592524391.0,0,0,0,SI,,SOLO_2023,Seguro de Desempleo,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",19,✓,✗,✗,✗,1506294939138.0,0,0,0,SI,,SOLO_2023,Asignaciones Familiares,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",20,✓,✗,✗,✗,1888251150.0,0,0,0,SI,,SOLO_2023,Formulacion y Regulacion de la Politica Laboral,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",21,✓,✗,✗,✗,66778283663.0,0,0,0,SI,,SOLO_2023,Atencion Pensiones Ex-Combatientes y Regimen Reparatorio Ley Nº26.913,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",22,✓,✗,✗,✗,947068762.0,0,0,0,SI,,SOLO_2023,Regularizacion del Trabajo,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",23,✓,✗,✗,✗,13842391011.0,0,0,0,SI,,SOLO_2023,Acciones de Capacitacion Laboral,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",27,✓,✗,✗,✗,7166576164.0,0,0,0,SI,,SOLO_2023,Acciones de Articulacion Territorial,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",30,✓,✗,✗,✗,214030739111.0,0,0,0,SI,,SOLO_2023,Pension Universal para el Adulto Mayor,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",31,✓,✗,✗,✗,285134136859.0,0,0,0,SI,,SOLO_2023,Pensiones No Contributivas (Decreto N° 746/2017),
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",32,✓,✗,✗,✗,15416526422.0,0,0,0,SI,,SOLO_2023,Acciones de Nutricion – Programa 1.000 Dias,
+75,"Ministerio de Trabajo, Empleo y Seguridad Social",99,✓,✗,✗,✗,430732715606.0,0,0,0,SI,,SOLO_2023,Transferencias y Contribuciones a la Seguridad Social y Organismos Descentralizados,
+77,Ministerio de Infraestructura,1,✗,✓,✗,✗,0,71614843953.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,10,✗,✓,✗,✗,0,2603448358.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,11,✗,✓,✗,✗,0,5644874582.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,16,✗,✓,✗,✗,0,55480553244.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,17,✗,✓,✗,✗,0,2270118016.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,20,✗,✓,✗,✗,0,333363326.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,22,✗,✓,✗,✗,0,20691901194.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,26,✗,✓,✗,✗,0,33055788044.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,37,✗,✓,✗,✗,0,22282011539.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,39,✗,✓,✗,✗,0,200980229118.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,4,✗,✓,✗,✗,0,813610767.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,40,✗,✓,✗,✗,0,195534033820.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,42,✗,✓,✗,✗,0,40812603556.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,43,✗,✓,✗,✗,0,11758645724.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,44,✗,✓,✗,✗,0,80278329644.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,45,✗,✓,✗,✗,0,17119197520.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,47,✗,✓,✗,✗,0,669245456.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,48,✗,✓,✗,✗,0,6533096624.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,49,✗,✓,✗,✗,0,4345701039.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,5,✗,✓,✗,✗,0,1566961411.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,50,✗,✓,✗,✗,0,12651972569.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,52,✗,✓,✗,✗,0,2435041473.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,53,✗,✓,✗,✗,0,2993884987.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,54,✗,✓,✗,✗,0,2858659672.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,57,✗,✓,✗,✗,0,15200000.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,58,✗,✓,✗,✗,0,0.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,6,✗,✓,✗,✗,0,4751065075.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,66,✗,✓,✗,✗,0,2045853829.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,67,✗,✓,✗,✗,0,34415422832.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,68,✗,✓,✗,✗,0,473424698807.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,69,✗,✓,✗,✗,0,921574993.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,71,✗,✓,✗,✗,0,112165885534.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,74,✗,✓,✗,✗,0,8353233751.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,75,✗,✓,✗,✗,0,1456719064.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,76,✗,✓,✗,✗,0,80539129800.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,77,✗,✓,✗,✗,0,421822819.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,78,✗,✓,✗,✗,0,33920939902.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,79,✗,✓,✗,✗,0,34424459617.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,80,✗,✓,✗,✗,0,2170678702.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,86,✗,✓,✗,✗,0,143908869.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,87,✗,✓,✗,✗,0,11883054540.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,91,✗,✓,✗,✗,0,9862691060.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,92,✗,✓,✗,✗,0,21782970453.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,94,✗,✓,✗,✗,0,810219298.0,0,0,SI,,NUEVO_POST2023,,
+77,Ministerio de Infraestructura,95,✗,✓,✗,✗,0,85971169998.0,0,0,SI,,NUEVO_POST2023,,
+80,Ministerio de Salud,1,✓,✓,✓,✓,20715025721.0,132954698646.0,188152540445.0,121161145160.0,SI,,,Actividades Centrales,Actividades Centrales
+80,Ministerio de Salud,10,✗,✓,✓,✓,0,7391219032.0,9274133795.0,6600005159.0,NO,Actividades Comunes  a los Programas 51 y 52 | Actividad Comun a los Programas 51 y 52,NOMBRE_CAMBIA | NUEVO_POST2023,,Actividades Comunes  a los Programas 51 y 52
+80,Ministerio de Salud,12,✗,✗,✗,✓,0,0,0,22808171763.0,SI,,NUEVO_POST2023,,Actividades Comunes a  las Politicas de Discapacidad
+80,Ministerio de Salud,16,✓,✓,✓,✓,2647612072.0,6102325164.0,5304959248.0,19271253200.0,NO,Apoyo al Desarrollo de la Atencion Medica | Asistencia para la Salud Mental y Consumos Problematicos,NOMBRE_CAMBIA,Apoyo al Desarrollo de la Atencion Medica,Asistencia para la Salud Mental y Consumos Problematicos
+80,Ministerio de Salud,17,✓,✓,✓,✓,8128557328.0,7079827505.0,24222320566.0,46763139167.0,NO,Abordaje de Curso de Vida (NNA) | Abordaje de Curso de Vida | Atencion Especializada en Rehabilitacion y Cuidados Paliativos,NOMBRE_CAMBIA,Abordaje de Curso de Vida (NNA),Atencion Especializada en Rehabilitacion y Cuidados Paliativos
+80,Ministerio de Salud,18,✓,✓,✓,✓,1741372679.0,9031443005.0,292813000.0,25830248886.0,NO,Formacion de Recursos Humanos Sanitarios y Asistenciales | Promocion del Modelo Social de la Discapacidad en Municipios,NOMBRE_CAMBIA,Formacion de Recursos Humanos Sanitarios y Asistenciales,Formacion de Recursos Humanos Sanitarios y Asistenciales
+80,Ministerio de Salud,19,✗,✗,✗,✓,0,0,0,38331866279.0,SI,,NUEVO_POST2023,,Asistencia Especializada en Problematicas de Salud Mental y Discapacidad Intelectual
+80,Ministerio de Salud,20,✓,✓,✓,✓,117545568172.0,226916851674.0,227523893438.0,304037812568.0,NO,Prevencion y Control de Enfermedades Transmisible e Inmunoprevenibles | Prevencion y Control de Enfermedades Transmisibles e Inmunoprevenibles,NOMBRE_CAMBIA,Prevencion y Control de Enfermedades Transmisibles e Inmunoprevenibles,Prevencion y Control de Enfermedades Transmisible e Inmunoprevenibles
+80,Ministerio de Salud,21,✓,✓,✓,✓,10895035436.0,1084146350.0,2617422823.0,7279182741.0,SI,,,"Planificacion, Control, Regulacion, Estudios, Investigaciones y Fiscalizacion de la Politica de Salud","Planificacion, Control, Regulacion, Estudios, Investigaciones y Fiscalizacion de la Politica de Salud"
+80,Ministerio de Salud,22,✓,✓,✓,✓,21224490382.0,23473293565.0,59977472018.0,61373228858.0,SI,,,"Respuesta al VIH, Infecciones de Transmision Sexual, Hepatitis Virales, Tuberculosis y Lepra","Respuesta al VIH, Infecciones de Transmision Sexual, Hepatitis Virales, Tuberculosis y Lepra"
+80,Ministerio de Salud,23,✗,✗,✓,✗,0,0,4232463728109.0,0,SI,,NUEVO_POST2023,,
+80,Ministerio de Salud,24,✓,✓,✓,✓,450607453.0,410736926.0,812669578.0,2860471722.0,SI,,,Abordaje Integral de Enfermedades No Transmisibles y sus Factores de Riesgo,Abordaje Integral de Enfermedades No Transmisibles y sus Factores de Riesgo
+80,Ministerio de Salud,25,✓,✓,✓,✓,7891268259.0,3968664466.0,25615899010.0,27288661351.0,SI,,,Desarrollo de la Salud Sexual y la Procreacion Responsable,Desarrollo de la Salud Sexual y la Procreacion Responsable
+80,Ministerio de Salud,26,✓,✓,✓,✓,834690967.0,684001155.0,1783153820.0,4398182622.0,SI,,,Cobertura de Emergencias Sanitarias,Cobertura de Emergencias Sanitarias
+80,Ministerio de Salud,29,✓,✓,✓,✓,26052744225.0,118279125172.0,151269521887.0,159564757289.0,SI,,,"Acceso a Medicamentos, Insumos y Tecnologia Medica","Acceso a Medicamentos, Insumos y Tecnologia Medica"
+80,Ministerio de Salud,3,✓,✓,✓,✗,554940400.0,1513886983.0,1695899921.0,0,SI,,,Actividades Comunes a los Programas con Financiamiento Externo,
+80,Ministerio de Salud,30,✓,✓,✓,✓,2319397677.0,7299077973.0,21125533553.0,8808902578.0,SI,,,Fortalecimiento de la Capacidad del Sistema Publico de  Salud,Fortalecimiento de la Capacidad del Sistema Publico de  Salud
+80,Ministerio de Salud,36,✗,✗,✓,✗,0,0,868655239207.0,0,SI,,NUEVO_POST2023,,
+80,Ministerio de Salud,37,✓,✓,✓,✓,3056511266.0,3331804429.0,4487137860.0,11277081500.0,SI,,,Prevencion y Control de Enfermedades Endemicas,Prevencion y Control de Enfermedades Endemicas
+80,Ministerio de Salud,38,✓,✓,✗,✗,0.0,243169429.0,0,0,SI,,,Funciones Esenciales de Salud Publica (BCIE N°2215),
+80,Ministerio de Salud,39,✓,✓,✓,✓,1905632670.0,2044780750.0,994328440.0,557300671.0,NO,Fortalecimiento de la Estrategia de Atencion Primaria | Desarrollo de Estrategias en Salud Comunitaria,NOMBRE_CAMBIA,Desarrollo de Estrategias en Salud Comunitaria,Fortalecimiento de la Estrategia de Atencion Primaria
+80,Ministerio de Salud,41,✓,✓,✓,✗,113749097.0,156223216.0,7859543.0,0,SI,,,Atencion Sanitaria en el Territorio,
+80,Ministerio de Salud,42,✓,✓,✓,✓,682788513.0,617103665.0,621683255.0,501465873.0,SI,,,Prevencion y Tratamiento de Patologias Especificas,Prevencion y Tratamiento de Patologias Especificas
+80,Ministerio de Salud,45,✓,✓,✓,✗,5635456738.0,47021871798.0,1000000.0,0,SI,,,Prevencion y Control de Enfermedades Cronicas no Transmisibles,
+80,Ministerio de Salud,47,✓,✓,✓,✓,27858639486.0,83443229240.0,131227890924.0,30988124613.0,NO,Fortalecimiento de los Sistemas Provinciales de Salud | Desarrollo de Seguros Publicos de Salud (BIRF N° 8853-AR/BIRF N° 9222-AR/BIRF N° 9547-AR) | Desarrollo de Seguros Publicos de Salud (BIRF N°8853-AR/ BIRF N°9222-AR),NOMBRE_CAMBIA,Desarrollo de Seguros Publicos de Salud (BIRF N°8853-AR/ BIRF N°9222-AR),Fortalecimiento de los Sistemas Provinciales de Salud
+80,Ministerio de Salud,49,✓,✓,✓,✓,1088518630.0,560768634.0,1633606972.0,3934722377.0,SI,,,"Estadisticas, Estudios e Investigaciones en Salud","Estadisticas, Estudios e Investigaciones en Salud"
+80,Ministerio de Salud,5,✓,✓,✓,✓,414508502.0,378120605.0,3636141956.0,10873469483.0,NO,Actividades Comunes de Programas de Calidad en Salud | Actividades Comunes de Programas de Gestion Sanitaria,NOMBRE_CAMBIA,Actividades Comunes de Programas de Calidad en Salud,Actividades Comunes de Programas de Gestion Sanitaria
+80,Ministerio de Salud,50,✓,✓,✓,✓,1245246208.0,5569378999.0,5593129651.0,6454274918.0,SI,,,Regulacion y Control del Sistema de Salud,Regulacion y Control del Sistema de Salud
+80,Ministerio de Salud,51,✗,✓,✓,✓,0,2145179941.0,2950661263.0,2562430900.0,SI,,NUEVO_POST2023,,"Prevencion, Estadisticas e Investigacion sobre Consumos Problematicos"
+80,Ministerio de Salud,52,✓,✓,✓,✓,2999189383.0,32245926680.0,55372624968.0,57599513329.0,NO,Atencion y Acompañamiento a Personas con Consumos Problematicos | Asistencia para la Salud Mental y Consumos Problematicos  (DIS),NOMBRE_CAMBIA,Asistencia para la Salud Mental y Consumos Problematicos  (DIS),Atencion y Acompañamiento a Personas con Consumos Problematicos
+80,Ministerio de Salud,53,✓,✓,✓,✗,7214485764.0,38014851892.0,44552759797.0,0,SI,,,Atencion de Pacientes,
+80,Ministerio de Salud,54,✓,✓,✓,✓,7347516164.0,39568187913.0,48883232684.0,48160000000.0,SI,,,"Control y Fiscalizacion de Medicamentos, Alimentos, Productos Medicos, Cosmeticos y Productos de Uso Domestico","Control y Fiscalizacion de Medicamentos, Alimentos, Productos Medicos, Cosmeticos y Productos de Uso Domestico"
+80,Ministerio de Salud,55,✓,✓,✓,✓,4303814644.0,37244127898.0,44045654252.0,44823100000.0,SI,,,Regulacion de la Ablacion e Implantes,Regulacion de la Ablacion e Implantes
+80,Ministerio de Salud,56,✓,✓,✓,✓,9464934780.0,41879062399.0,50922381642.0,53155102779.0,SI,,,"Prevencion, Control e Investigacion de Patologias en Salud","Prevencion, Control e Investigacion de Patologias en Salud"
+80,Ministerio de Salud,58,✓,✓,✓,✗,34926922303.0,171976001208.0,209353958685.0,0,SI,,,Atencion Sanitaria para la Comunidad,
+80,Ministerio de Salud,59,✓,✓,✓,✗,5821014425.0,29483527121.0,37782166470.0,0,NO,Atencion de Pacientes (DIS) | Atencion de Pacientes,NOMBRE_CAMBIA,Atencion de Pacientes (DIS),
+80,Ministerio de Salud,60,✓,✓,✓,✗,2281773289.0,11240829814.0,14962333318.0,0,NO,Atencion a Personas con Discapacidades Psicofisicas | Atencion a Personas con Discapacidades Psicofisicas (DIS),NOMBRE_CAMBIA,Atencion a Personas con Discapacidades Psicofisicas (DIS),
+80,Ministerio de Salud,62,✗,✗,✓,✗,0,0,3624598955.0,0,SI,,NUEVO_POST2023,,
+80,Ministerio de Salud,63,✓,✓,✓,✓,42513117108.0,81620202550.0,63685853385.0,79682201863.0,SI,,,Asistencia Financiera a Agentes del Seguro de Salud,Asistencia Financiera a Agentes del Seguro de Salud
+80,Ministerio de Salud,65,✓,✓,✓,✓,894387671.0,4999027821.0,12932528560.0,10227256394.0,SI,,,"Investigacion, Prevencion, Deteccion Temprana y Tratamiento del Cancer","Investigacion, Prevencion, Deteccion Temprana y Tratamiento del Cancer"
+80,Ministerio de Salud,66,✓,✓,✓,✗,382566147.0,274717345.0,0.0,0,SI,,,Investigacion y Desarrollo de los Laboratorios de Produccion Publica,
+80,Ministerio de Salud,67,✗,✗,✗,✓,0,0,0,3035673552.0,SI,,NUEVO_POST2023,,Acciones de Integracion de Personas con Discapacidad
+80,Ministerio de Salud,68,✗,✗,✗,✓,0,0,0,412000000.0,SI,,NUEVO_POST2023,,Promocion del Modelo Social de la Discapacidad en Municipios
+80,Ministerio de Salud,69,✗,✗,✗,✓,0,0,0,4038642891366.0,SI,,NUEVO_POST2023,,Pensiones no Contributivas por Invalidez Laborativa
+80,Ministerio de Salud,7,✓,✓,✓,✗,450835576.0,525888095.0,2965448.0,0,SI,,,Actividades Comunes de Programas de Equidad en Salud,
+80,Ministerio de Salud,70,✗,✗,✗,✓,0,0,0,1141628124572.0,SI,,NUEVO_POST2023,,Atencion Medica a los Beneficiarios de Pensiones no Contributivas
+80,Ministerio de Salud,71,✗,✗,✗,✓,0,0,0,5756890867.0,SI,,NUEVO_POST2023,,Prevencion y Control de Discapacidades
+80,Ministerio de Salud,8,✓,✓,✓,✗,792922822.0,639872771.0,0.0,0,SI,,,Actividades Comunes a los Programas de Acceso a la Salud,
+80,Ministerio de Salud,9,✓,✓,✓,✓,714030850.0,731157481.0,1276363978.0,4244220163.0,SI,,,Actividades Comunes de la Unidad Gabinete de Asesores,Actividades Comunes de la Unidad Gabinete de Asesores
+80,Ministerio de Salud,95,✓,✓,✓,✓,24000.0,89274.0,89274.0,1000000.0,SI,,,Servicios de la Deuda,Servicios de la Deuda
+80,Ministerio de Salud,99,✓,✓,✓,✓,63514377191.0,423730594792.0,516981861701.0,556252522650.0,NO,Transferencias Varias | Transferencias Varias y Erogaciones Figurativas,NOMBRE_CAMBIA,Transferencias Varias,Transferencias Varias y Erogaciones Figurativas
+81,Ministerio de Ambiente y Desarrollo Sostenible,1,✓,✗,✗,✗,7388627145.0,0,0,0,SI,,SOLO_2023,Actividades Centrales,
+81,Ministerio de Ambiente y Desarrollo Sostenible,17,✓,✗,✗,✗,9703988035.0,0,0,0,SI,,SOLO_2023,Conservacion y Administracion de Areas Naturales Protegidas,
+81,Ministerio de Ambiente y Desarrollo Sostenible,18,✓,✗,✗,✗,770802902.0,0,0,0,SI,,SOLO_2023,Atencion a Pasividades de Guardaparques,
+81,Ministerio de Ambiente y Desarrollo Sostenible,19,✓,✗,✗,✗,285104161.0,0,0,0,SI,,SOLO_2023,Formacion y Capacitacion,
+81,Ministerio de Ambiente y Desarrollo Sostenible,23,✓,✗,✗,✗,161221161.0,0,0,0,SI,,SOLO_2023,Programa de Desarrollo de Corredores Turisticos (BID Nº 2606/OC-AR),
+81,Ministerio de Ambiente y Desarrollo Sostenible,24,✓,✗,✗,✗,1120176202.0,0,0,0,SI,,SOLO_2023,Infraestructura en Areas Naturales Protegidas,
+81,Ministerio de Ambiente y Desarrollo Sostenible,25,✓,✗,✗,✗,122730533.0,0,0,0,SI,,SOLO_2023,Sistema de Areas Marinas Protegidas,
+81,Ministerio de Ambiente y Desarrollo Sostenible,26,✓,✗,✗,✗,299649259.0,0,0,0,SI,,SOLO_2023,"Planificacion, Formulacion y Ejecucion de Politicas de Conservacion en Areas Naturales Protegidas",
+81,Ministerio de Ambiente y Desarrollo Sostenible,27,✓,✗,✗,✗,1475240156.0,0,0,0,SI,,SOLO_2023,Recuperacion Sustentable de Paisajes y Medios de Vida en Argentina (BIRF N° 9335-AR y PROGREEN Nº TF0B7681),
+81,Ministerio de Ambiente y Desarrollo Sostenible,60,✓,✗,✗,✗,11607359076.0,0,0,0,SI,,SOLO_2023,Politica Ambiental en Recursos Naturales,
+81,Ministerio de Ambiente y Desarrollo Sostenible,61,✓,✗,✗,✗,956377037.0,0,0,0,SI,,SOLO_2023,Promocion y Gestion del Cambio Climatico y el Desarrollo Sostenible,
+81,Ministerio de Ambiente y Desarrollo Sostenible,62,✓,✗,✗,✗,630764440.0,0,0,0,SI,,SOLO_2023,Coordinacion Interjurisdiccional e Interinstitucional,
+81,Ministerio de Ambiente y Desarrollo Sostenible,63,✓,✗,✗,✗,19682678769.0,0,0,0,SI,,SOLO_2023,Control Ambiental,
+81,Ministerio de Ambiente y Desarrollo Sostenible,66,✓,✗,✗,✗,860844844.0,0,0,0,SI,,SOLO_2023,Desarrollo Sostenible,
+85,Ministerio de Desarrollo Social,1,✓,✗,✗,✗,19654747227.0,0,0,0,SI,,SOLO_2023,Actividades Centrales,
+85,Ministerio de Desarrollo Social,11,✓,✗,✗,✗,4163294095.0,0,0,0,SI,,SOLO_2023,Actividad Comun a los Programas 57 y 58,
+85,Ministerio de Desarrollo Social,20,✓,✗,✗,✗,47746147251.0,0,0,0,SI,,SOLO_2023,Abordaje Territorial,
+85,Ministerio de Desarrollo Social,24,✓,✗,✗,✗,3266440753.0,0,0,0,SI,,SOLO_2023,Economia Social,
+85,Ministerio de Desarrollo Social,26,✓,✗,✗,✗,420527667283.0,0,0,0,SI,,SOLO_2023,Politicas Alimentarias,
+85,Ministerio de Desarrollo Social,38,✓,✗,✗,✗,590463031546.0,0,0,0,SI,,SOLO_2023,Acciones de Pg Nac de Inclusion Socio-Productiva y Desarrollo Local - Potenciar Trabajo,
+85,Ministerio de Desarrollo Social,4,✓,✗,✗,✗,1801575645.0,0,0,0,SI,,SOLO_2023,"Actividades Comunes a los Programas 44, 45, 46, 47 y 49",
+85,Ministerio de Desarrollo Social,44,✓,✗,✗,✗,6213881910.0,0,0,0,SI,,SOLO_2023,"Acciones para la Promocion y Proteccion Integral de los Derechos de Niños, Niñas y Adolescentes",
+85,Ministerio de Desarrollo Social,45,✓,✗,✗,✗,2365068729.0,0,0,0,SI,,SOLO_2023,Politicas Federales para la Promocion de los Derechos de Niños y Adolescentes,
+85,Ministerio de Desarrollo Social,46,✓,✗,✗,✗,1988308269.0,0,0,0,SI,,SOLO_2023,Promocion y Proteccion de los Derechos de Adultos Mayores,
+85,Ministerio de Desarrollo Social,47,✓,✗,✗,✗,3278890267.0,0,0,0,SI,,SOLO_2023,Promocion y Asistencia a Espacios de Primera Infancia,
+85,Ministerio de Desarrollo Social,49,✓,✗,✗,✗,300455926.0,0,0,0,SI,,SOLO_2023,Acciones para el Fortalecimiento de las Familias y su Inclusion Comunitaria,
+85,Ministerio de Desarrollo Social,51,✓,✗,✗,✗,129362177.0,0,0,0,SI,,SOLO_2023,Acciones para el Fortalecimiento de las Organizaciones de la Sociedad Civil,
+85,Ministerio de Desarrollo Social,52,✓,✗,✗,✗,4088514930.0,0,0,0,SI,,SOLO_2023,Apoyo al Plan Nacional de Primera Infancia,
+85,Ministerio de Desarrollo Social,53,✓,✗,✗,✗,11213780480.0,0,0,0,SI,,SOLO_2023,Integracion Socio Urbana,
+85,Ministerio de Desarrollo Social,54,✓,✗,✗,✗,4090635979.0,0,0,0,SI,,SOLO_2023,Plan Nacional de Proteccion Social,
+85,Ministerio de Desarrollo Social,55,✓,✗,✗,✗,70601077.0,0,0,0,SI,,SOLO_2023,Programa de Fortalecimiento de la Informacion Social Estrategica,
+85,Ministerio de Desarrollo Social,56,✓,✗,✗,✗,6655269273.0,0,0,0,SI,,SOLO_2023,Acciones del Programa Nacional de Inclusion e Integracion de Jovenes - Potenciar Inclusion Joven,
+85,Ministerio de Desarrollo Social,57,✓,✗,✗,✗,2852174194.0,0,0,0,SI,,SOLO_2023,Acciones de Abordaje Integral Comunitaria,
+85,Ministerio de Desarrollo Social,58,✓,✗,✗,✗,724920925.0,0,0,0,SI,,SOLO_2023,Programa de Integracion Social y Fortalecimiento de la Ciudadania hacia el Desarrollo Humano,
+85,Ministerio de Desarrollo Social,59,✓,✗,✗,✗,50161809.0,0,0,0,SI,,SOLO_2023,Programa para la Equidad del Norte Grande,
+85,Ministerio de Desarrollo Social,60,✓,✗,✗,✗,50161809.0,0,0,0,SI,,SOLO_2023,Programa de Articulacion Social del Area Metropolitana de Buenos Aires,
+85,Ministerio de Desarrollo Social,61,✓,✗,✗,✗,0.0,0,0,0,SI,,SOLO_2023,Construccion “CASA AMOR”,
+85,Ministerio de Desarrollo Social,8,✓,✗,✗,✗,4639428048.0,0,0,0,SI,,SOLO_2023,Actividad Comun a los Programas 24 y 38,
+85,Ministerio de Desarrollo Social,9,✓,✗,✗,✗,1558583485.0,0,0,0,SI,,SOLO_2023,"Actividad Comun a los Programas 26, 51, 54 y 56",
+85,Ministerio de Desarrollo Social,99,✓,✗,✗,✗,3061795212.0,0,0,0,SI,,SOLO_2023,Transferencias Varias,
+86,"Ministerio de las Mujeres, Géneros y Diversidad",1,✓,✗,✗,✗,1323298165.0,0,0,0,SI,,SOLO_2023,Actividades Centrales (PPG),
+86,"Ministerio de las Mujeres, Géneros y Diversidad",18,✓,✗,✗,✗,50588058628.0,0,0,0,SI,,SOLO_2023,Formulacion de Politicas contra la Violencia por Razones de Genero (PPG),
+86,"Ministerio de las Mujeres, Géneros y Diversidad",19,✓,✗,✗,✗,1647110433.0,0,0,0,SI,,SOLO_2023,Formulacion de Politicas de Igualdad y Diversidad (PPG),
+86,"Ministerio de las Mujeres, Géneros y Diversidad",20,✓,✗,✗,✗,561608154.0,0,0,0,SI,,SOLO_2023,"Acciones de Formacion, Investigacion y Politicas Culturales para la Igualdad (PPG)",
+86,"Ministerio de las Mujeres, Géneros y Diversidad",21,✓,✗,✗,✗,283093230.0,0,0,0,SI,,SOLO_2023,Apoyo a la Implementacion de Politicas de Genero (PPG),
+88,Ministerio de Capital Humano,1,✗,✓,✓,✓,0,1274295980184.0,1559825485013.0,1784757382604.0,SI,,NUEVO_POST2023,,Actividades Centrales
+88,Ministerio de Capital Humano,11,✗,✓,✓,✗,0,4171036152.0,3947203617.0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,16,✗,✓,✓,✓,0,28033633524672.0,45239328312054.0,52748936114251.0,SI,,NUEVO_POST2023,,Prestaciones Previsionales
+88,Ministerio de Capital Humano,17,✗,✓,✓,✓,0,2909334896639.0,2999334896639.0,2946969084091.0,SI,,NUEVO_POST2023,,Complementos a las Prestaciones Previsionales
+88,Ministerio de Capital Humano,18,✗,✓,✓,✓,0,257136904538.0,349636904538.0,363257590214.0,SI,,NUEVO_POST2023,,Seguro de Desempleo
+88,Ministerio de Capital Humano,19,✗,✓,✓,✓,0,1470546187.0,8846113558819.0,10152516013276.0,NO,Asignaciones Familiares | Formulacion de Politicas de Igualdad y Diversidad (PPG),NOMBRE_CAMBIA | NUEVO_POST2023,,Asignaciones Familiares
+88,Ministerio de Capital Humano,20,✗,✓,✓,✓,0,8603574367.0,9222341367.0,19641858017.0,SI,,NUEVO_POST2023,,Formulacion y Regulacion de la Politica Laboral
+88,Ministerio de Capital Humano,21,✗,✓,✓,✓,0,228262709059.0,322262709059.0,374777412159.0,SI,,NUEVO_POST2023,,Atencion Pensiones Ex-Combatientes y Regimen Reparatorio Ley Nº26.913
+88,Ministerio de Capital Humano,22,✗,✓,✓,✓,0,5344825839.0,6323055839.0,18560424101.0,SI,,NUEVO_POST2023,,Regularizacion del Trabajo
+88,Ministerio de Capital Humano,23,✗,✓,✓,✓,0,9617318583.0,31089818312.0,41908736880.0,NO,Acciones de Capacitacion Laboral | Gestion de Organismos Estables,NOMBRE_CAMBIA | NUEVO_POST2023,,Acciones de Capacitacion Laboral
+88,Ministerio de Capital Humano,24,✗,✓,✓,✗,0,15351955677.0,0.0,0,NO,Economia Social | Gestion de Museos Nacionales,NOMBRE_CAMBIA | NUEVO_POST2023,,
+88,Ministerio de Capital Humano,25,✗,✓,✓,✓,0,25912987032.0,28476272728.0,29529000003.0,SI,,NUEVO_POST2023,,Servicios de la Biblioteca Nacional
+88,Ministerio de Capital Humano,26,✗,✓,✓,✓,0,2026979083525.0,2279949329712.0,2293777940529.0,SI,,NUEVO_POST2023,,Politicas Alimentarias
+88,Ministerio de Capital Humano,27,✗,✓,✓,✗,0,14531932017.0,43716453042.0,0,NO,Acciones de Articulacion Territorial | Gestion de Espacios Culturales y Proyectos Especiales,NOMBRE_CAMBIA | NUEVO_POST2023,,
+88,Ministerio de Capital Humano,28,✗,✓,✗,✗,0,4487907627.0,0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,29,✗,✓,✓,✓,0,422049797234.0,276633893045.0,296358475927.0,SI,,NUEVO_POST2023,,Gestion Educativa y Politicas Socioeducativas
+88,Ministerio de Capital Humano,30,✗,✓,✓,✓,0,444470525080.0,625170525080.0,981674734207.0,SI,,NUEVO_POST2023,,Pension Universal para el Adulto Mayor
+88,Ministerio de Capital Humano,31,✗,✓,✓,✓,0,765630470191.0,1114630470191.0,1280885112620.0,SI,,NUEVO_POST2023,,Pensiones No Contributivas (Decreto N° 746/2017)
+88,Ministerio de Capital Humano,32,✗,✓,✓,✓,0,2463527519.0,15819698308.0,32549610237.0,NO,Legitimar y Reconstruir Juventudes | Informacion y Evaluacion de la Calidad Educativa,NOMBRE_CAMBIA | NUEVO_POST2023,,Informacion y Evaluacion de la Calidad Educativa
+88,Ministerio de Capital Humano,33,✗,✗,✓,✓,0,0,902614239.0,9972720000.0,NO,"Apoyo al Desarrollo Integral de la Primera Infancia | Apoyo al Desarrollo Integral de la Educacion, el Empleo  y la Proteccion Social",NOMBRE_CAMBIA | NUEVO_POST2023,,"Apoyo al Desarrollo Integral de la Educacion, el Empleo  y la Proteccion Social"
+88,Ministerio de Capital Humano,37,✗,✓,✓,✓,0,62285078701.0,176315486566.0,24808693354.0,SI,,NUEVO_POST2023,,Infraestructura y Equipamiento
+88,Ministerio de Capital Humano,38,✗,✓,✓,✓,0,610300119048.0,216428812370.0,306889853321.0,SI,,NUEVO_POST2023,,Acciones de Inclusion Social
+88,Ministerio de Capital Humano,39,✗,✓,✓,✓,0,44683054865.0,41277111168.0,17946272675.0,SI,,NUEVO_POST2023,,Innovacion y Desarrollo de la Formacion Tecnologica
+88,Ministerio de Capital Humano,4,✗,✓,✓,✗,0,9837313508.0,9294843541.0,0,NO,"Actividades Comunes a los Programas 44, 46 y 47 | Actividades Comunes a los Programas 44, 45, 46, 47 y 49",NOMBRE_CAMBIA | NUEVO_POST2023,,
+88,Ministerio de Capital Humano,40,✗,✓,✓,✓,0,4496987290.0,381143585461.0,559552781438.0,NO,Plan Nacional de Alfabetizacion | Asistencia y Coordinacion de Politicas Sociales,NOMBRE_CAMBIA | NUEVO_POST2023,,Plan Nacional de Alfabetizacion
+88,Ministerio de Capital Humano,41,✗,✗,✗,✓,0,0,0,8002383165.0,SI,,NUEVO_POST2023,,Acciones para la Promocion e Integracion Familiar
+88,Ministerio de Capital Humano,44,✗,✓,✓,✓,0,67013259012.0,10887874802.0,31961388244.0,NO,"Acciones para la Promocion y Proteccion Integral de los Derechos de Niños, Niñas y Adolescentes | Mejoramiento de la Calidad Educativa",NOMBRE_CAMBIA | NUEVO_POST2023,,"Acciones para la Promocion y Proteccion Integral de los Derechos de Niños, Niñas y Adolescentes"
+88,Ministerio de Capital Humano,45,✗,✓,✓,✓,0,7068894483.0,5787868851.0,9874969036.0,NO,Politicas Federales para la Promocion de los Derechos de Niños y Adolescentes | Acciones de Formacion Docente,NOMBRE_CAMBIA | NUEVO_POST2023,,Acciones de Formacion Docente
+88,Ministerio de Capital Humano,46,✗,✓,✓,✗,0,9669621108.0,10645284289.0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,47,✗,✓,✓,✓,0,11133286682.0,8628133105.0,15351268887.0,SI,,NUEVO_POST2023,,Promocion y Asistencia a Espacios de Primera Infancia
+88,Ministerio de Capital Humano,48,✗,✓,✓,✗,0,972016170.0,202662034.0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,49,✗,✓,✓,✓,0,368330110217.0,299017840607.0,366849319738.0,SI,,NUEVO_POST2023,,Gestion y Asignacion de Becas a Estudiantes
+88,Ministerio de Capital Humano,5,✗,✓,✓,✓,0,459833430.0,471230196.0,447384000.0,NO,Actividad Comun a las acciones del Consejo Nacional de Coordinacion de Politicas Sociales | Actividades Comunes a las Acciones del Consejo Nacional de Coordinacion de Politicas Sociales,NOMBRE_CAMBIA | NUEVO_POST2023,,Actividades Comunes a las Acciones del Consejo Nacional de Coordinacion de Politicas Sociales
+88,Ministerio de Capital Humano,51,✗,✓,✗,✗,0,0.0,0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,52,✗,✓,✓,✗,0,9859660067.0,3636714066.0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,54,✗,✓,✓,✗,0,2983795523.0,0.0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,55,✗,✓,✓,✗,0,70601006.0,0.0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,56,✗,✓,✗,✗,0,0.0,0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,57,✗,✓,✓,✓,0,2928282126.0,1830821309.0,6346467869.0,SI,,NUEVO_POST2023,,Acciones de Abordaje Integral Comunitaria
+88,Ministerio de Capital Humano,58,✗,✓,✓,✓,0,48666450.0,30127267.0,34268025526.0,SI,,NUEVO_POST2023,,Programa de Integracion Social y Fortalecimiento de la Ciudadania hacia el Desarrollo Humano
+88,Ministerio de Capital Humano,59,✗,✓,✓,✗,0,50161759.0,0.0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,60,✗,✓,✓,✗,0,50161759.0,0.0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,61,✗,✓,✓,✗,0,225100000.0,0.0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,62,✗,✓,✗,✗,0,0.0,0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,63,✗,✓,✓,✗,0,990182617.0,2435528889.0,0,SI,,NUEVO_POST2023,,
+88,Ministerio de Capital Humano,8,✗,✓,✓,✗,0,4655993662.0,4233754757.0,0,NO,Actividad Comun a los Programas 24 y 38 | Actividad Comun a los Programas 26 y 38,NOMBRE_CAMBIA | NUEVO_POST2023,,
+88,Ministerio de Capital Humano,9,✗,✓,✓,✗,0,1558581926.0,1398053747.0,0,NO,"Actividad Comun a los Programas 26 y  54 | Actividad Comun a los Programas 26, 51, 54 y 56",NOMBRE_CAMBIA | NUEVO_POST2023,,
+88,Ministerio de Capital Humano,98,✗,✓,✓,✓,0,59149679393.0,0.0,17495086838.0,NO,Fondo Nacional de Incentivo Docente | Fondo  de  Compensacion Salarial Docente,NOMBRE_CAMBIA | NUEVO_POST2023,,Fondo  de  Compensacion Salarial Docente
+88,Ministerio de Capital Humano,99,✗,✓,✓,✓,0,1201212431115.0,1830103231115.0,2120757679810.0,SI,,NUEVO_POST2023,,Transferencias y Contribuciones a la Seguridad Social y Organismos Descentralizados
+89,Ministerio de Desregulación y Transformación del Estado,1,✗,✗,✓,✓,0,0,3464632198.0,6560996361.0,SI,,NUEVO_POST2023,,Actividades Centrales
+89,Ministerio de Desregulación y Transformación del Estado,27,✗,✗,✓,✓,0,0,5866058177.0,11482606684.0,NO,Desarrollo de los Recursos Humanos del Sector Publico | Planificacion Estrategica y Desarrollo de los Recursos Humanos del Sector Publico,NOMBRE_CAMBIA | NUEVO_POST2023,,Planificacion Estrategica y Desarrollo de los Recursos Humanos del Sector Publico
+89,Ministerio de Desregulación y Transformación del Estado,28,✗,✗,✓,✓,0,0,2409363457.0,5724017541.0,NO,Transformacion del Estado y Funcion Publica | Fortalecimiento de la Gestion Publica,NOMBRE_CAMBIA | NUEVO_POST2023,,Transformacion del Estado y Funcion Publica
+89,Ministerio de Desregulación y Transformación del Estado,29,✗,✗,✗,✓,0,0,0,1029852826.0,SI,,NUEVO_POST2023,,Desregulacion y Simplificacion Normativa
+90,Servicio de la Deuda Pública,98,✓,✓,✓,✓,2912760632758.0,10277457720000.0,12380240690453.0,14118044188890.0,SI,,,Deudas Directas de la Administracion Central,Deudas Directas de la Administracion Central
+91,Obligaciones a Cargo del Tesoro,65,✓,✓,✓,✗,0.0,1964000000.0,1964000000.0,0,NO,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Cultura | Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Cultura,NOMBRE_CAMBIA,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Cultura,
+91,Obligaciones a Cargo del Tesoro,66,✓,✓,✓,✓,32500032500.0,474189483597.0,142368000000.0,6847000000.0,SI,,,Asistencia Financiera a Empresas Publicas y Otros Entes dependientes de la Jefatura de Gabinete de Ministros,Asistencia Financiera a Empresas Publicas y Otros Entes dependientes de la Jefatura de Gabinete de Ministros
+91,Obligaciones a Cargo del Tesoro,67,✓,✓,✓,✓,90346090346.0,510000000000.0,1408000000000.0,190000000000.0,NO,Cumplimiento de Medida Cautelar CSJN 1864/2022 | Reglamentacion Ley N° 27.606,NOMBRE_CAMBIA,Reglamentacion Ley N° 27.606,Cumplimiento de Medida Cautelar CSJN 1864/2022
+91,Obligaciones a Cargo del Tesoro,68,✓,✓,✗,✗,199160199160.0,0.0,0,0,SI,,,Fondo de Fortalecimiento Fiscal de la Provincia de Buenos Aires,
+91,Obligaciones a Cargo del Tesoro,72,✓,✓,✓,✓,25558825559.0,43305577178.0,81480198486.0,62244896690.0,NO,Asistencia Financiera a Empresas Publicas y Otros Entes dependientes de la Secretaria de Comunicacion y Medios | Asistencia Financiera a Empresas Publicas y Otros Entes dependientes de la Secretaria de Comunicacion y Prensa | Asistencia Financiera a Empresas Publicas y Otros Entes dependientes de la Secretaria de Medios y Comunicacion Publica,NOMBRE_CAMBIA,Asistencia Financiera a Empresas Publicas y Otros Entes dependientes de la Secretaria de Medios y Comunicacion Publica,Asistencia Financiera a Empresas Publicas y Otros Entes dependientes de la Secretaria de Comunicacion y Prensa
+91,Obligaciones a Cargo del Tesoro,73,✓,✓,✓,✓,5492909493.0,16000000000.0,20650000000.0,18400000000.0,NO,"Asistencia Financiera a Empresas Publicas y Otros Entes del Sector Deportes | Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de  Turismo, Ambiente y Deportes | Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Turismo y Deportes",NOMBRE_CAMBIA,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Turismo y Deportes,Asistencia Financiera a Empresas Publicas y Otros Entes del Sector Deportes
+91,Obligaciones a Cargo del Tesoro,74,✓,✓,✓,✓,4127504128.0,251771485499.0,79712500000.0,82002000000.0,SI,,,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Economia,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Economia
+91,Obligaciones a Cargo del Tesoro,75,✓,✓,✓,✓,4298404298.0,44594400000.0,108603297341.0,52300000000.0,NO,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Educacion | Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Educacion,NOMBRE_CAMBIA,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Educacion,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Educacion
+91,Obligaciones a Cargo del Tesoro,76,✓,✓,✓,✓,808159090158.0,2208246412811.0,1359769365767.0,1839715400000.0,SI,,,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Energia,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Energia
+91,Obligaciones a Cargo del Tesoro,77,✓,✓,✓,✓,207575207575.0,266192870897.0,93069561089.0,84906140000.0,NO,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Obras Publicas | Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de  Obras Publicas,NOMBRE_CAMBIA,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de  Obras Publicas,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Obras Publicas
+91,Obligaciones a Cargo del Tesoro,83,✓,✓,✓,✓,10717360717.0,34198637993.0,44326411902.0,43101288130.0,SI,,,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Defensa,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Defensa
+91,Obligaciones a Cargo del Tesoro,87,✓,✓,✓,✓,442036094036.0,1093550375291.0,1446908352732.0,1686019000000.0,NO,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Transporte | Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Transporte,NOMBRE_CAMBIA,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Transporte,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Transporte
+91,Obligaciones a Cargo del Tesoro,88,✗,✓,✓,✓,0,718549000000.0,1729000000000.0,1606865249382.0,SI,,NUEVO_POST2023,,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Salud
+91,Obligaciones a Cargo del Tesoro,96,✓,✓,✓,✓,528096528.0,10688396000.0,10688396000.0,12067000000.0,SI,,,Atencion Servicios Financieros y Gastos Judiciales,Atencion Servicios Financieros y Gastos Judiciales
+91,Obligaciones a Cargo del Tesoro,97,✓,✓,✓,✓,67612896613.0,172213158370.0,353413158370.0,297073073523.0,SI,,,Aportes al Sector Externo,Aportes al Sector Externo
+91,Obligaciones a Cargo del Tesoro,98,✓,✓,✓,✓,26155690156.0,768902236.0,805707657.0,862198712.0,SI,,,Asistencia Financiera a Provincias y Municipios,Asistencia Financiera a Provincias y Municipios
+91,Obligaciones a Cargo del Tesoro,99,✓,✓,✓,✓,1156507983187.0,1178154700595.0,610473441993.0,5126007428568.0,SI,,,Otras Asistencias Financieras,Otras Asistencias Financieras

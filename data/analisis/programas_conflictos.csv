@@ -1,0 +1,290 @@
+jur_id,jur_desc,prg_id,año,desc,monto_normalizado
+1,Poder Legislativo Nacional,40,2023,"Seguimiento y Control del Ministerio Publico de la Nacion (Ley N° 24.946,27.148 y 27.149)",33800034.0
+1,Poder Legislativo Nacional,40,2024,"Seguimiento y Control del Ministerio Publico de la Nacion (Ley N° 24.946,27.148 y 27.149)",33800000.0
+1,Poder Legislativo Nacional,40,2025,"Seguimiento y Control del Ministerio Publico de la Nacion (Ley N° 24.946,27.148 y 27.149)",0.0
+1,Poder Legislativo Nacional,40,2026,"Seguimiento y Control del Ministerio Publico de la Nacion (Ley N° 24.946 ,27.148 y 27.149)",38000000.0
+1,Poder Legislativo Nacional,41,2023,"Control Parlamentario de los Derechos de las Niñas, Niños y Adolescentes (NNA)",57945058.0
+1,Poder Legislativo Nacional,41,2024,"Control Parlamentario de los Derechos de las Niñas, Niños y Adolescentes (NNA)",151545000.0
+1,Poder Legislativo Nacional,41,2025,"Control Parlamentario de los Derechos de las Niñas, Niños y Adolescentes",151545000.0
+1,Poder Legislativo Nacional,41,2026,"Control Parlamentario de los Derechos de las Niñas, Niños y Adolescentes",171000000.0
+1,Poder Legislativo Nacional,44,2023,"Defensa de los Derechos de las Niñas, Niños y Adolescentes (NNA)",2057112441.0
+1,Poder Legislativo Nacional,44,2024,"Defensa de los Derechos de las Niñas, Niños y Adolescentes (NNA)",7254943914.0
+1,Poder Legislativo Nacional,44,2025,"Defensa de los Derechos de las Niñas, Niños y Adolescentes",8405783916.0
+1,Poder Legislativo Nacional,44,2026,"Defensa de los Derechos de las Niñas, Niños y Adolescentes",8769000000.0
+20,Presidencia de la Nación,22,2024,Acciones de Prensa Institucional,4437005420.0
+20,Presidencia de la Nación,22,2025,Promocion y Desarrollo Artistico Cultural y de las Economias Creativas,9781454741.0
+20,Presidencia de la Nación,22,2026,Promocion y Desarrollo Artistico Cultural y de las Economias Creativas,8110979751.0
+20,Presidencia de la Nación,23,2023,Pensiones no Contributivas por Invalidez Laborativa,381217883037.0
+20,Presidencia de la Nación,23,2025,Gestion de Organismos Estables,12948372472.0
+20,Presidencia de la Nación,23,2026,Gestion de Organismos Estables,24439842932.0
+25,Jefatura de Gabinete de Ministros,16,2023,"Prevencion, Estadisticas e Investigacion sobre Consumos Problematicos",519032725.0
+25,Jefatura de Gabinete de Ministros,16,2024,Generacion de Ciclos de Informacion Espacial Completos,45537007709.0
+25,Jefatura de Gabinete de Ministros,16,2025,Promocion del Turismo Receptivo Internacional,12881492651.0
+25,Jefatura de Gabinete de Ministros,16,2026,Promocion del Turismo Receptivo Internacional,13568400000.0
+25,Jefatura de Gabinete de Ministros,17,2023,Atencion y Acompañamiento a Personas con Consumos Problematicos,8688751017.0
+25,Jefatura de Gabinete de Ministros,17,2024,Investigacion y Desarrollo de Medios de Acceso al Espacio,11441793648.0
+25,Jefatura de Gabinete de Ministros,17,2025,Investigacion y Desarrollo de Medios de Acceso al Espacio,7445798504.0
+25,Jefatura de Gabinete de Ministros,17,2026,Investigacion y Desarrollo de Medios de Acceso al Espacio,326392831.0
+25,Jefatura de Gabinete de Ministros,18,2023,Administracion de Servicios de Tecnologias de la Informacion y las Comunicaciones,1142800901.0
+25,Jefatura de Gabinete de Ministros,18,2024,"Promocion, Investigacion, Financiamiento, Innovacion y Divulgacion en Ciencia y Tecnica",29556037179.0
+25,Jefatura de Gabinete de Ministros,18,2025,"Promocion, Investigacion, Financiamiento, Innovacion y Divulgacion en Ciencia y Tecnica",40572989500.0
+25,Jefatura de Gabinete de Ministros,18,2026,"Promocion, Investigacion, Financiamiento, Innovacion y Divulgacion en Ciencia y Tecnica",43375434487.0
+25,Jefatura de Gabinete de Ministros,19,2024,Investigaciones en Ciencia y Tecnica en el Atlantico Sur: Pampa Azul,215430665.0
+25,Jefatura de Gabinete de Ministros,19,2025,Relaciones con las Provincias y Desarrollo Regional,229706157516.0
+25,Jefatura de Gabinete de Ministros,19,2026,Formacion y Capacitacion,3793596574.0
+25,Jefatura de Gabinete de Ministros,20,2023,Control de Servicios Postales,398489807.0
+25,Jefatura de Gabinete de Ministros,20,2024,Desarrollo de Politicas de Vinculacion Tecnologica y Social,283014409.0
+25,Jefatura de Gabinete de Ministros,20,2025,Desarrollos y Suministros para la Energia Nuclear,113040019639.0
+25,Jefatura de Gabinete de Ministros,20,2026,Desarrollo de Politicas de Vinculacion Tecnologica y Social,2199648203.0
+25,Jefatura de Gabinete de Ministros,23,2023,"Enseñanza, Capacitacion y Habilitacion",731864625.0
+25,Jefatura de Gabinete de Ministros,23,2024,Pensiones no Contributivas por Invalidez Laborativa,3165104583670.0
+25,Jefatura de Gabinete de Ministros,23,2025,Investigacion y Aplicaciones no Nucleares,11904613991.0
+25,Jefatura de Gabinete de Ministros,23,2026,"Enseñanza, Capacitacion y Habilitacion",4183806296.0
+25,Jefatura de Gabinete de Ministros,24,2023,Gobierno Abierto y Pais Digital,2253037748.0
+25,Jefatura de Gabinete de Ministros,24,2024,Gobierno Abierto y Pais Digital,11381176121.0
+25,Jefatura de Gabinete de Ministros,24,2025,Suministros y Tecnologia del Ciclo de Combustible Nuclear,14542274608.0
+25,Jefatura de Gabinete de Ministros,24,2026,Infraestructura en Areas Naturales Protegidas,3596818482.0
+25,Jefatura de Gabinete de Ministros,25,2023,Innovacion Administrativa,1902237540.0
+25,Jefatura de Gabinete de Ministros,25,2024,Innovacion Administrativa,9769617697.0
+25,Jefatura de Gabinete de Ministros,25,2025,Sistema de Areas Marinas Protegidas,715774172.0
+25,Jefatura de Gabinete de Ministros,25,2026,Sistema de Areas Marinas Protegidas,806774560.0
+25,Jefatura de Gabinete de Ministros,26,2023,Gestion y Organizacion del Sistema de Contrataciones de la Administracion Publica Nacional,316219736.0
+25,Jefatura de Gabinete de Ministros,26,2024,Gestion y Organizacion del Sistema de Contrataciones de la Administracion Publica Nacional,1337455014.0
+25,Jefatura de Gabinete de Ministros,26,2025,"Planificacion, Formulacion y Ejecucion de Politicas de Conservacion en Areas Naturales Protegidas",1986990186.0
+25,Jefatura de Gabinete de Ministros,26,2026,"Planificacion, Formulacion y Ejecucion de Politicas de Conservacion en Areas Naturales Protegidas",8231979805.0
+25,Jefatura de Gabinete de Ministros,27,2023,Desarrollo de los Recursos Humanos del Sector Publico,3287326546.0
+25,Jefatura de Gabinete de Ministros,27,2024,Desarrollo de los Recursos Humanos del Sector Publico,12402990509.0
+25,Jefatura de Gabinete de Ministros,27,2025,Recuperacion Sustentable de Paisajes y Medios de Vida en Argentina (BIRF N° 9335-AR y PROGREEN Nº TF0B7681),4764983898.0
+25,Jefatura de Gabinete de Ministros,27,2026,Recuperacion Sustentable de Paisajes y Medios de Vida en Argentina (BIRF N° 9335-AR y PROGREEN Nº TF0B7681),5385000000.0
+25,Jefatura de Gabinete de Ministros,34,2023,Administracion de Bienes del Estado,3139585910.0
+25,Jefatura de Gabinete de Ministros,34,2024,Administracion de Bienes del Estado,11141499786.0
+25,Jefatura de Gabinete de Ministros,34,2025,Iniciativas Complementarias de Interior,17382400969.0
+25,Jefatura de Gabinete de Ministros,34,2026,Administracion de Bienes del Estado,15573214830.0
+25,Jefatura de Gabinete de Ministros,50,2023,Coordinacion de Proyectos Sociocomunitarios,499335917.0
+25,Jefatura de Gabinete de Ministros,50,2025,Desarrollo del Turismo Nacional,2714921666.0
+25,Jefatura de Gabinete de Ministros,50,2026,Formulacion y Ejecucion de Politica en Ciencia y Tecnica,22918575881.0
+25,Jefatura de Gabinete de Ministros,51,2023,Legitimar y Reconstruir Juventudes,1440789440.0
+25,Jefatura de Gabinete de Ministros,51,2025,Plan Federal de Turismo Social Responsable,6313570514.0
+25,Jefatura de Gabinete de Ministros,52,2023,Argentina Futura,32333288.0
+25,Jefatura de Gabinete de Ministros,52,2025,Inversiones con Financiamiento Internacional,1733408092.0
+25,Jefatura de Gabinete de Ministros,53,2025,Calidad y Formacion Turistica,540878441.0
+25,Jefatura de Gabinete de Ministros,53,2026,Calidad Turistica,3445956862.0
+25,Jefatura de Gabinete de Ministros,55,2025,Deporte Federado e Iniciacion Deportiva,12263886529.0
+25,Jefatura de Gabinete de Ministros,55,2026,"Estrategia, Coordinacion y Priorizacion de las Politicas Publicas",11036712137.0
+25,Jefatura de Gabinete de Ministros,62,2023,Coordinacion de Iniciativas bajo la Modalidad de Contratos de Participacion Publica - Privada,33440053.0
+25,Jefatura de Gabinete de Ministros,62,2024,Prevencion y Control de Discapacidades,3501598955.0
+25,Jefatura de Gabinete de Ministros,74,2023,Prensa y Difusion de Actos de Gobierno,20520458835.0
+25,Jefatura de Gabinete de Ministros,74,2025,Politica Ambiental en Recursos Naturales,13454259852.0
+25,Jefatura de Gabinete de Ministros,75,2023,Acciones para la Federalizacion de la Comunicacion Publica y de los Contenidos,806947224.0
+25,Jefatura de Gabinete de Ministros,75,2025,Promocion y Gestion del Cambio Climatico y el Desarrollo Sostenible,2549009848.0
+25,Jefatura de Gabinete de Ministros,8,2023,Actividad Comun a los Programas 74 y 75,1225306274.0
+25,Jefatura de Gabinete de Ministros,8,2025,Actividades Comun de Programas de Turismo y Deporte,7323407957.0
+25,Jefatura de Gabinete de Ministros,9,2023,"Actividades Comunes a los Programas 24, 25, 26 y 58",5178100178.0
+25,Jefatura de Gabinete de Ministros,9,2024,"Actividades Comunes a los Programas 24, 25 y 26",5797518071.0
+25,Jefatura de Gabinete de Ministros,9,2025,Actividades Comunes a los Programas 24 y 25,1117294268.0
+30,Ministerio del Interior,11,2024,Actividad Comun a Programas 54 y 55 Deportes,1489548823.0
+30,Ministerio del Interior,11,2026,Actividades Comunes a los Programas de Deporte,408696357.0
+30,Ministerio del Interior,16,2023,Impulso al Desarrollo del Sistema Democratico y Relaciones con la Comunidad,56361336715.0
+30,Ministerio del Interior,16,2024,Promocion del Turismo Receptivo Internacional,12143423207.0
+30,Ministerio del Interior,16,2026,Impulso al Desarrollo del Sistema Democratico y Relaciones con la Comunidad,3680214457.0
+30,Ministerio del Interior,54,2024,Deporte Comunitario y Competencias,25056114500.0
+30,Ministerio del Interior,54,2026,"Deporte Comunitario, Infraestructura Deportiva y Predios Deportivos Nacionales",17959783880.0
+30,Ministerio del Interior,55,2024,Deporte Federado e Iniciacion Deportiva,11418885757.0
+30,Ministerio del Interior,55,2026,Deporte Federado y Representacion Nacional,16333031236.0
+30,Ministerio del Interior,57,2024,Programa Federal de Infraestructura Deportiva,776402205.0
+30,Ministerio del Interior,57,2026,Programa Federal de Infraestrutura Deportiva,40500000.0
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",23,2023,"Acciones Diplomaticas para la Promocion del Reclamo Argentino de Reconocimiento de la Soberania Nacional de las Islas Malvinas,",755342260.0
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",23,2024,"Acciones Diplomaticas para la Promocion del Reclamo Argentino de Reconocimiento de la Soberania Nacional de las Islas Malvinas,",3452799880.0
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",23,2025,"Acciones Diplomaticas para la Promocion del Reclamo Argentino de Reconocimiento de la Soberania Nacional de las Islas Malvinas,",4429977655.0
+35,"Ministerio de Relaciones Exteriores, Comercio Internacional y Culto",23,2026,"Acciones Diplomaticas asociadas a la Cuestion Malvinas, Antartida, Politica Oceanica y Atlantico Sur",4575344263.0
+40,Ministerio de Justicia y Derechos Humanos,16,2023,Seguridad y Rehabilitacion del Interno,58736113971.0
+40,Ministerio de Justicia,16,2024,Promocion Internacional de los Derechos Humanos,1147520180.0
+40,Ministerio de Justicia,16,2025,Promocion Internacional de los Derechos Humanos,1754590852.0
+40,Ministerio de Justicia,16,2026,Promocion Internacional de los Derechos Humanos,1762457217.0
+41,Ministerio de Seguridad,39,2023,Seguridad en Eventos Deportivos,105189616.0
+41,Ministerio de Seguridad,39,2024,Seguridad en Eventos Deportivos,465676232.0
+41,Ministerio de Seguridad Nacional,39,2025,Control y Servicio Tecnico de Seguridad de la Navegacion,6999643426.0
+41,Ministerio de Seguridad Nacional,39,2026,Control y Servicio Tecnico de Seguridad de la Navegacion,7504565311.0
+41,Ministerio de Seguridad,42,2023,Asistencia Sanitaria de la Gendarmeria Nacional,6412450809.0
+41,Ministerio de Seguridad,42,2024,Asistencia Sanitaria de la Gendarmeria Nacional,28868495239.0
+41,Ministerio de Seguridad Nacional,42,2025,Asistencia Sanitaria de la Gendarmeria Nacional,35628882218.0
+41,Ministerio de Seguridad Nacional,42,2026,Asistencia Sanitaria de la Gendarmeria Nacional Argentina,88063772990.0
+50,Ministerio de Economía,10,2024,Actividades Comunes de los Programas de la Secretaria de Bioeconomia,26693957292.0
+50,Ministerio de Economía,10,2025,Actividades Comunes a los Programas de la Secretaria de Industria y Desarrollo Productivo,96925330275.0
+50,Ministerio de Economía,17,2023,"Investigacion Aplicada, Innovacion, Transferencias de Tecnologias, Extension y Apoyo al Desarrollo Rural - AITTE",33956468443.0
+50,Ministerio de Economía,17,2024,"Investigacion Aplicada, Innovacion, Transferencias de Tecnologias, Extension y Apoyo al Desarrollo Rural - AITTE",152181146539.0
+50,Ministerio de Economía,17,2025,"Investigacion Aplicada, Innovacion, Transferencias de Tecnologias, Extension y Apoyo al Desarrollo Rural - AITTE",153247534956.0
+50,Ministerio de Economía,17,2026,Regulacion del Transporte y Distribucion de Gas,59654265600.0
+50,Ministerio de Economía,18,2023,Proteccion de los Derechos de la Propiedad Industrial,2755762481.0
+50,Ministerio de Economía,18,2024,Proteccion de los Derechos de la Propiedad Industrial,12432536494.0
+50,Ministerio de Economía,18,2025,Proteccion de los Derechos de la Propiedad Industrial,14729251494.0
+50,Ministerio de Economía,18,2026,Regulacion y Contralor del Mercado Electrico,20403524400.0
+50,Ministerio de Economía,20,2023,Desarrollos y Suministros para la Energia Nuclear,15039688952.0
+50,Ministerio de Economía,20,2024,Desarrollos y Suministros para la Energia Nuclear,68024614638.0
+50,Ministerio de Economía,20,2025,Prevencion Sismica,807756615.0
+50,Ministerio de Economía,20,2026,Prevencion Sismica,1937700283.0
+50,Ministerio de Economía,24,2023,Suministros y Tecnologia del Ciclo de Combustible Nuclear,3401810638.0
+50,Ministerio de Economía,24,2024,Suministros y Tecnologia del Ciclo de Combustible Nuclear,14670931379.0
+50,Ministerio de Economía,24,2025,Acciones para la Sanidad Animal,32565196761.0
+50,Ministerio de Economía,24,2026,Suministros y Tecnologia del Ciclo de Combustible Nuclear,19575257458.0
+50,Ministerio de Economía,25,2023,Coordinacion del Plan Nacional de Medicina,233000233.0
+50,Ministerio de Economía,25,2024,Coordinacion del Plan Nacional de Medicina,651087204.0
+50,Ministerio de Economía,25,2025,Acciones para la Proteccion Vegetal,30539619300.0
+50,Ministerio de Economía,25,2026,Coordinacion del Plan Nacional de Medicina,1124205147.0
+50,Ministerio de Economía,26,2023,Administracion Financiera,2699475872.0
+50,Ministerio de Economía,26,2024,Administracion Financiera,23699893556.0
+50,Ministerio de Economía,26,2025,Ejecucion Obras de Rehabilitacion y Mantenimiento en Red por Sistema de Gestion Integral,41502744906.0
+50,Ministerio de Economía,26,2026,Acciones para la Inocuidad y Calidad Agroalimentaria,51166861673.0
+50,Ministerio de Economía,3,2023,"Actividades Comunes de los Programas de la Secretaria de Agricultura, Ganaderia y Pesca",6440382232.0
+50,Ministerio de Economía,3,2024,Actividades Comunes de los Programas de la Secretaria de Bioeconomia,8144852410.0
+50,Ministerio de Economía,3,2026,Actividades Comunes a los Programas de las Secretarias de Energia y de Mineria,237915941.0
+50,Ministerio de Economía,37,2023,Prevencion del Lavado de Activos,1833847655.0
+50,Ministerio de Economía,37,2025,Planificacion Territorial de la Inversion Publica,29465790.0
+50,Ministerio de Economía,37,2026,"Fiscalizacion, Regulacion y Control del Servicio de Transporte Terrestre",25938190720.0
+50,Ministerio de Economía,39,2023,Formulacion de Politicas para la Agricultura Familiar y Desarrollo Productivo,5486746801.0
+50,Ministerio de Economía,39,2025,Planificacion y Desarrollo Territorial,1693576629.0
+50,Ministerio de Economía,4,2023,Actividad Comun de la Secretaria de Energia,1892306595.0
+50,Ministerio de Economía,4,2024,Actividad Comun de la Secretaria de Energia,4431774433.0
+50,Ministerio de Economía,4,2025,Actividades Comunes de la Secretaria de Energia,5952012894.0
+50,Ministerio de Economía,4,2026,Actividades Comunes de los Programas de la Secretaria de Energia,2680685676.0
+50,Ministerio de Economía,45,2023,Promocion de la Productividad y Competitividad PyME y el Desarrollo de los Emprendedores,4754624851.0
+50,Ministerio de Economía,45,2024,Promocion de la Productividad y Competitividad PyME y el Desarrollo de los Emprendedores,3889897608.0
+50,Ministerio de Economía,45,2025,Promocion de la Productividad y Competitividad PyME y el Desarrollo de los Emprendedores,0.0
+50,Ministerio de Economía,45,2026,Administracion Financiera,481434996418.0
+50,Ministerio de Economía,48,2023,Administracion de los Asuntos Economicos y Financieros  Internacionales,90601612.0
+50,Ministerio de Economía,48,2024,Administracion de los Asuntos Economicos y Financieros  Internacionales,382416982.0
+50,Ministerio de Economía,48,2025,Ejecucion Obras de Seguridad en Rutas Nacionales,1814276268.0
+50,Ministerio de Economía,48,2026,Ejecucion Obras de Seguridad en Rutas Nacionales,191718165.0
+50,Ministerio de Economía,49,2025,Reparacion y Construccion de Puentes y Alcantarillas,4708327727.0
+50,Ministerio de Economía,49,2026,"Consolidacion Urbana, Mejoramiento de Barrios y Puesta en Valor de Centralidades",27271101676.0
+50,Ministerio de Economía,52,2023,Formulacion y Ejecucion de Politicas de Desarrollo y Competitividad Federal,107368842.0
+50,Ministerio de Economía,52,2024,Formulacion y Ejecucion de Politicas de Desarrollo y Competitividad Federal,187987589.0
+50,Ministerio de Economía,52,2025,Mantenimiento y Reparacion de Obras de Arte,61483358.0
+50,Ministerio de Economía,52,2026,Mantenimiento y Reparacion de Obras de Arte,0.0
+50,Ministerio de Economía,53,2023,Coordinacion de Financiamientos Transversales y Federales y de la Asistencia a la Produccion,11526500051.0
+50,Ministerio de Economía,53,2024,Coordinacion de Financiamientos Transversales y Federales y de la Asistencia a la Produccion,47429503607.0
+50,Ministerio de Economía,53,2025,"Ejecucion de Infraestructura Vial para el Desarrollo Economico, Social y Productivo",9324487581.0
+50,Ministerio de Economía,62,2023,Fortalecimiento del Desarrollo Regional de Alimentos y Bioeconomia,1419466604.0
+50,Ministerio de Economía,62,2024,Fortalecimiento del Desarrollo Regional de Alimentos y Bioeconomia,21031943452.0
+50,Ministerio de Economía,62,2025,Fortalecimiento del Desarrollo Regional de Alimentos y Bioeconomia,0.0
+50,Ministerio de Economía,62,2026,Construcciones Viales,218798873168.0
+50,Ministerio de Economía,63,2023,Coordinacion de Relaciones Financieras Internacionales,1496496759.0
+50,Ministerio de Economía,63,2024,Coordinacion de Relaciones Financieras Internacionales,3319762869.0
+50,Ministerio de Economía,63,2025,Coordinacion de Relaciones Financieras Internacionales,2190645016.0
+50,Ministerio de Economía,63,2026,Rehabilitacion y Repavimentacion Viales,53048111942.0
+50,Ministerio de Economía,66,2023,Fomento al Desarrollo Tecnologico,11682127933.0
+50,Ministerio de Economía,66,2024,Fomento al Desarrollo Tecnologico,16562000847.0
+50,Ministerio de Economía,66,2025,Fomento al Desarrollo Tecnologico,24031020636.0
+50,Ministerio de Economía,66,2026,"Promocion de la Competitividad Pyme, el Desarrollo de los Emprendedores y la Economia del Conocimiento",9155159859.0
+80,Ministerio de Salud,10,2024,Actividad Comun a los Programas 51 y 52,7391219032.0
+80,Ministerio de Salud,10,2025,Actividades Comunes  a los Programas 51 y 52,9274133795.0
+80,Ministerio de Salud,10,2026,Actividades Comunes  a los Programas 51 y 52,6600005159.0
+80,Ministerio de Salud,16,2023,Apoyo al Desarrollo de la Atencion Medica,2647612072.0
+80,Ministerio de Salud,16,2024,Apoyo al Desarrollo de la Atencion Medica,6102325164.0
+80,Ministerio de Salud,16,2025,Apoyo al Desarrollo de la Atencion Medica,5304959248.0
+80,Ministerio de Salud,16,2026,Asistencia para la Salud Mental y Consumos Problematicos,19271253200.0
+80,Ministerio de Salud,17,2023,Abordaje de Curso de Vida (NNA),8128557328.0
+80,Ministerio de Salud,17,2024,Abordaje de Curso de Vida,7079827505.0
+80,Ministerio de Salud,17,2025,Abordaje de Curso de Vida,24222320566.0
+80,Ministerio de Salud,17,2026,Atencion Especializada en Rehabilitacion y Cuidados Paliativos,46763139167.0
+80,Ministerio de Salud,18,2023,Formacion de Recursos Humanos Sanitarios y Asistenciales,1741372679.0
+80,Ministerio de Salud,18,2024,Formacion de Recursos Humanos Sanitarios y Asistenciales,9031443005.0
+80,Ministerio de Salud,18,2025,Promocion del Modelo Social de la Discapacidad en Municipios,292813000.0
+80,Ministerio de Salud,18,2026,Formacion de Recursos Humanos Sanitarios y Asistenciales,25830248886.0
+80,Ministerio de Salud,20,2023,Prevencion y Control de Enfermedades Transmisibles e Inmunoprevenibles,117545568172.0
+80,Ministerio de Salud,20,2024,Prevencion y Control de Enfermedades Transmisibles e Inmunoprevenibles,226916851674.0
+80,Ministerio de Salud,20,2025,Prevencion y Control de Enfermedades Transmisible e Inmunoprevenibles,227523893438.0
+80,Ministerio de Salud,20,2026,Prevencion y Control de Enfermedades Transmisible e Inmunoprevenibles,304037812568.0
+80,Ministerio de Salud,39,2023,Desarrollo de Estrategias en Salud Comunitaria,1905632670.0
+80,Ministerio de Salud,39,2024,Desarrollo de Estrategias en Salud Comunitaria,2044780750.0
+80,Ministerio de Salud,39,2025,Fortalecimiento de la Estrategia de Atencion Primaria,994328440.0
+80,Ministerio de Salud,39,2026,Fortalecimiento de la Estrategia de Atencion Primaria,557300671.0
+80,Ministerio de Salud,47,2023,Desarrollo de Seguros Publicos de Salud (BIRF N°8853-AR/ BIRF N°9222-AR),27858639486.0
+80,Ministerio de Salud,47,2024,Desarrollo de Seguros Publicos de Salud (BIRF N° 8853-AR/BIRF N° 9222-AR/BIRF N° 9547-AR),83443229240.0
+80,Ministerio de Salud,47,2025,Fortalecimiento de los Sistemas Provinciales de Salud,131227890924.0
+80,Ministerio de Salud,47,2026,Fortalecimiento de los Sistemas Provinciales de Salud,30988124613.0
+80,Ministerio de Salud,5,2023,Actividades Comunes de Programas de Calidad en Salud,414508502.0
+80,Ministerio de Salud,5,2024,Actividades Comunes de Programas de Calidad en Salud,378120605.0
+80,Ministerio de Salud,5,2025,Actividades Comunes de Programas de Gestion Sanitaria,3636141956.0
+80,Ministerio de Salud,5,2026,Actividades Comunes de Programas de Gestion Sanitaria,10873469483.0
+80,Ministerio de Salud,52,2023,Asistencia para la Salud Mental y Consumos Problematicos  (DIS),2999189383.0
+80,Ministerio de Salud,52,2024,Atencion y Acompañamiento a Personas con Consumos Problematicos,32245926680.0
+80,Ministerio de Salud,52,2025,Atencion y Acompañamiento a Personas con Consumos Problematicos,55372624968.0
+80,Ministerio de Salud,52,2026,Atencion y Acompañamiento a Personas con Consumos Problematicos,57599513329.0
+80,Ministerio de Salud,59,2023,Atencion de Pacientes (DIS),5821014425.0
+80,Ministerio de Salud,59,2024,Atencion de Pacientes,29483527121.0
+80,Ministerio de Salud,59,2025,Atencion de Pacientes,37782166470.0
+80,Ministerio de Salud,60,2023,Atencion a Personas con Discapacidades Psicofisicas (DIS),2281773289.0
+80,Ministerio de Salud,60,2024,Atencion a Personas con Discapacidades Psicofisicas,11240829814.0
+80,Ministerio de Salud,60,2025,Atencion a Personas con Discapacidades Psicofisicas,14962333318.0
+80,Ministerio de Salud,99,2023,Transferencias Varias,63514377191.0
+80,Ministerio de Salud,99,2024,Transferencias Varias,423730594792.0
+80,Ministerio de Salud,99,2025,Transferencias Varias,516981861701.0
+80,Ministerio de Salud,99,2026,Transferencias Varias y Erogaciones Figurativas,556252522650.0
+88,Ministerio de Capital Humano,19,2024,Formulacion de Politicas de Igualdad y Diversidad (PPG),1470546187.0
+88,Ministerio de Capital Humano,19,2025,Asignaciones Familiares,8846113558819.0
+88,Ministerio de Capital Humano,19,2026,Asignaciones Familiares,10152516013276.0
+88,Ministerio de Capital Humano,23,2024,Gestion de Organismos Estables,9617318583.0
+88,Ministerio de Capital Humano,23,2025,Acciones de Capacitacion Laboral,31089818312.0
+88,Ministerio de Capital Humano,23,2026,Acciones de Capacitacion Laboral,41908736880.0
+88,Ministerio de Capital Humano,24,2024,Gestion de Museos Nacionales,15351955677.0
+88,Ministerio de Capital Humano,24,2025,Economia Social,0.0
+88,Ministerio de Capital Humano,27,2024,Gestion de Espacios Culturales y Proyectos Especiales,14531932017.0
+88,Ministerio de Capital Humano,27,2025,Acciones de Articulacion Territorial,43716453042.0
+88,Ministerio de Capital Humano,32,2024,Legitimar y Reconstruir Juventudes,2463527519.0
+88,Ministerio de Capital Humano,32,2025,Informacion y Evaluacion de la Calidad Educativa,15819698308.0
+88,Ministerio de Capital Humano,32,2026,Informacion y Evaluacion de la Calidad Educativa,32549610237.0
+88,Ministerio de Capital Humano,33,2025,Apoyo al Desarrollo Integral de la Primera Infancia,902614239.0
+88,Ministerio de Capital Humano,33,2026,"Apoyo al Desarrollo Integral de la Educacion, el Empleo  y la Proteccion Social",9972720000.0
+88,Ministerio de Capital Humano,4,2024,"Actividades Comunes a los Programas 44, 45, 46, 47 y 49",9837313508.0
+88,Ministerio de Capital Humano,4,2025,"Actividades Comunes a los Programas 44, 46 y 47",9294843541.0
+88,Ministerio de Capital Humano,40,2024,Asistencia y Coordinacion de Politicas Sociales,4496987290.0
+88,Ministerio de Capital Humano,40,2025,Plan Nacional de Alfabetizacion,381143585461.0
+88,Ministerio de Capital Humano,40,2026,Plan Nacional de Alfabetizacion,559552781438.0
+88,Ministerio de Capital Humano,44,2024,Mejoramiento de la Calidad Educativa,67013259012.0
+88,Ministerio de Capital Humano,44,2025,Mejoramiento de la Calidad Educativa,10887874802.0
+88,Ministerio de Capital Humano,44,2026,"Acciones para la Promocion y Proteccion Integral de los Derechos de Niños, Niñas y Adolescentes",31961388244.0
+88,Ministerio de Capital Humano,45,2024,Politicas Federales para la Promocion de los Derechos de Niños y Adolescentes,7068894483.0
+88,Ministerio de Capital Humano,45,2025,Politicas Federales para la Promocion de los Derechos de Niños y Adolescentes,5787868851.0
+88,Ministerio de Capital Humano,45,2026,Acciones de Formacion Docente,9874969036.0
+88,Ministerio de Capital Humano,5,2024,Actividad Comun a las acciones del Consejo Nacional de Coordinacion de Politicas Sociales,459833430.0
+88,Ministerio de Capital Humano,5,2025,Actividad Comun a las acciones del Consejo Nacional de Coordinacion de Politicas Sociales,471230196.0
+88,Ministerio de Capital Humano,5,2026,Actividades Comunes a las Acciones del Consejo Nacional de Coordinacion de Politicas Sociales,447384000.0
+88,Ministerio de Capital Humano,8,2024,Actividad Comun a los Programas 24 y 38,4655993662.0
+88,Ministerio de Capital Humano,8,2025,Actividad Comun a los Programas 26 y 38,4233754757.0
+88,Ministerio de Capital Humano,9,2024,"Actividad Comun a los Programas 26, 51, 54 y 56",1558581926.0
+88,Ministerio de Capital Humano,9,2025,Actividad Comun a los Programas 26 y  54,1398053747.0
+88,Ministerio de Capital Humano,98,2024,Fondo Nacional de Incentivo Docente,59149679393.0
+88,Ministerio de Capital Humano,98,2025,Fondo  de  Compensacion Salarial Docente,0.0
+88,Ministerio de Capital Humano,98,2026,Fondo  de  Compensacion Salarial Docente,17495086838.0
+89,Ministerio de Desregulación y Transformación del Estado,27,2025,Desarrollo de los Recursos Humanos del Sector Publico,5866058177.0
+89,Ministerio de Desregulación y Transformación del Estado,27,2026,Planificacion Estrategica y Desarrollo de los Recursos Humanos del Sector Publico,11482606684.0
+89,Ministerio de Desregulación y Transformación del Estado,28,2025,Fortalecimiento de la Gestion Publica,2409363457.0
+89,Ministerio de Desregulación y Transformación del Estado,28,2026,Transformacion del Estado y Funcion Publica,5724017541.0
+91,Obligaciones a Cargo del Tesoro,65,2023,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Cultura,0.0
+91,Obligaciones a Cargo del Tesoro,65,2024,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Cultura,1964000000.0
+91,Obligaciones a Cargo del Tesoro,65,2025,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Cultura,1964000000.0
+91,Obligaciones a Cargo del Tesoro,67,2023,Reglamentacion Ley N° 27.606,90346090346.0
+91,Obligaciones a Cargo del Tesoro,67,2024,Cumplimiento de Medida Cautelar CSJN 1864/2022,510000000000.0
+91,Obligaciones a Cargo del Tesoro,67,2025,Cumplimiento de Medida Cautelar CSJN 1864/2022,1408000000000.0
+91,Obligaciones a Cargo del Tesoro,67,2026,Cumplimiento de Medida Cautelar CSJN 1864/2022,190000000000.0
+91,Obligaciones a Cargo del Tesoro,72,2023,Asistencia Financiera a Empresas Publicas y Otros Entes dependientes de la Secretaria de Medios y Comunicacion Publica,25558825559.0
+91,Obligaciones a Cargo del Tesoro,72,2024,Asistencia Financiera a Empresas Publicas y Otros Entes dependientes de la Secretaria de Comunicacion y Prensa,43305577178.0
+91,Obligaciones a Cargo del Tesoro,72,2025,Asistencia Financiera a Empresas Publicas y Otros Entes dependientes de la Secretaria de Comunicacion y Medios,81480198486.0
+91,Obligaciones a Cargo del Tesoro,72,2026,Asistencia Financiera a Empresas Publicas y Otros Entes dependientes de la Secretaria de Comunicacion y Prensa,62244896690.0
+91,Obligaciones a Cargo del Tesoro,73,2023,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Turismo y Deportes,5492909493.0
+91,Obligaciones a Cargo del Tesoro,73,2024,"Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de  Turismo, Ambiente y Deportes",16000000000.0
+91,Obligaciones a Cargo del Tesoro,73,2025,"Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de  Turismo, Ambiente y Deportes",20650000000.0
+91,Obligaciones a Cargo del Tesoro,73,2026,Asistencia Financiera a Empresas Publicas y Otros Entes del Sector Deportes,18400000000.0
+91,Obligaciones a Cargo del Tesoro,75,2023,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Educacion,4298404298.0
+91,Obligaciones a Cargo del Tesoro,75,2024,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Educacion,44594400000.0
+91,Obligaciones a Cargo del Tesoro,75,2025,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Educacion,108603297341.0
+91,Obligaciones a Cargo del Tesoro,75,2026,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Educacion,52300000000.0
+91,Obligaciones a Cargo del Tesoro,77,2023,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de  Obras Publicas,207575207575.0
+91,Obligaciones a Cargo del Tesoro,77,2024,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Obras Publicas,266192870897.0
+91,Obligaciones a Cargo del Tesoro,77,2025,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Obras Publicas,93069561089.0
+91,Obligaciones a Cargo del Tesoro,77,2026,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Obras Publicas,84906140000.0
+91,Obligaciones a Cargo del Tesoro,87,2023,Asistencia Financiera a Empresas Publicas y Otros Entes del Ministerio de Transporte,442036094036.0
+91,Obligaciones a Cargo del Tesoro,87,2024,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Transporte,1093550375291.0
+91,Obligaciones a Cargo del Tesoro,87,2025,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Transporte,1446908352732.0
+91,Obligaciones a Cargo del Tesoro,87,2026,Asistencia Financiera a Empresas Publicas y Otros Entes de la Secretaria de Transporte,1686019000000.0

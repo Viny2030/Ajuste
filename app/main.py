@@ -813,6 +813,110 @@ def evolucion_real(
 
 
 
+
+
+# ── ANÁLISIS SECTORIAL ────────────────────────────────────────────
+# Compara gasto por jurisdicción entre 2023 y 2026 SIN cruzar por programa_id
+# Resuelve: (1) migración jur 75→88, (2) inestabilidad de programa_id entre años
+
+SECTORES_DEF = {
+    "salud":        {"jur_2023": ["80"],      "jur_2026": ["80"],      "label": "Salud"},
+    "jubilaciones": {"jur_2023": ["75","91"], "jur_2026": ["88","91"], "label": "Jubilaciones y Seguridad Social",
+                     "excluir_jur91_prg": ["76","87"]},
+    "ninez":        {"jur_2023": ["85"],      "jur_2026": ["88"],      "label": "Niñez y Desarrollo Social",
+                     "prg_2023": ["47","46","53","57","58"],
+                     "prg_2026": ["19","32","49"]},
+    "obra-publica": {"jur_2023": ["64","57","65"], "jur_2026": ["64","57","65"], "label": "Obra Pública e Infraestructura"},
+    "salario":      {"jur_2023": None, "jur_2026": None, "inciso": "1", "label": "Salario Público"},
+    "educacion":    {"jur_2023": ["70"], "jur_2026": ["88"], "label": "Educación",
+                     "prg_2026": ["26","29","40","49","23"]},
+}
+
+
+@app.get("/api/v1/analisis/sector", tags=["Analítica"],
+         summary="Comparativa sectorial 2023 vs 2026 — agrega por jurisdicción, sin cruzar por programa_id")
+def analisis_sector(
+    sector: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    macro   = cargar_macro_indices()
+    factor  = macro["factor_deflactacion"]
+    TC_2023 = 187.0
+    tc_act  = macro.get("usd_actual") or TC_2023 * factor
+
+    sectores = {sector: SECTORES_DEF[sector]} if sector and sector in SECTORES_DEF else SECTORES_DEF
+
+    resultado = []
+    for sec_id, cfg in sectores.items():
+        inciso = cfg.get("inciso")
+
+        def _suma(anio: int) -> float:
+            col  = models.PresupuestoBase.monto_original if anio == 2023 else models.PresupuestoBase.monto_vigente
+            jurs = cfg.get("jur_2023") if anio == 2023 else cfg.get("jur_2026")
+            prgs = cfg.get("prg_2023") if anio == 2023 else cfg.get("prg_2026")
+            exc91 = cfg.get("excluir_jur91_prg", [])
+
+            if inciso:
+                # salario: toda la APN, filtrar por inciso
+                q = db.query(func.sum(col)).filter(
+                    models.PresupuestoBase.ejercicio == anio,
+                    models.PresupuestoBase.inciso_id == inciso,
+                )
+                raw = float(q.scalar() or 0)
+            elif jurs and "91" in jurs and exc91 and anio != 2023:
+                # jubilaciones 2026: jur 88 + jur 91 sin subsidios energía
+                jurs_sin91 = [j for j in jurs if j != "91"]
+                q1 = db.query(func.sum(col)).filter(
+                    models.PresupuestoBase.ejercicio == anio,
+                    models.PresupuestoBase.jurisdiccion_id.in_(jurs_sin91),
+                )
+                if prgs: q1 = q1.filter(models.PresupuestoBase.programa_id.in_(prgs))
+                q2 = db.query(func.sum(col)).filter(
+                    models.PresupuestoBase.ejercicio == anio,
+                    models.PresupuestoBase.jurisdiccion_id == "91",
+                    ~models.PresupuestoBase.programa_id.in_(exc91),
+                )
+                raw = float(q1.scalar() or 0) + float(q2.scalar() or 0)
+            else:
+                q = db.query(func.sum(col)).filter(
+                    models.PresupuestoBase.ejercicio == anio,
+                    models.PresupuestoBase.jurisdiccion_id.in_(jurs),
+                )
+                if prgs: q = q.filter(models.PresupuestoBase.programa_id.in_(prgs))
+                raw = float(q.scalar() or 0)
+
+            return raw if anio == 2023 else raw * 1_000_000
+
+        orig = _suma(2023)
+        vig  = _suma(2026)
+        if orig == 0:
+            continue
+
+        real      = vig / factor
+        var_nom   = round(((vig  / orig) - 1) * 100, 2)
+        var_real  = round(((real / orig) - 1) * 100, 2)
+        orig_usd  = round(orig / TC_2023, 0)
+        vig_usd   = round(vig  / tc_act,  0) if tc_act else None
+        var_usd   = round(((vig_usd / orig_usd) - 1) * 100, 2) if (vig_usd and orig_usd) else None
+
+        resultado.append({
+            "sector_id":             sec_id,
+            "sector_label":          cfg["label"],
+            "monto_original_2023":   round(orig, 0),
+            "monto_vigente_2026":    round(vig,  0),
+            "monto_real_2026":       round(real, 0),
+            "variacion_nominal_pct": var_nom,
+            "variacion_real_pct":    var_real,
+            "monto_original_usd":    orig_usd,
+            "monto_vigente_usd":     vig_usd,
+            "variacion_usd_pct":     var_usd,
+            "factor_ipc":            round(factor, 4),
+            "estado":                "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
+        })
+
+    return resultado
+
+
 @app.post(
     "/api/v1/scrape/trigger",
     tags=["Admin"],
