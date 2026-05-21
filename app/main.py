@@ -723,15 +723,49 @@ def evolucion_real(
     macro = cargar_macro_indices()
     factor_total = macro["factor_deflactacion"]
 
-    # Factor IPC por año aproximado (acumulado desde ene-2023)
-    # 2023: factor = 1.0 (base), 2024: ~3.0 (inflación ~211% en 2023), 2025: ~6.0, 2026: ~8.5+
-    # Se usan valores de la serie macro si están disponibles, si no estimados
-    FACTORES_ANIO = {
+    # ── Calcular factores IPC al cierre de cada año desde la DB ──
+    # La tabla macro_indices guarda 'IPC_variacion_mensual' (variación % mensual)
+    # Factor acumulado = producto de (1 + var/100) desde ene-2023
+    FACTORES_FALLBACK = {
         2023: 1.0,
-        2024: 3.05,   # IPC dic-2023: ~211% interanual
-        2025: 5.60,   # IPC dic-2024: ~118% interanual
-        2026: factor_total,  # acumulado actual
+        2024: 3.05,   # dic-2023: inflación 2023 ~211%
+        2025: 5.60,   # dic-2024: inflación 2024 ~118%
+        2026: factor_total,
     }
+
+    factores_anio = dict(FACTORES_FALLBACK)
+    fuentes_anio = {2023: "base", 2024: "estimado_indec", 2025: "estimado_indec", 2026: "serie_bcra"}
+
+    try:
+        ipc_rows = (
+            db.query(models.MacroIndice)
+            .filter(
+                models.MacroIndice.indicador == "IPC_variacion_mensual",
+                models.MacroIndice.fecha >= "2023-01-01",
+            )
+            .order_by(models.MacroIndice.fecha)
+            .all()
+        )
+        if ipc_rows:
+            factor_acum = 1.0
+            ultimo_anio_visto = 2023
+            for row in ipc_rows:
+                try:
+                    anio = row.fecha.year
+                    factor_acum *= (1 + float(row.valor) / 100)
+                    ultimo_anio_visto = anio
+                    # Al final de cada año, guardar el factor acumulado
+                    # (se sobreescribe en cada mes → queda el último mes del año)
+                    if anio in factores_anio:
+                        factores_anio[anio] = round(factor_acum, 4)
+                        fuentes_anio[anio] = "db_ipc_mensual"
+                except (AttributeError, TypeError, ValueError):
+                    continue
+            # 2026 siempre usa el factor_total del engine (más preciso, toma API en vivo)
+            factores_anio[2026] = factor_total
+            fuentes_anio[2026] = "serie_bcra"
+    except Exception:
+        pass  # si falla, se usan los fallbacks INDEC
 
     resultado = {}
     for anio in [2023, 2024, 2025, 2026]:
@@ -751,7 +785,7 @@ def evolucion_real(
         else:
             total_nominal = total_raw * 1_000_000
 
-        factor = FACTORES_ANIO.get(anio, factor_total)
+        factor = factores_anio.get(anio, factor_total)
         total_real = total_nominal / factor if factor else total_nominal
 
         resultado[anio] = {
@@ -759,6 +793,7 @@ def evolucion_real(
             "total_nominal":  round(total_nominal, 0),
             "total_real":     round(total_real, 0),
             "factor_ipc":     round(factor, 4),
+            "factor_fuente":  fuentes_anio.get(anio, "estimado_indec"),
         }
 
     # Calcular variaciones YoY

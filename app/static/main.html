@@ -669,24 +669,53 @@ const C = {
   gray:      '#94a3b8',
 };
 
-// Mapeo sectorial por jurisdiccion_id (evita solapamiento por nombre)
-// APN 2024+: Capital Humano (88) absorbió Educación, Trabajo y Desarrollo Social
+// Mapeo sectorial por jurisdiccion_id
+// 2023: ministerios separados | 2024+: fusionados en Capital Humano (88)
 // Criterio de exclusividad: cada programa va al sector más específico
 const SECTOR_IDS = {
-  salud:          { ids: ['80'], programas: null },           // Ministerio de Salud
-  jubilaciones:   { ids: ['88', '91'], programas: ['16','17','20','21','30','31','99'] }, // progs previsionales de Cap.Humano + Obligaciones
-  ninez:          { ids: ['88'], programas: ['19','32','38','49','26'] }, // Asignaciones Familiares, 1000 días, etc.
-  'obra-publica': { ids: ['25','30','50'], programas: null, keywords: ['obra','infraestructura','transporte','vial','agua','vivienda'] },
-  salario:        { ids: null, inciso: '1' },                 // inciso 1 = Personal, todas las jurisdicciones
-  educacion:      { ids: ['88'], programas: ['26','29','40','49','23'], keywords: ['educac','universit','becas','alfabetizac'] },
+  salud: {
+    ids_2024: ['80'],
+    ids_2023: ['80'],
+    programas: null,
+  },
+  jubilaciones: {
+    ids_2024: ['88', '91'],
+    ids_2023: ['75', '91'],
+    // 2024+ prg previsionales de Cap.Humano; 2023 prg de Trabajo+Tesoro
+    programas_2024: ['16','17','20','21','30','31','99'],
+    programas_2023: ['16','17','19','20','21','31','99'],
+    excluir_jur91_prg: ['76','87'],  // subsidios energía/transporte, NO previsionales
+  },
+  ninez: {
+    ids_2024: ['88'],
+    ids_2023: ['85'],
+    // 2024+ asignaciones familiares; 2023 Desarrollo Social (excluye Potenciar Trabajo prg38)
+    programas_2024: ['19','32','38','49'],
+    programas_2023: ['26','44','56','8'],  // alimentario, niñez, jóvenes (excluye prg38 Potenciar Trabajo)
+  },
+  'obra-publica': {
+    ids_2024: ['25','30','50'],
+    ids_2023: ['64','57','65'],
+    programas: null,
+    keywords: ['obra','infraestructura','transporte','vial','agua','vivienda','habitat','saneamiento','autopista'],
+  },
+  salario: {
+    ids: null, inciso: '1',
+  },
+  educacion: {
+    ids_2024: ['88'],
+    ids_2023: ['70'],
+    programas_2024: ['26','29','40','49','23'],
+    programas_2023: null,  // toda la jur 70 es educación
+  },
 };
 
-// Fallback por nombre para datos 2023 (ministerios anteriores a la fusión)
+// Fallback por nombre para datos sin jurisdiccion_id
 const SECTOR_JURIS_LEGACY = {
   salud:          ['ministerio de salud'],
   jubilaciones:   ['ministerio de capital humano', 'obligaciones a cargo del tesoro', 'ministerio de trabajo'],
   ninez:          ['ministerio de desarrollo social', 'ministerio de capital humano'],
-  'obra-publica': ['ministerio de obras públicas', 'ministerio de obras publicas', 'ministerio de infraestructura', 'ministerio de transporte'],
+  'obra-publica': ['ministerio de obras públicas', 'ministerio de obras publicas', 'ministerio de infraestructura', 'ministerio de transporte', 'ministerio de desarrollo territorial'],
   salario:        null,
   educacion:      ['ministerio de educación', 'ministerio de educacion', 'ministerio de capital humano'],
 };
@@ -738,25 +767,41 @@ function filtrarSector(sector) {
   if (cfg.inciso) return D.filter(d => String(d.inciso_id) === cfg.inciso);
 
   return D.filter(d => {
-    // Si el dato tiene jurisdiccion_id (API nueva), usarlo
     const jid = d.jurisdiccion_id ? String(d.jurisdiccion_id).trim() : null;
+
     if (jid) {
-      // Filtrar por IDs de jurisdicción
-      if (cfg.ids && !cfg.ids.includes(jid)) return false;
-      // Si hay restricción por programa_id específico, aplicarla
-      if (cfg.programas) {
+      // Detectar si el dato es de 2023 (pre-fusión) o 2024+ por jurisdiccion_id
+      // jur 75=Trabajo, 85=Des.Social, 70=Educación → indican dato 2023
+      const ids_legacy = ['75','85','70','64','57','65'];
+      const is2023 = ids_legacy.includes(jid);
+      const ids      = is2023 ? (cfg.ids_2023 || cfg.ids_2024) : (cfg.ids_2024 || cfg.ids_2023);
+      const programas = is2023 ? cfg.programas_2023 : cfg.programas_2024;
+      const excluir91 = cfg.excluir_jur91_prg;
+
+      if (!ids || !ids.includes(jid)) return false;
+
+      // Excluir programas específicos de jur 91 que NO son previsionales
+      if (jid === '91' && excluir91) {
         const pid = String(d.programa_id || '').trim();
-        return cfg.programas.includes(pid);
+        if (excluir91.includes(pid)) return false;
       }
-      // Si hay restricción por keywords en descripción del programa
+
+      // Si hay lista de programas permitidos, aplicarla
+      if (programas) {
+        const pid = String(d.programa_id || '').trim();
+        return programas.includes(pid);
+      }
+
+      // Si hay keywords en descripción del programa
       if (cfg.keywords) {
         const desc = (d.programa_desc || '').toLowerCase();
         return cfg.keywords.some(kw => desc.includes(kw));
       }
+
       return true;
     }
 
-    // Fallback: filtrar por nombre de jurisdicción (datos legacy 2023)
+    // Fallback: filtrar por nombre de jurisdicción
     const juris = SECTOR_JURIS_LEGACY[sector];
     if (!juris) return false;
     const j = (d.jurisdiccion || '').toLowerCase();
