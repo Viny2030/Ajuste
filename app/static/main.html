@@ -63,7 +63,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
 .sector-icon { font-size: 28px; line-height: 1; }
 .sector-title { font-size: 16px; font-weight: 600; color: #3d1e6e; }
 .sector-subtitle { font-size: 12px; color: #888; margin-top: 2px; }
-.sector-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.sector-kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
 .sector-kpi { background: white; border-radius: 8px; padding: 14px 16px; border: 1px solid #e8e8e4; }
 .sector-kpi-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px; }
 .sector-kpi-value { font-size: 22px; font-weight: 600; line-height: 1; }
@@ -812,15 +812,40 @@ function filtrarSector(sector) {
 function renderSectorKpis(sector, data) {
   const el = document.getElementById(sector + '-kpis');
   if (!el) return;
-  const reds = data.filter(d => d.variacion_real_pct < 0);
-  const totalOrig = data.reduce((s,d) => s + (d.monto_original||0), 0) || 1;
-  const avgReal = data.reduce((s,d) => s + (d.variacion_real_pct||0) * (d.monto_original||0), 0) / totalOrig;
-  const avgLic  = data.reduce((s,d) => s + (d.licuacion_pct||0) * (d.monto_original||0), 0) / totalOrig;
+  const totalOrig    = data.reduce((s,d) => s + (d.monto_original||0), 0);
+  const totalVig     = data.reduce((s,d) => s + (d.monto_vigente_nominal||0), 0);
+  const totalReal    = data.reduce((s,d) => s + (d.monto_real_en_moneda_2023||0), 0);
+  const totalOrigUSD = data.reduce((s,d) => s + (d.monto_original_usd||0), 0);
+  const totalVigUSD  = data.reduce((s,d) => s + (d.monto_vigente_usd||0), 0);
+  const varNom  = totalOrig > 0 ? ((totalVig  / totalOrig)  - 1) * 100 : 0;
+  const varReal = totalOrig > 0 ? ((totalReal / totalOrig)  - 1) * 100 : 0;
+  const varUSD  = totalOrigUSD > 0 ? ((totalVigUSD / totalOrigUSD) - 1) * 100 : 0;
   el.innerHTML = `
-    <div class="sector-kpi"><div class="sector-kpi-label">programas</div><div class="sector-kpi-value">${data.length}</div><div class="sector-kpi-sub">en este sector</div></div>
-    <div class="sector-kpi"><div class="sector-kpi-label">var. real ponderada</div><div class="sector-kpi-value ${avgReal<0?'red':'green'}">${fmtP(avgReal)}</div><div class="sector-kpi-sub">deflactado IPC · pond. por monto</div></div>
-    <div class="sector-kpi"><div class="sector-kpi-label">con reducción real</div><div class="sector-kpi-value red">${reds.length}</div><div class="sector-kpi-sub">de ${data.length} programas</div></div>
-    <div class="sector-kpi"><div class="sector-kpi-label">licuación pond.</div><div class="sector-kpi-value amber">${avgLic.toFixed(1)}%</div><div class="sector-kpi-sub">nominal − real · pond. por monto</div></div>`;
+    <div class="sector-kpi">
+      <div class="sector-kpi-label">Presupuesto original 2023</div>
+      <div class="sector-kpi-value" style="font-size:17px;">${fmtAbs(totalOrig)}</div>
+      <div class="sector-kpi-sub">pesos corrientes · base</div>
+    </div>
+    <div class="sector-kpi">
+      <div class="sector-kpi-label">Crédito vigente 2026</div>
+      <div class="sector-kpi-value" style="font-size:17px;">${fmtAbs(totalVig)}</div>
+      <div class="sector-kpi-sub">pesos corrientes · último ejercicio</div>
+    </div>
+    <div class="sector-kpi">
+      <div class="sector-kpi-label">Variación nominal</div>
+      <div class="sector-kpi-value ${varNom<0?'red':'green'}">${varNom>0?'+':''}${varNom.toFixed(1)}%</div>
+      <div class="sector-kpi-sub">en pesos corrientes · sin deflactar</div>
+    </div>
+    <div class="sector-kpi">
+      <div class="sector-kpi-label">Variación real (IPC)</div>
+      <div class="sector-kpi-value ${varReal<0?'red':'green'}">${varReal>0?'+':''}${varReal.toFixed(1)}%</div>
+      <div class="sector-kpi-sub">deflactado por IPC acumulado ene-2023 → hoy</div>
+    </div>
+    <div class="sector-kpi">
+      <div class="sector-kpi-label">Variación en USD</div>
+      <div class="sector-kpi-value ${varUSD<0?'red':'green'}">${varUSD>0?'+':''}${varUSD.toFixed(1)}%</div>
+      <div class="sector-kpi-sub">USD al TC vigente en cada asignación · orig: ${fmtUSD(totalOrigUSD)} → ${fmtUSD(totalVigUSD)}</div>
+    </div>`;
 }
 
 function renderSectorBarChart(canvasId, wrapId, data) {
