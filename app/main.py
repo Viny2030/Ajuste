@@ -1,75 +1,60 @@
 # app/main.py
 """
-FastAPI — Monitor de Ajuste Presupuestario (MAP)
-Endpoints completos:
-  /api/v1/partidas/                   → Listado con filtros
-  /api/v1/analisis/ajuste/{id}        → Ajuste real de una partida
-  /api/v1/analisis/ranking            → Top N partidas más ajustadas
-  /api/v1/analisis/por-inciso         → Ajuste agregado por inciso
-  /api/v1/macro/series                → IPC y USD desde BCRA
-  /api/v1/macro/base-monetaria        → Base Monetaria en vivo BCRA
-  /api/v1/normativa/                  → Listado de normas JGM
-  /api/v1/normativa/{norma_id}        → Detalle de una norma
-  /api/v1/normativa/{norma_id}/partidas → Partidas afectadas por norma
-  /api/v1/comparativa/                → Gasto nominal vs real vs inflación vs USD
-  /api/v1/scrape/trigger              → Dispara scraper BORA (async)
-  /api/social/kpis                    → KPIs sanitarios (mortalidad, adultos mayores, suicidios)
-  /api/social/status                  → Health-check datos sociales
+FastAPI — Monitor de Ajuste Presupuestario (MAP) v2.2.0
+Endpoints:
+  GET  /                                → Health JSON (para el dashboard)
+  GET  /dashboard                       → Sirve main.html
+  GET  /api/v1/partidas/                → Listado con filtros
+  GET  /api/v1/analisis/ranking         → Top N partidas más ajustadas
+  GET  /api/v1/analisis/por-inciso      → Ajuste agregado por inciso
+  GET  /api/v1/analisis/evolucion-real  → Evolución gasto real por año
+  GET  /api/v1/analisis/sector          → Comparativa sectorial 2023→2026 ✅
+  GET  /api/v1/macro/series             → IPC y USD desde BCRA
+  GET  /api/v1/macro/base-monetaria     → Base Monetaria en vivo BCRA
+  GET  /api/v1/normativa/               → Listado de normas JGM
+  GET  /api/v1/normativa/{id}           → Detalle de una norma
+  GET  /api/v1/normativa/{id}/partidas  → Partidas afectadas por norma
+  GET  /api/v1/comparativa/             → Gasto nominal vs real vs inflación vs USD
+  POST /api/v1/scrape/trigger           → Dispara scraper BORA (async)
+  GET  /health                          → Health check
 """
 import asyncio
 import uvicorn
 import httpx
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from fastapi import FastAPI, Depends, HTTPException, Query, BackgroundTasks
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, and_, text
 
 from app.database import models, schemas
 from app.database.session import SessionLocal, engine
 from app.core.engine import AnalizadorPresupuestario, cargar_macro_indices
 from app.core.viz import generar_grafico_ajuste
-from scripts.social.router_social import router as social_router
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Monitor de Ajuste Presupuestario (MAP)",
     description=(
-        "Análisis del ajuste presupuestario 2023–2026: "
-        "partidas vs IPC y cotización del dólar. "
-        "Decisiones Administrativas del Jefe de Gabinete."
+        "Análisis del ajuste presupuestario 2023-2026: "
+        "partidas vs IPC y cotización del dólar."
     ),
-    version="2.0.0",
+    version="2.2.0",
 )
 
-# Servir archivos estáticos (dashboard)
+# ── Archivos estáticos ─────────────────────────────────────────────────────────
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-# ── Routers ─────────────────────────────────────────────────────
-app.include_router(social_router)
 
-
-@app.get("/dashboard", tags=["Home"], include_in_schema=False)
-async def dashboard():
-    """Dashboard visual del ajuste presupuestario."""
-    path = os.path.join(os.path.dirname(__file__), "static", "main.html")
-    return FileResponse(path)
-@app.get("/manual", tags=["Home"], include_in_schema=False)
-async def manual():
-    """Manual técnico del MAP."""
-    path = os.path.join(os.path.dirname(__file__), "static", "manual.html")
-    return FileResponse(path)
-
-# ── Dependencia DB ──────────────────────────────────────────────
-
+# ── DB dependency ──────────────────────────────────────────────────────────────
 def get_db():
     db = SessionLocal()
     try:
@@ -78,854 +63,592 @@ def get_db():
         db.close()
 
 
-# ── HOME ────────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+# MAPEO SECTORIAL DEFINITIVO — verificado contra sql_app.db
+# Diagnóstico: _check2.py a _check7.py — mayo 2026
+#
+# HALLAZGOS CLAVE:
+#   - jur 77 (Infraestructura) solo tiene datos de 2024, NO de 2026
+#   - Obra pública 2026 quedó en jur 50 (Ministerio de Economía), programas específicos
+#   - Jubilaciones 2023: jur 75 (Trabajo) prg 16,17,21,30,31
+#   - Jubilaciones 2026: jur 88 (Capital Humano) prg 16,17,21,30,31
+#   - Capital Humano 2026: jur 88 agrupa Educación (jur 70) + Trabajo (jur 75) + Des.Social (jur 85)
+#   - Salud: jur 80 sin cambios en ambos períodos
+#   - Tabla real: presupuesto_base (NO "partidas")
+#   - Campos: monto_original (2023), monto_vigente (2026)
+#   - Años disponibles: 2023, 2024, 2025, 2026
+# ══════════════════════════════════════════════════════════════════════════════
 
-@app.get("/", tags=["Home"])
-async def root():
-    macro = cargar_macro_indices()
-    return {
-        "sistema": "Monitor de Ajuste Presupuestario (MAP)",
-        "version": "2.0.0",
-        "estado": "Online",
-        "punto_base": "Enero 2023",
-        "factor_ipc_acumulado": round(macro["factor_deflactacion"], 4),
-        "usd_oficial_actual": macro["usd_actual"],
-        "servidor_tiempo": datetime.now().isoformat(),
-    }
+SECTORES: Dict[str, dict] = {
 
+    "obra_publica": {
+        "label": "Obra Pública / Infraestructura",
+        "icon": "🏗️",
+        "color": "#1a3a6e",
+        # 2023: Obras Públicas (64) + Transporte (57) + Hábitat (65)
+        "jur_2023": [64, 57, 65],
+        "prg_2023": None,           # toda la jurisdicción es obra pública
+        # 2026: migró a jur 50 (Economía) — solo programas de infraestructura/vial
+        # Excluye energía (prg 74,73,75), economía general (prg 45,18,36,etc.)
+        "jur_2026": [50],
+        "prg_2026": [62, 63, 48, 51, 82, 54, 16, 37, 69, 57, 5, 15, 52],
+    },
 
-# ── JURISDICCIONES ──────────────────────────────────────────────
+    "jubilaciones": {
+        "label": "Jubilaciones y Pensiones",
+        "icon": "👴",
+        "color": "#3d1e6e",
+        # 2023: jur 75 (Trabajo/ANSES) prg previsionales principales
+        "jur_2023": [75],
+        "prg_2023": [16, 17, 21, 30, 31],
+        # 2026: jur 88 (Capital Humano) mismos programas previsionales
+        "jur_2026": [88],
+        "prg_2026": [16, 17, 21, 30, 31],
+    },
 
-@app.get(
-    "/api/v1/jurisdicciones",
-    tags=["Presupuesto"],
-)
-def listar_jurisdicciones(db: Session = Depends(get_db)):
-    """Lista todas las jurisdicciones con ID, descripcion y totales presupuestados."""
-    rows = (
-        db.query(
-            models.PresupuestoBase.jurisdiccion_id,
-            models.PresupuestoBase.jurisdiccion_desc,
-            func.sum(models.PresupuestoBase.monto_original).label("total_original"),
-            func.sum(models.PresupuestoBase.monto_vigente).label("total_vigente"),
-        )
-        .group_by(
-            models.PresupuestoBase.jurisdiccion_id,
-            models.PresupuestoBase.jurisdiccion_desc,
-        )
-        .order_by(func.sum(models.PresupuestoBase.monto_original).desc())
-        .all()
-    )
-    return [
-        {
-            "jurisdiccion_id": r.jurisdiccion_id,
-            "jurisdiccion_desc": r.jurisdiccion_desc,
-            "total_original": round(r.total_original or 0),
-            "total_vigente": round(r.total_vigente or 0),
-        }
-        for r in rows
-    ]
+    "jubilaciones_fuerzas": {
+        "label": "Jubilaciones Fuerzas Armadas y Seguridad",
+        "icon": "🛡️",
+        "color": "#6b7280",
+        # Sin cambio de jurisdicción — jur 41 (Seguridad) y jur 45 (Defensa)
+        "jur_2023": [41, 45],
+        "prg_2023": [16, 18, 19, 20, 21, 22],
+        "jur_2026": [41, 45],
+        "prg_2026": [16, 18, 19, 20, 21, 22],
+    },
 
+    "capital_humano": {
+        "label": "Capital Humano (Educ + Niñez + Empleo)",
+        "icon": "📚",
+        "color": "#7a4500",
+        # 2023: Educación (70) + Trabajo/empleo (75 excl. previsional) + Des.Social (85)
+        "jur_2023": [70, 75, 85],
+        "prg_2023": None,           # toda la jur — se excluye vía prg_excluir_2023
+        # Excluir de jur 75/2023 los programas previsionales (ya en "jubilaciones")
+        "prg_excluir_2023": {75: [16, 17, 21, 30, 31]},
+        # 2026: todo jur 88 excepto programas previsionales y obra pública
+        "jur_2026": [88],
+        "prg_2026": None,
+        "prg_excluir_2026": {88: [16, 17, 21, 30, 31]},  # excluir previsionales
+    },
 
-@app.get(
-    "/api/v1/jurisdicciones/{jurisdiccion_id}/programas",
-    tags=["Presupuesto"],
-)
-def programas_por_jurisdiccion(
-    jurisdiccion_id: str,
-    inciso_id: Optional[str] = None,
-    db: Session = Depends(get_db),
-):
-    """Programas de una jurisdiccion con ajuste real e impacto en USD al TC historico."""
-    jid = jurisdiccion_id.lstrip("0") or "0"
-    q = db.query(models.PresupuestoBase).filter(
-        models.PresupuestoBase.jurisdiccion_id == jid
-    )
-    if inciso_id:
-        q = q.filter(models.PresupuestoBase.inciso_id == inciso_id)
-    programas = q.limit(500).all()
-    if not programas:
-        raise HTTPException(404, detail=f"Jurisdiccion '{jurisdiccion_id}' no encontrada")
-    all_mods = db.query(models.ModificacionPresupuestaria).all()
-    mods_map: dict = {}
-    for m in all_mods:
-        mods_map.setdefault(m.programa_id, []).append(m)
-    analizador = AnalizadorPresupuestario(db)
-    resultado = []
-    for prog in programas:
-        mods = mods_map.get(prog.programa_id, [])
-        r = analizador.calcular_variacion_real(prog, mods)
-        if r:
-            r["inciso_id"] = prog.inciso_id
-            r["inciso_desc"] = prog.inciso_desc
-            resultado.append(r)
-    return sorted(resultado, key=lambda x: x["variacion_real_pct"])
+    "salud": {
+        "label": "Salud",
+        "icon": "🏥",
+        "color": "#145a2a",
+        # Sin cambio — jur 80 estable en ambos períodos
+        "jur_2023": [80],
+        "prg_2023": None,
+        "jur_2026": [80],
+        "prg_2026": None,
+    },
 
+    "seguridad": {
+        "label": "Seguridad (Fuerzas Federales)",
+        "icon": "🚔",
+        "color": "#dc2626",
+        # Sin cambio de jurisdicción
+        "jur_2023": [41],
+        "prg_2023": None,
+        "jur_2026": [41],
+        "prg_2026": None,
+    },
 
-# ── PARTIDAS ────────────────────────────────────────────────────
+    "defensa": {
+        "label": "Defensa Nacional",
+        "icon": "⚔️",
+        "color": "#374151",
+        "jur_2023": [45],
+        "prg_2023": None,
+        "jur_2026": [45],
+        "prg_2026": None,
+    },
+}
 
-@app.get(
-    "/api/v1/partidas",
-    response_model=List[schemas.PartidaResumen],
-    tags=["Presupuesto"],
-)
-def listar_partidas(
-    skip: int = 0,
-    limit: int = 100,
-    jurisdiccion_id: Optional[str] = Query(None, description="Filtrar por código de jurisdicción"),
-    inciso_id: Optional[str] = Query(None, description="Filtrar por inciso (1=Personal, 2=Bienes, etc.)"),
-    fuente: Optional[str] = Query(None, description="Filtrar por fuente de financiamiento"),
-    db: Session = Depends(get_db),
-):
-    """Listado de partidas con filtros opcionales."""
-    q = db.query(models.PresupuestoBase)
-    if jurisdiccion_id:
-        q = q.filter(models.PresupuestoBase.jurisdiccion_id == jurisdiccion_id)
-    if inciso_id:
-        q = q.filter(models.PresupuestoBase.inciso_id == inciso_id)
-    if fuente:
-        q = q.filter(models.PresupuestoBase.fuente_financiamiento_id == fuente)
-    return q.offset(skip).limit(limit).all()
-
-
-# ── ANÁLISIS DE AJUSTE ──────────────────────────────────────────
-
-@app.get(
-    "/api/v1/analisis/ajuste/{programa_id}",
-    response_model=schemas.AjustePartida,
-    tags=["Analítica"],
-)
-def ajuste_por_programa(programa_id: str, db: Session = Depends(get_db)):
-    """Calcula la variación real (deflactada por IPC) de un programa."""
-    base = (
-        db.query(models.PresupuestoBase)
-        .filter(models.PresupuestoBase.programa_id == programa_id)
-        .first()
-    )
-    if not base:
-        raise HTTPException(404, detail=f"Programa '{programa_id}' no encontrado en base 2023")
-
-    mods = (
-        db.query(models.ModificacionPresupuestaria)
-        .filter(models.ModificacionPresupuestaria.programa_id == programa_id)
-        .all()
-    )
-    analizador = AnalizadorPresupuestario(db)
-    return analizador.calcular_variacion_real(base, mods)
+# IPC acumulado enero 2023 → 2026 (fallback — actualizar mensualmente)
+# Fuente: INDEC
+IPC_FACTOR_FALLBACK = 10.53   # ~953% acumulado ene-2023 → dic-2025
+TC_USD_INICIO_2023  = 187.0   # $/USD enero 2023 (TC oficial BNA)
+TC_USD_FALLBACK     = 1200.0  # $/USD vigente (actualizar)
 
 
-@app.get(
-    "/api/v1/analisis/ranking",
-    tags=["Analítica"],
-)
-def ranking_ajuste(
-    top_n: int = Query(20, le=500),
-    jurisdiccion_id: Optional[str] = None,
-    inciso_id: Optional[str] = None,
-    db: Session = Depends(get_db),
-):
-    macro = cargar_macro_indices()
-    factor = macro["factor_deflactacion"]
-    usd_actual = macro.get("usd_actual")
-    TC_ENE2023 = 187.0
-    tc_actual  = usd_actual if usd_actual else TC_ENE2023 * factor
+# ══════════════════════════════════════════════════════════════════════════════
+# HELPERS — queries sobre presupuesto_base
+# La tabla real es "presupuesto_base", campos monto_original / monto_vigente
+# Año se guarda en columna "ejercicio" (int)
+# ══════════════════════════════════════════════════════════════════════════════
 
-    q_base = db.query(
-        models.PresupuestoBase.programa_id,
-        models.PresupuestoBase.programa_desc,
-        models.PresupuestoBase.jurisdiccion_id,
-        models.PresupuestoBase.jurisdiccion_desc,
-        models.PresupuestoBase.inciso_id,
-        models.PresupuestoBase.inciso_desc,
-        func.sum(models.PresupuestoBase.monto_original).label("original"),
-    ).filter(models.PresupuestoBase.ejercicio == 2023).group_by(
-        models.PresupuestoBase.programa_id,
-        models.PresupuestoBase.programa_desc,
-        models.PresupuestoBase.jurisdiccion_id,
-        models.PresupuestoBase.jurisdiccion_desc,
-        models.PresupuestoBase.inciso_id,
-        models.PresupuestoBase.inciso_desc,
-    )
-    if jurisdiccion_id:
-        q_base = q_base.filter(models.PresupuestoBase.jurisdiccion_id == jurisdiccion_id)
-    if inciso_id:
-        q_base = q_base.filter(models.PresupuestoBase.inciso_id == inciso_id)
-
-    base_map = {
-        (str(r.programa_id).strip(), str(r.inciso_id or '').strip()): r
-        for r in q_base.all()
-    }
-
-    vigente_map = {}
-    for anio in [2024, 2025, 2026]:
-        q_vig = db.query(
-            models.PresupuestoBase.programa_id,
-            models.PresupuestoBase.inciso_id,
-            func.sum(models.PresupuestoBase.monto_vigente).label("vigente"),
-        ).filter(models.PresupuestoBase.ejercicio == anio).group_by(
-            models.PresupuestoBase.programa_id,
-            models.PresupuestoBase.inciso_id,
-        )
-        if jurisdiccion_id:
-            q_vig = q_vig.filter(models.PresupuestoBase.jurisdiccion_id == jurisdiccion_id)
-        if inciso_id:
-            q_vig = q_vig.filter(models.PresupuestoBase.inciso_id == inciso_id)
-        for r in q_vig.all():
-            key = (str(r.programa_id).strip(), str(r.inciso_id or '').strip())
-            vigente_map[key] = float(r.vigente or 0) * 1_000_000
-
-    cant_map = {
-        (str(r.programa_id).strip(), str(r.inciso_id or '').strip()): int(r.cant or 0)
-        for r in db.query(
-            models.ModificacionPresupuestaria.programa_id,
-            models.ModificacionPresupuestaria.inciso_id,
-            func.count(models.ModificacionPresupuestaria.id).label("cant"),
-        ).filter(
-            models.ModificacionPresupuestaria.norma_id.like("CREDITO-VIGENTE-%")
-        ).group_by(
-            models.ModificacionPresupuestaria.programa_id,
-            models.ModificacionPresupuestaria.inciso_id,
-        ).all()
-    }
-
-    resultado = []
-    for key, r in base_map.items():
-        if not r.original or r.original < 100_000_000:
-            continue
-
-        vigente_real = vigente_map.get(key)
-        if vigente_real is None or vigente_real == 0:
-            continue
-
-        var_nom    = ((vigente_real / r.original) - 1) * 100
-        real_pesos = vigente_real / factor
-        var_real   = ((real_pesos / r.original) - 1) * 100
-        abs_nom    = vigente_real - r.original
-        abs_real   = real_pesos - r.original
-
-        original_usd = round(r.original / TC_ENE2023, 2)
-        vigente_usd  = round(vigente_real / tc_actual, 2) if tc_actual else None
-        abs_usd      = round(vigente_usd - original_usd, 2) if vigente_usd is not None else None
-        var_usd_pct  = round(((vigente_usd / original_usd) - 1) * 100, 2) if (vigente_usd and original_usd) else None
-        # Filtrar outliers que distorsionan promedios sectoriales
-        if var_real > 500 or var_real < -99.5:
-            continue
-        resultado.append({
-            "programa_id":               r.programa_id,
-            "programa_desc":             r.programa_desc,
-            "jurisdiccion":              r.jurisdiccion_desc,
-            "jurisdiccion_id":           str(r.jurisdiccion_id or "").strip(),
-            "inciso_id":                 r.inciso_id,
-            "inciso_desc":               r.inciso_desc,
-            "monto_original":            round(r.original, 2),
-            "monto_vigente_nominal":     round(vigente_real, 2),
-            "monto_real_en_moneda_2023": round(real_pesos, 2),
-            "ajuste_nominal_pct":        round(var_nom, 2),
-            "ajuste_nominal_abs":        round(abs_nom, 2),
-            "ajuste_real_pct":           round(var_real, 2),
-            "ajuste_real_abs":           round(abs_real, 2),
-            "ajuste_usd_pct":            var_usd_pct,
-            "ajuste_usd_abs":            abs_usd,
-            "monto_original_usd":        original_usd,
-            "monto_vigente_usd":         vigente_usd,
-            "tc_ene2023":                TC_ENE2023,
-            "tc_actual":                 round(tc_actual, 2) if tc_actual else None,
-            "licuacion_pct":             round(var_nom - var_real, 2),
-            "cantidad_modificaciones":   cant_map.get(key, 0),
-            "estado_ajuste":             "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
-            "variacion_nominal_pct":     round(var_nom, 2),
-            "variacion_real_pct":        round(var_real, 2),
-        })
-
-    resultado.sort(key=lambda x: x["variacion_real_pct"])
-    return resultado[:top_n]
-
-
-@app.get(
-    "/api/v1/analisis/por-inciso",
-    tags=["Analítica"],
-)
-def ajuste_por_inciso(db: Session = Depends(get_db)):
+def _sumar_presupuesto(
+    db: Session,
+    jurisdicciones: List[int],
+    ejercicio: int,
+    programas: Optional[List[int]] = None,
+    prg_excluir: Optional[Dict[int, List[int]]] = None,
+) -> float:
     """
-    Agregado del ajuste real por tipo de gasto (inciso).
-    Original: ejercicio 2023 en pesos completos → normalizado a millones.
-    Vigente:  ejercicio más reciente disponible (2026 > 2025 > 2024), en millones × 1_000_000.
+    Suma monto_original (si ejercicio==2023) o monto_vigente (resto)
+    desde presupuesto_base filtrando por jurisdiccion_id y opcionalmente programa_id.
     """
-    macro = cargar_macro_indices()
-    factor = macro["factor_deflactacion"]
+    campo = "monto_original" if ejercicio == 2023 else "monto_vigente"
 
-    q_orig = db.query(
-        models.PresupuestoBase.inciso_id,
-        models.PresupuestoBase.inciso_desc,
-        func.sum(models.PresupuestoBase.monto_original).label("total_original"),
-    ).filter(
-        models.PresupuestoBase.ejercicio == 2023
-    ).group_by(
-        models.PresupuestoBase.inciso_id,
-        models.PresupuestoBase.inciso_desc,
-    ).all()
+    # Construir filtro de jurisdicciones
+    jur_in = ", ".join(str(j) for j in jurisdicciones)
 
-    orig_map = {
-        str(r.inciso_id or "").strip(): {
-            "inciso_desc": r.inciso_desc,
-            "total_original": float(r.total_original or 0),
-        }
-        for r in q_orig
-    }
+    # Filtro de programas (lista de permitidos)
+    prg_clause = ""
+    if programas:
+        prg_in = ", ".join(str(p) for p in programas)
+        prg_clause = f" AND programa_id IN ({prg_in})"
 
-    vigente_map = {}
-    for anio in [2024, 2025, 2026]:
-        q_vig = db.query(
-            models.PresupuestoBase.inciso_id,
-            func.sum(models.PresupuestoBase.monto_vigente).label("total_vigente"),
-        ).filter(
-            models.PresupuestoBase.ejercicio == anio
-        ).group_by(
-            models.PresupuestoBase.inciso_id,
-        ).all()
-        for r in q_vig:
-            key = str(r.inciso_id or "").strip()
-            vigente_map[key] = float(r.total_vigente or 0) * 1_000_000
+    # Filtro de exclusión por jur+programa
+    excl_clauses = []
+    if prg_excluir:
+        for jur_id, prgs in prg_excluir.items():
+            if prgs and jur_id in jurisdicciones:
+                prg_excl_in = ", ".join(str(p) for p in prgs)
+                excl_clauses.append(
+                    f"NOT (jurisdiccion_id = {jur_id} AND programa_id IN ({prg_excl_in}))"
+                )
+    excl_clause = (" AND " + " AND ".join(excl_clauses)) if excl_clauses else ""
 
-    resultado = []
-    for inciso_id, orig in orig_map.items():
-        total_orig = orig["total_original"]
-        total_vig  = vigente_map.get(inciso_id)
+    sql = text(f"""
+        SELECT COALESCE(SUM({campo}), 0)
+        FROM presupuesto_base
+        WHERE ejercicio = :ejercicio
+          AND jurisdiccion_id IN ({jur_in})
+          {prg_clause}
+          {excl_clause}
+    """)
 
-        if not total_orig or total_orig == 0 or not total_vig:
-            continue
-
-        real     = total_vig / factor
-        var_nom  = ((total_vig  / total_orig) - 1) * 100
-        var_real = ((real       / total_orig) - 1) * 100
-
-        resultado.append({
-            "inciso_id":              inciso_id,
-            "inciso_desc":            orig["inciso_desc"],
-            "total_original":         round(total_orig, 2),
-            "total_vigente":          round(total_vig,  2),
-            "total_real_moneda_2023": round(real,       2),
-            "variacion_nominal_pct":  round(var_nom,    2),
-            "variacion_real_pct":     round(var_real,   2),
-            "licuacion_pct":          round(var_nom - var_real, 2),
-            "estado": "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
-        })
-
-    return sorted(resultado, key=lambda x: x["variacion_real_pct"])
+    resultado = db.execute(sql, {"ejercicio": ejercicio}).scalar()
+    return float(resultado or 0)
 
 
-# ── MACRO: IPC y USD ─────────────────────────────────────────────
-
-@app.get(
-    "/api/v1/macro/series",
-    tags=["Macro"],
-)
-def series_macro(db: Session = Depends(get_db)):
-    """Retorna las series mensuales de IPC y USD oficial desde Enero 2023."""
-    analizador = AnalizadorPresupuestario(db)
-    return analizador.get_serie_macro()
-
-
-# ── MACRO: BASE MONETARIA (BCRA API en vivo) ─────────────────────
-
-BCRA_MONETARIAS   = "https://api.bcra.gob.ar/estadisticas/v4.0/monetarias"
-BCRA_CAMBIARIAS   = "https://api.bcra.gob.ar/estadisticascambiarias/v1.0/Cotizaciones"
-ID_BASE_MONETARIA = 15
-FECHA_ASUNCION    = "2023-12-07"
-BM_ASUNCION_MM    = 10_124_959   # millones ARS — BCRA 07/12/2023
-
-TC_USD_FALLBACK   = 1_150.0
-
-
-def _label_mes(fecha_str: str) -> str:
-    meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]
+def _get_ipc_factor(db: Session) -> float:
+    """Factor IPC acumulado desde la DB. Fallback a constante."""
     try:
-        p = fecha_str.split("-")
-        return f"{meses[int(p[1])-1]} {p[0]}"
-    except Exception:
-        return fecha_str
-
-
-async def _obtener_tc_usd(client: httpx.AsyncClient) -> tuple[float | None, bool]:
-    hoy      = date.today().isoformat()
-    hace_30d = (date.today() - timedelta(days=30)).isoformat()
-
-    urls_a_probar = [
-        (
-            f"{BCRA_CAMBIARIAS}/USD",
-            {"fechadesde": hace_30d, "fechahasta": hoy, "limit": 10},
-            lambda data: next(
-                (
-                    det.get("tipoCotizacion") or det.get("tipoPase")
-                    for row in data.get("results", [])
-                    for det in (row.get("detalle") or [])
-                    if (det.get("tipoCotizacion") or det.get("tipoPase") or 0) > 0
-                ),
-                None,
-            ),
-        ),
-        (
-            "https://api.bcra.gob.ar/estadisticas/v4.0/monetarias/4",
-            {"desde": hace_30d, "hasta": hoy, "limit": 5},
-            lambda data: next(
-                (row["valor"] for row in reversed(data.get("results", [{}])[0].get("detalle", []))),
-                None,
-            ),
-        ),
-    ]
-
-    for url, params, extractor in urls_a_probar:
-        try:
-            r = await client.get(url, params=params)
-            if r.status_code == 200:
-                tc = extractor(r.json())
-                if tc and float(tc) > 0:
-                    return float(tc), False
-        except Exception:
-            continue
-
-    return TC_USD_FALLBACK, True
-
-
-@app.get(
-    "/api/v1/macro/base-monetaria",
-    tags=["Macro"],
-    summary="Base Monetaria — datos en vivo BCRA",
-)
-async def base_monetaria():
-    hoy = date.today().isoformat()
-
-    async with httpx.AsyncClient(timeout=12, verify=False) as client:
-
-        resp = await client.get(
-            f"{BCRA_MONETARIAS}/{ID_BASE_MONETARIA}",
-            params={"desde": FECHA_ASUNCION, "hasta": hoy, "limit": 3000},
-        )
-        if resp.status_code != 200:
-            raise HTTPException(502, "Error al consultar API BCRA (base monetaria)")
-
-        detalle     = resp.json()["results"][0]["detalle"]
-        detalle_asc = list(reversed(detalle))
-
-        ultimo    = detalle_asc[-1]
-        bm_actual = ultimo["valor"]
-        fecha_ult = ultimo["fecha"]
-
-        tc_usd, tc_es_fallback = await _obtener_tc_usd(client)
-
-    var_pct = round((bm_actual / BM_ASUNCION_MM - 1) * 100, 1)
-    mult    = round(bm_actual / BM_ASUNCION_MM, 2)
-    bm_usd_mm = round(bm_actual / tc_usd, 0)
-
-    serie = []
-    meses_vistos = set()
-    for row in detalle_asc:
-        mes = row["fecha"][:7]
-        if mes not in meses_vistos:
-            meses_vistos.add(mes)
-            serie.append({
-                "fecha":   row["fecha"],
-                "label":   _label_mes(row["fecha"]),
-                "bm_bill": round(row["valor"] / 1_000_000, 1),
-                "var_pct": round((row["valor"] / BM_ASUNCION_MM - 1) * 100, 1),
-                "mult":    round(row["valor"] / BM_ASUNCION_MM, 2),
-            })
-
-    tc_nota = (
-        f"TC USD: ${tc_usd:,.0f} (oficial BNA)"
-        if not tc_es_fallback
-        else f"TC USD: ${tc_usd:,.0f} (referencia aproximada — API BCRA no disponible)"
-    )
-
-    return {
-        "inicio": {
-            "fecha":       FECHA_ASUNCION,
-            "label":       "07/12/2023",
-            "bm_billones": round(BM_ASUNCION_MM / 1_000_000, 1),
-        },
-        "actual": {
-            "fecha":       fecha_ult,
-            "label":       _label_mes(fecha_ult),
-            "bm_billones": round(bm_actual / 1_000_000, 1),
-            "bm_usd_mm":   bm_usd_mm,
-            "tc_usd":      tc_usd,
-            "tc_es_fallback": tc_es_fallback,
-        },
-        "variacion_pct": var_pct,
-        "multiplicador":  mult,
-        "nota": (
-            f"La cantidad de dinero circulante (más los encajes bancarios) "
-            f"se multiplicó por {mult}x respecto al valor que recibió "
-            f"la administración actual al asumir en diciembre de 2023. "
-            f"{tc_nota}."
-        ),
-        "serie_mensual": serie,
-    }
-
-
-# ── NORMATIVA JGM ────────────────────────────────────────────────
-
-@app.get(
-    "/api/v1/normativa",
-    response_model=List[schemas.NormaResumen],
-    tags=["Normativa"],
-)
-def listar_normas(
-    tipo_accion: Optional[str] = Query(None, description="REDUCCION | REASIGNACION | AMPLIACION"),
-    anio: Optional[int] = None,
-    db: Session = Depends(get_db),
-):
-    q = db.query(models.NormaJGM)
-    if tipo_accion:
-        q = q.filter(models.NormaJGM.tipo_accion == tipo_accion.upper())
-    if anio:
-        q = q.filter(models.NormaJGM.anio == anio)
-    return q.order_by(models.NormaJGM.fecha_publicacion.desc()).all()
-
-
-@app.get(
-    "/api/v1/normativa/{norma_id}",
-    response_model=schemas.NormaResumen,
-    tags=["Normativa"],
-)
-def detalle_norma(norma_id: str, db: Session = Depends(get_db)):
-    norma = (
-        db.query(models.NormaJGM)
-        .filter(models.NormaJGM.norma_id == norma_id)
-        .first()
-    )
-    if not norma:
-        raise HTTPException(404, detail=f"Norma '{norma_id}' no encontrada")
-    return norma
-
-
-@app.get(
-    "/api/v1/normativa/{norma_id}/partidas",
-    tags=["Normativa"],
-)
-def partidas_por_norma(norma_id: str, db: Session = Depends(get_db)):
-    mods = (
-        db.query(models.ModificacionPresupuestaria)
-        .filter(models.ModificacionPresupuestaria.norma_id == norma_id)
-        .all()
-    )
-    if not mods:
-        raise HTTPException(404, detail=f"No hay partidas registradas para '{norma_id}'")
-    analizador = AnalizadorPresupuestario(db)
-    return [analizador.cruce_norma_inflacion(m) for m in mods]
-
-
-# ── COMPARATIVA ──────────────────────────────────────────────────
-
-@app.get(
-    "/api/v1/comparativa",
-    tags=["Analítica"],
-)
-def comparativa_global(
-    jurisdiccion_id: Optional[str] = None,
-    db: Session = Depends(get_db),
-):
-    q = db.query(models.ModificacionPresupuestaria)
-    if jurisdiccion_id:
-        q = q.join(models.PresupuestoBase).filter(
-            models.PresupuestoBase.jurisdiccion_id == jurisdiccion_id
-        )
-    mods = q.order_by(models.ModificacionPresupuestaria.fecha_boletin).all()
-    analizador = AnalizadorPresupuestario(db)
-    macro = analizador.get_serie_macro()
-
-    ipc_idx = {}
-    for row in macro["ipc"]:
-        mes = row["fecha"][:7]
-        ipc_idx[mes] = row.get("ipc_acum_vs_ene23", 1.0)
-
-    usd_idx = {}
-    for row in macro["usd_oficial"]:
-        mes = row["fecha"][:7]
-        usd_idx[mes] = row.get("usd_oficial")
-
-    por_mes = {}
-    for m in mods:
-        if not m.fecha_boletin:
-            continue
-        mes = m.fecha_boletin.strftime("%Y-%m")
-        if mes not in por_mes:
-            por_mes[mes] = {"aumento": 0.0, "reduccion": 0.0}
-        por_mes[mes]["aumento"] += m.aumento or 0.0
-        por_mes[mes]["reduccion"] += m.reduccion or 0.0
-
-    resultado = []
-    for mes, montos in sorted(por_mes.items()):
-        factor = ipc_idx.get(mes, analizador.ipc_acumulado)
-        neto = montos["aumento"] - montos["reduccion"]
-        resultado.append({
-            "periodo": mes,
-            "modificacion_neta_nominal": round(neto, 2),
-            "modificacion_neta_real_moneda_2023": round(neto / factor, 2),
-            "factor_ipc_acumulado": round(factor, 4),
-            "usd_oficial": usd_idx.get(mes),
-            "aumento": round(montos["aumento"], 2),
-            "reduccion": round(montos["reduccion"], 2),
-        })
-
-    return resultado
-
-
-# ── VISUALIZACIÓN ─────────────────────────────────────────────────
-
-@app.get(
-    "/api/v1/graficos/ajuste/{programa_id}",
-    response_class=HTMLResponse,
-    tags=["Visualización"],
-)
-def grafico_ajuste(programa_id: str, db: Session = Depends(get_db)):
-    base = (
-        db.query(models.PresupuestoBase)
-        .filter(models.PresupuestoBase.programa_id == programa_id)
-        .first()
-    )
-    if not base:
-        raise HTTPException(404, detail="No hay datos para graficar")
-    mods = (
-        db.query(models.ModificacionPresupuestaria)
-        .filter(models.ModificacionPresupuestaria.programa_id == programa_id)
-        .all()
-    )
-    analizador = AnalizadorPresupuestario(db)
-    ajuste = analizador.calcular_variacion_real(base, mods)
-    return generar_grafico_ajuste(
-        nombre_programa=base.programa_desc,
-        original=base.monto_original,
-        vigente=ajuste["monto_vigente_nominal"],
-        real=ajuste["monto_real_en_moneda_2023"],
-    )
-
-
-# ── EVOLUCIÓN REAL POR PERÍODO ───────────────────────────────────
-
-@app.get(
-    "/api/v1/evolucion-real",
-    tags=["Analítica"],
-    summary="Evolución real del gasto por período — acumulado deflactado por IPC",
-)
-def evolucion_real(
-    jurisdiccion_id: Optional[str] = None,
-    inciso_id: Optional[str] = None,
-    db: Session = Depends(get_db),
-):
-    """
-    Devuelve la evolución anual del gasto público en pesos constantes (enero 2023).
-    Para cada ejercicio disponible calcula:
-      - total nominal (monto_vigente en millones × 1_000_000 para 2024+, pesos completos para 2023)
-      - total real (deflactado por IPC acumulado desde ene-2023)
-      - variación real % respecto al ejercicio anterior
-    """
-    macro = cargar_macro_indices()
-    factor_total = macro["factor_deflactacion"]
-
-    # ── Calcular factores IPC al cierre de cada año desde la DB ──
-    # La tabla macro_indices guarda 'IPC_variacion_mensual' (variación % mensual)
-    # Factor acumulado = producto de (1 + var/100) desde ene-2023
-    FACTORES_FALLBACK = {
-        2023: 1.0,
-        2024: 3.05,   # dic-2023: inflación 2023 ~211%
-        2025: 5.60,   # dic-2024: inflación 2024 ~118%
-        2026: factor_total,
-    }
-
-    factores_anio = dict(FACTORES_FALLBACK)
-    fuentes_anio = {2023: "base", 2024: "estimado_indec", 2025: "estimado_indec", 2026: "serie_bcra"}
-
-    try:
-        ipc_rows = (
+        filas = (
             db.query(models.MacroIndice)
             .filter(
-                models.MacroIndice.indicador == "IPC_variacion_mensual",
-                models.MacroIndice.fecha >= "2023-01-01",
+                and_(
+                    models.MacroIndice.tipo == "IPC_variacion_mensual",
+                    models.MacroIndice.fecha >= date(2023, 1, 1),
+                )
             )
             .order_by(models.MacroIndice.fecha)
             .all()
         )
-        if ipc_rows:
-            factor_acum = 1.0
-            ultimo_anio_visto = 2023
-            for row in ipc_rows:
-                try:
-                    anio = row.fecha.year
-                    factor_acum *= (1 + float(row.valor) / 100)
-                    ultimo_anio_visto = anio
-                    # Al final de cada año, guardar el factor acumulado
-                    # (se sobreescribe en cada mes → queda el último mes del año)
-                    if anio in factores_anio:
-                        factores_anio[anio] = round(factor_acum, 4)
-                        fuentes_anio[anio] = "db_ipc_mensual"
-                except (AttributeError, TypeError, ValueError):
-                    continue
-            # 2026 siempre usa el factor_total del engine (más preciso, toma API en vivo)
-            factores_anio[2026] = factor_total
-            fuentes_anio[2026] = "serie_bcra"
+        if not filas:
+            return IPC_FACTOR_FALLBACK
+        factor = 1.0
+        for f in filas:
+            factor *= 1 + (float(f.valor) / 100)
+        return factor
     except Exception:
-        pass  # si falla, se usan los fallbacks INDEC
-
-    resultado = {}
-    for anio in [2023, 2024, 2025, 2026]:
-        q = db.query(
-            func.sum(models.PresupuestoBase.monto_original if anio == 2023 else models.PresupuestoBase.monto_vigente).label("total"),
-        ).filter(models.PresupuestoBase.ejercicio == anio)
-        if jurisdiccion_id:
-            q = q.filter(models.PresupuestoBase.jurisdiccion_id == jurisdiccion_id)
-        if inciso_id:
-            q = q.filter(models.PresupuestoBase.inciso_id == inciso_id)
-        row = q.first()
-        total_raw = float(row.total or 0) if row else 0.0
-
-        # Normalizar a pesos completos
-        if anio == 2023:
-            total_nominal = total_raw
-        else:
-            total_nominal = total_raw * 1_000_000
-
-        factor = factores_anio.get(anio, factor_total)
-        total_real = total_nominal / factor if factor else total_nominal
-
-        resultado[anio] = {
-            "ejercicio":      anio,
-            "total_nominal":  round(total_nominal, 0),
-            "total_real":     round(total_real, 0),
-            "factor_ipc":     round(factor, 4),
-            "factor_fuente":  fuentes_anio.get(anio, "estimado_indec"),
-        }
-
-    # Calcular variaciones YoY
-    salida = []
-    prev_real = None
-    for anio in [2023, 2024, 2025, 2026]:
-        d = resultado[anio]
-        var_real_pct = None
-        if prev_real and prev_real > 0:
-            var_real_pct = round(((d["total_real"] / prev_real) - 1) * 100, 2)
-        d["variacion_real_pct_yoy"] = var_real_pct
-        prev_real = d["total_real"]
-        salida.append(d)
-
-    return salida
+        return IPC_FACTOR_FALLBACK
 
 
+def _get_tc_usd(db: Session) -> float:
+    """Último TC USD disponible en la DB. Fallback a constante."""
+    try:
+        fila = (
+            db.query(models.MacroIndice)
+            .filter(models.MacroIndice.tipo == "TC_USD_oficial")
+            .order_by(models.MacroIndice.fecha.desc())
+            .first()
+        )
+        return float(fila.valor) if fila else TC_USD_FALLBACK
+    except Exception:
+        return TC_USD_FALLBACK
 
 
-
-
-# ── ANÁLISIS SECTORIAL ────────────────────────────────────────────
-# Compara gasto por jurisdicción entre 2023 y 2026 SIN cruzar por programa_id
-# Resuelve: (1) migración jur 75→88, (2) inestabilidad de programa_id entre años
-
-SECTORES_DEF = {
-    "salud":        {"jur_2023": ["80"],      "jur_2026": ["80"],      "label": "Salud"},
-    "jubilaciones": {"jur_2023": ["75","91"], "jur_2026": ["88","91"], "label": "Jubilaciones y Seguridad Social",
-                     "excluir_jur91_prg": ["76","87"]},
-    "ninez":        {"jur_2023": ["85"],      "jur_2026": ["88"],      "label": "Niñez y Desarrollo Social",
-                     "prg_2023": ["47","46","53","57","58"],
-                     "prg_2026": ["19","32","49"]},
-    "obra-publica": {"jur_2023": ["64","57","65"], "jur_2026": ["64","57","65"], "label": "Obra Pública e Infraestructura"},
-    "salario":      {"jur_2023": None, "jur_2026": None, "inciso": "1", "label": "Salario Público"},
-    "educacion":    {"jur_2023": ["70"], "jur_2026": ["88"], "label": "Educación",
-                     "prg_2026": ["26","29","40","49","23"]},
-}
-
-
-@app.get("/api/v1/analisis/sector", tags=["Analítica"],
-         summary="Comparativa sectorial 2023 vs 2026 — agrega por jurisdicción, sin cruzar por programa_id")
-def analisis_sector(
-    sector: Optional[str] = Query(None),
+# ══════════════════════════════════════════════════════════════════════════════
+# ROOT — JSON para el dashboard (kpi-ipc y last-update)
+# ══════════════════════════════════════════════════════════════════════════════
+@app.get("/", tags=["Home"], include_in_schema=False)
+async def root(
+    accept: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    macro   = cargar_macro_indices()
-    factor  = macro["factor_deflactacion"]
-    TC_2023 = 187.0
-    tc_act  = macro.get("usd_actual") or TC_2023 * factor
+    ipc = _get_ipc_factor(db)
+    return {
+        "app": "Monitor de Ajuste Presupuestario",
+        "version": "2.2.0",
+        "factor_ipc_acumulado": round(ipc, 4),
+        "servidor_tiempo": datetime.utcnow().isoformat(),
+    }
 
-    sectores = {sector: SECTORES_DEF[sector]} if sector and sector in SECTORES_DEF else SECTORES_DEF
 
-    resultado = []
-    for sec_id, cfg in sectores.items():
-        inciso = cfg.get("inciso")
+# ── Dashboard ──────────────────────────────────────────────────────────────────
+@app.get("/dashboard", tags=["Home"], include_in_schema=False)
+async def dashboard():
+    """Sirve main.html (dashboard visual)."""
+    # Acepta main.html o index.html
+    for nombre in ("main.html", "index.html"):
+        path = os.path.join(static_dir, nombre)
+        if os.path.exists(path):
+            return FileResponse(path)
+    return HTMLResponse("<h1>Dashboard no encontrado. Copiar main.html a app/static/</h1>")
 
-        def _suma(anio: int) -> float:
-            col  = models.PresupuestoBase.monto_original if anio == 2023 else models.PresupuestoBase.monto_vigente
-            jurs = cfg.get("jur_2023") if anio == 2023 else cfg.get("jur_2026")
-            prgs = cfg.get("prg_2023") if anio == 2023 else cfg.get("prg_2026")
-            exc91 = cfg.get("excluir_jur91_prg", [])
 
-            if inciso:
-                # salario: toda la APN, filtrar por inciso
-                q = db.query(func.sum(col)).filter(
-                    models.PresupuestoBase.ejercicio == anio,
-                    models.PresupuestoBase.inciso_id == inciso,
-                )
-                raw = float(q.scalar() or 0)
-            elif jurs and "91" in jurs and exc91 and anio != 2023:
-                # jubilaciones 2026: jur 88 + jur 91 sin subsidios energía
-                jurs_sin91 = [j for j in jurs if j != "91"]
-                q1 = db.query(func.sum(col)).filter(
-                    models.PresupuestoBase.ejercicio == anio,
-                    models.PresupuestoBase.jurisdiccion_id.in_(jurs_sin91),
-                )
-                if prgs: q1 = q1.filter(models.PresupuestoBase.programa_id.in_(prgs))
-                q2 = db.query(func.sum(col)).filter(
-                    models.PresupuestoBase.ejercicio == anio,
-                    models.PresupuestoBase.jurisdiccion_id == "91",
-                    ~models.PresupuestoBase.programa_id.in_(exc91),
-                )
-                raw = float(q1.scalar() or 0) + float(q2.scalar() or 0)
-            else:
-                q = db.query(func.sum(col)).filter(
-                    models.PresupuestoBase.ejercicio == anio,
-                    models.PresupuestoBase.jurisdiccion_id.in_(jurs),
-                )
-                if prgs: q = q.filter(models.PresupuestoBase.programa_id.in_(prgs))
-                raw = float(q.scalar() or 0)
+# ══════════════════════════════════════════════════════════════════════════════
+# ENDPOINT /api/v1/analisis/sector  — MAPEO DEFINITIVO 2023→2026
+# ══════════════════════════════════════════════════════════════════════════════
+@app.get("/api/v1/analisis/sector", tags=["Análisis"])
+async def analisis_sector(
+    sector: Optional[str] = Query(
+        None,
+        description=(
+            "Clave del sector: obra_publica | jubilaciones | jubilaciones_fuerzas | "
+            "capital_humano | salud | seguridad | defensa. "
+            "Sin valor devuelve todos."
+        ),
+    ),
+    db: Session = Depends(get_db),
+):
+    """
+    Comparativa sectorial 2023 → 2026 usando mapeo correcto de jurisdicciones.
 
-            return raw if anio == 2023 else raw * 1_000_000
+    NO usa programa_id para el cruce (inválido post-fusión ministerial).
+    Agrega por jurisdiccion_id + programa_id (cuando corresponde) en cada período.
 
-        orig = _suma(2023)
-        vig  = _suma(2026)
-        if orig == 0:
-            continue
+    Retorna 5 KPIs por sector:
+      1. credito_original_2023_mm  — $ nominales enero 2023 (millones)
+      2. credito_vigente_2026_mm   — $ nominales vigentes 2026 (millones)
+      3. var_nominal_pct           — variación % nominal
+      4. var_real_ipc_pct          — variación % deflactada por IPC acumulado
+      5. var_real_usd_pct          — variación % en dólares constantes
 
-        real      = vig / factor
-        var_nom   = round(((vig  / orig) - 1) * 100, 2)
-        var_real  = round(((real / orig) - 1) * 100, 2)
-        orig_usd  = round(orig / TC_2023, 0)
-        vig_usd   = round(vig  / tc_act,  0) if tc_act else None
-        var_usd   = round(((vig_usd / orig_usd) - 1) * 100, 2) if (vig_usd and orig_usd) else None
+    Mapeo verificado contra sql_app.db — mayo 2026:
+      obra_publica:  jur 64+57+65 (2023) → jur 50 prg específicos (2026)
+      jubilaciones:  jur 75 prg 16,17,21,30,31 → jur 88 mismos prg
+      capital_humano: jur 70+75+85 (excl. previsional) → jur 88 (excl. previsional)
+      salud:         jur 80 → jur 80
+      seguridad:     jur 41 → jur 41
+      defensa:       jur 45 → jur 45
+    """
+    if sector and sector not in SECTORES:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Sector '{sector}' no reconocido. Opciones: {list(SECTORES.keys())}",
+        )
 
-        resultado.append({
-            "sector_id":             sec_id,
-            "sector_label":          cfg["label"],
-            "monto_original_2023":   round(orig, 0),
-            "monto_vigente_2026":    round(vig,  0),
-            "monto_real_2026":       round(real, 0),
-            "variacion_nominal_pct": var_nom,
-            "variacion_real_pct":    var_real,
-            "monto_original_usd":    orig_usd,
-            "monto_vigente_usd":     vig_usd,
-            "variacion_usd_pct":     var_usd,
-            "factor_ipc":            round(factor, 4),
-            "estado":                "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
+    ipc_factor = _get_ipc_factor(db)
+    tc_usd     = _get_tc_usd(db)
+
+    sectores_a_calcular = (
+        {sector: SECTORES[sector]} if sector else SECTORES
+    )
+
+    resultados = []
+    for clave, cfg in sectores_a_calcular.items():
+
+        monto_2023 = _sumar_presupuesto(
+            db,
+            jurisdicciones   = cfg["jur_2023"],
+            ejercicio        = 2023,
+            programas        = cfg.get("prg_2023"),
+            prg_excluir      = cfg.get("prg_excluir_2023"),
+        )
+
+        monto_2026 = _sumar_presupuesto(
+            db,
+            jurisdicciones   = cfg["jur_2026"],
+            ejercicio        = 2026,
+            programas        = cfg.get("prg_2026"),
+            prg_excluir      = cfg.get("prg_excluir_2026"),
+        )
+
+        # Variación nominal
+        if monto_2023 > 0:
+            var_nominal  = (monto_2026 / monto_2023 - 1) * 100
+            # Variación real IPC: deflactar el monto 2026
+            monto_2026_real = monto_2026 / ipc_factor
+            var_real_ipc = (monto_2026_real / monto_2023 - 1) * 100
+        else:
+            var_nominal  = None
+            var_real_ipc = None
+
+        # Variación real USD (TC inicio 2023 vs TC vigente)
+        tc_inicio = TC_USD_INICIO_2023
+        if monto_2023 > 0 and tc_inicio > 0 and tc_usd > 0:
+            monto_2023_usd = monto_2023 / tc_inicio
+            monto_2026_usd = monto_2026 / tc_usd
+            var_real_usd   = (monto_2026_usd / monto_2023_usd - 1) * 100
+        else:
+            monto_2023_usd = None
+            monto_2026_usd = None
+            var_real_usd   = None
+
+        resultados.append({
+            "sector":                   clave,
+            "label":                    cfg["label"],
+            "icon":                     cfg["icon"],
+            "color":                    cfg["color"],
+            "jur_2023":                 cfg["jur_2023"],
+            "jur_2026":                 cfg["jur_2026"],
+            "prg_2023":                 cfg.get("prg_2023"),
+            "prg_2026":                 cfg.get("prg_2026"),
+            "credito_original_2023_mm": round(monto_2023 / 1e6, 1),
+            "credito_vigente_2026_mm":  round(monto_2026 / 1e6, 1),
+            "var_nominal_pct":          round(var_nominal,  1) if var_nominal  is not None else None,
+            "var_real_ipc_pct":         round(var_real_ipc, 1) if var_real_ipc is not None else None,
+            "var_real_usd_pct":         round(var_real_usd, 1) if var_real_usd is not None else None,
+            "credito_2023_usd_mm":      round(monto_2023_usd / 1e6, 1) if monto_2023_usd else None,
+            "credito_2026_usd_mm":      round(monto_2026_usd / 1e6, 1) if monto_2026_usd else None,
+            "ipc_factor":               round(ipc_factor, 4),
+            "tc_usd":                   round(tc_usd, 2),
         })
 
-    return resultado
+    return {
+        "generado_en":          datetime.utcnow().isoformat(),
+        "ipc_factor_acumulado": round(ipc_factor, 4),
+        "tc_usd_vigente":       round(tc_usd, 2),
+        "tc_usd_inicio_2023":   TC_USD_INICIO_2023,
+        "advertencia_mapeo": (
+            "Obra pública 2026 en jur 50 (Economía) prg específicos. "
+            "jur 77 solo tiene datos 2024. "
+            "Jubilaciones: jur 75→88. Capital Humano: jur 70+75+85→88."
+        ),
+        "sectores": resultados,
+    }
 
 
-@app.post(
-    "/api/v1/scrape/trigger",
-    tags=["Admin"],
-    status_code=202,
-)
-async def trigger_scrape(background_tasks: BackgroundTasks, desde: str = "01/01/2023"):
-    from app.core.daily_sync import sincronizar
-    background_tasks.add_task(sincronizar, desde=desde)
-    return {"status": "accepted", "mensaje": f"Scraping iniciado desde {desde}"}
+# ══════════════════════════════════════════════════════════════════════════════
+# ENDPOINTS EXISTENTES
+# ══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/v1/partidas/", tags=["Partidas"])
+async def listar_partidas(
+    jurisdiccion_id: Optional[int] = None,
+    anio: Optional[int] = None,
+    inciso: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+):
+    """Listado de partidas con filtros opcionales."""
+    q = db.query(models.Partida)
+    if jurisdiccion_id:
+        q = q.filter(models.Partida.jurisdiccion_id == jurisdiccion_id)
+    if anio:
+        q = q.filter(models.Partida.anio == anio)
+    if inciso:
+        q = q.filter(models.Partida.inciso == inciso)
+    total = q.count()
+    items = q.offset(skip).limit(limit).all()
+    return {"total": total, "skip": skip, "limit": limit, "items": items}
+
+
+@app.get("/api/v1/analisis/ranking", tags=["Análisis"])
+async def ranking_ajuste(
+    top_n: int = Query(20, ge=1, le=500, alias="top_n"),
+    top: int = Query(20, ge=1, le=500),
+    anio_base: int = Query(2023),
+    anio_comp: int = Query(2026),
+    db: Session = Depends(get_db),
+):
+    """
+    Top N partidas más ajustadas entre anio_base y anio_comp.
+    NOTA: Solo válido para ministerios que NO se fusionaron.
+    Para sectores fusionados usar /api/v1/analisis/sector.
+    """
+    n = top_n if top_n != 20 else top
+    analizador = AnalizadorPresupuestario(db)
+    ipc_factor = _get_ipc_factor(db)
+    resultados = analizador.calcular_ranking(
+        top=n,
+        anio_base=anio_base,
+        anio_comp=anio_comp,
+        ipc_factor=ipc_factor,
+    )
+    return {
+        "advertencia": (
+            "Cruce por programa_id. Inválido para jur fusionadas (64/57/65/70/75/85→50/88). "
+            "Usar /api/v1/analisis/sector para sectores correctos."
+        ),
+        "ipc_factor": round(ipc_factor, 4),
+        "ranking": resultados,
+    }
+
+
+@app.get("/api/v1/analisis/por-inciso", tags=["Análisis"])
+async def analisis_por_inciso(
+    anio: int = Query(2026),
+    db: Session = Depends(get_db),
+):
+    """Ajuste agregado por inciso presupuestario."""
+    analizador = AnalizadorPresupuestario(db)
+    return analizador.por_inciso(anio=anio)
+
+
+@app.get("/api/v1/analisis/evolucion-real", tags=["Análisis"])
+async def evolucion_real(
+    jurisdiccion_id: Optional[int] = None,
+    db: Session = Depends(get_db),
+):
+    """
+    Evolución del gasto nominal y real ($ constantes ene-2023)
+    agrupado por año, para toda la administración o una jurisdicción.
+    """
+    analizador = AnalizadorPresupuestario(db)
+    ipc_factor = _get_ipc_factor(db)
+    tc_usd     = _get_tc_usd(db)
+    return analizador.evolucion_real(
+        jurisdiccion_id=jurisdiccion_id,
+        ipc_factor=ipc_factor,
+        tc_usd=tc_usd,
+    )
+
+
+@app.get("/api/v1/macro/series", tags=["Macro"])
+async def macro_series():
+    """IPC mensual y TC USD desde BCRA (desde ene-2023)."""
+    async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            r_ipc = await client.get(
+                "https://api.bcra.gob.ar/estadisticas/v3.0/monetarias",
+                params={"idVariable": 27, "desde": "2023-01-01"},
+            )
+            ipc_data = r_ipc.json() if r_ipc.status_code == 200 else []
+        except Exception:
+            ipc_data = []
+        try:
+            r_tc = await client.get(
+                "https://api.bcra.gob.ar/estadisticas/v3.0/monetarias",
+                params={"idVariable": 4, "desde": "2023-01-01"},
+            )
+            tc_data = r_tc.json() if r_tc.status_code == 200 else []
+        except Exception:
+            tc_data = []
+    return {"ipc": ipc_data, "tipo_cambio": tc_data}
+
+
+@app.get("/api/v1/macro/base-monetaria", tags=["Macro"])
+async def base_monetaria(db: Session = Depends(get_db)):
+    """Base Monetaria en vivo desde BCRA con conversión a USD."""
+    tc_usd = _get_tc_usd(db)
+    async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            # idVariable 15 = Base Monetaria (millones de pesos)
+            r = await client.get(
+                "https://api.bcra.gob.ar/estadisticas/v3.0/monetarias",
+                params={"idVariable": 15, "limit": 24},
+            )
+            data = r.json() if r.status_code == 200 else {}
+            resultados = data.get("results", [])
+            if not resultados:
+                raise ValueError("Sin datos BCRA")
+
+            # Último dato
+            ultimo   = resultados[-1]
+            bm_actual = float(ultimo.get("valor", 0)) * 1e6   # viene en millones
+
+            # Dato diciembre 2023 (asunción)
+            inicio_dato = next(
+                (x for x in resultados if str(x.get("fecha", "")).startswith("2023-12")),
+                resultados[0]
+            )
+            bm_inicio = float(inicio_dato.get("valor", 0)) * 1e6
+
+            var_pct     = (bm_actual / bm_inicio - 1) * 100 if bm_inicio else 0
+            multiplicador = bm_actual / bm_inicio if bm_inicio else 1
+
+            serie_mensual = []
+            for item in resultados:
+                bm = float(item.get("valor", 0)) * 1e6
+                bm_bill = bm / 1e12
+                var = (bm / bm_inicio - 1) * 100 if bm_inicio else 0
+                mult = bm / bm_inicio if bm_inicio else 1
+                fecha_str = str(item.get("fecha", ""))
+                label = fecha_str[:7] if fecha_str else "—"
+                serie_mensual.append({
+                    "label":    label,
+                    "bm_bill":  round(bm_bill, 2),
+                    "var_pct":  round(var, 1),
+                    "mult":     round(mult, 2),
+                })
+
+            return {
+                "inicio": {
+                    "label":       str(inicio_dato.get("fecha", ""))[:7],
+                    "bm_billones": round(bm_inicio / 1e12, 2),
+                },
+                "actual": {
+                    "label":       str(ultimo.get("fecha", ""))[:7],
+                    "bm_billones": round(bm_actual / 1e12, 2),
+                    "bm_usd_mm":   round(bm_actual / tc_usd / 1e6, 0) if tc_usd else None,
+                },
+                "variacion_pct":  round(var_pct, 1),
+                "multiplicador":  round(multiplicador, 2),
+                "nota": (
+                    f"Base Monetaria creció {round(multiplicador, 2)}x desde dic-2023. "
+                    f"Variación acumulada: +{round(var_pct, 1)}%."
+                ),
+                "serie_mensual": serie_mensual,
+            }
+
+        except Exception as e:
+            return {
+                "error": f"No se pudo obtener Base Monetaria desde BCRA: {e}",
+                "tc_usd_fallback": TC_USD_FALLBACK,
+            }
+
+
+@app.get("/api/v1/normativa/", tags=["Normativa"])
+async def listar_normativa(
+    skip: int = 0,
+    limit: int = 50,
+    db: Session = Depends(get_db),
+):
+    """Listado de normas JGM."""
+    items = db.query(models.Norma).offset(skip).limit(limit).all()
+    total = db.query(func.count(models.Norma.id)).scalar()
+    return {"total": total, "items": items}
+
+
+@app.get("/api/v1/normativa/{norma_id}", tags=["Normativa"])
+async def detalle_normativa(norma_id: int, db: Session = Depends(get_db)):
+    """Detalle de una norma JGM."""
+    norma = db.query(models.Norma).filter(models.Norma.id == norma_id).first()
+    if not norma:
+        raise HTTPException(status_code=404, detail="Norma no encontrada")
+    return norma
+
+
+@app.get("/api/v1/normativa/{norma_id}/partidas", tags=["Normativa"])
+async def partidas_por_norma(norma_id: int, db: Session = Depends(get_db)):
+    """Partidas afectadas por una norma JGM."""
+    norma = db.query(models.Norma).filter(models.Norma.id == norma_id).first()
+    if not norma:
+        raise HTTPException(status_code=404, detail="Norma no encontrada")
+    return {"norma_id": norma_id, "partidas": norma.partidas}
+
+
+@app.get("/api/v1/comparativa/", tags=["Comparativa"])
+async def comparativa(db: Session = Depends(get_db)):
+    """Gasto nominal vs real vs inflación acumulada vs USD."""
+    analizador = AnalizadorPresupuestario(db)
+    ipc_factor = _get_ipc_factor(db)
+    tc_usd     = _get_tc_usd(db)
+    return analizador.comparativa_total(ipc_factor=ipc_factor, tc_usd=tc_usd)
+
+
+@app.post("/api/v1/scrape/trigger", tags=["Scraping"])
+async def trigger_scrape(background_tasks: BackgroundTasks):
+    """Dispara el scraper BORA en segundo plano."""
+    from scripts.scraper_bora import scrape_bora
+    background_tasks.add_task(scrape_bora)
+    return {"status": "scraping iniciado", "timestamp": datetime.utcnow().isoformat()}
+
+
+@app.get("/health", tags=["Health"])
+async def health():
+    return {
+        "status": "ok",
+        "version": "2.2.0",
+        "timestamp": datetime.utcnow().isoformat(),
+    }
 
 
 if __name__ == "__main__":
