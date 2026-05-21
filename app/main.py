@@ -233,6 +233,7 @@ def ranking_ajuste(
     q_base = db.query(
         models.PresupuestoBase.programa_id,
         models.PresupuestoBase.programa_desc,
+        models.PresupuestoBase.jurisdiccion_id,
         models.PresupuestoBase.jurisdiccion_desc,
         models.PresupuestoBase.inciso_id,
         models.PresupuestoBase.inciso_desc,
@@ -240,6 +241,7 @@ def ranking_ajuste(
     ).filter(models.PresupuestoBase.ejercicio == 2023).group_by(
         models.PresupuestoBase.programa_id,
         models.PresupuestoBase.programa_desc,
+        models.PresupuestoBase.jurisdiccion_id,
         models.PresupuestoBase.jurisdiccion_desc,
         models.PresupuestoBase.inciso_id,
         models.PresupuestoBase.inciso_desc,
@@ -312,6 +314,7 @@ def ranking_ajuste(
             "programa_id":               r.programa_id,
             "programa_desc":             r.programa_desc,
             "jurisdiccion":              r.jurisdiccion_desc,
+            "jurisdiccion_id":           str(r.jurisdiccion_id or "").strip(),
             "inciso_id":                 r.inciso_id,
             "inciso_desc":               r.inciso_desc,
             "monto_original":            round(r.original, 2),
@@ -698,7 +701,82 @@ def grafico_ajuste(programa_id: str, db: Session = Depends(get_db)):
     )
 
 
-# ── SCRAPE TRIGGER (background) ──────────────────────────────────
+# ── EVOLUCIÓN REAL POR PERÍODO ───────────────────────────────────
+
+@app.get(
+    "/api/v1/evolucion-real",
+    tags=["Analítica"],
+    summary="Evolución real del gasto por período — acumulado deflactado por IPC",
+)
+def evolucion_real(
+    jurisdiccion_id: Optional[str] = None,
+    inciso_id: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    """
+    Devuelve la evolución anual del gasto público en pesos constantes (enero 2023).
+    Para cada ejercicio disponible calcula:
+      - total nominal (monto_vigente en millones × 1_000_000 para 2024+, pesos completos para 2023)
+      - total real (deflactado por IPC acumulado desde ene-2023)
+      - variación real % respecto al ejercicio anterior
+    """
+    macro = cargar_macro_indices()
+    factor_total = macro["factor_deflactacion"]
+
+    # Factor IPC por año aproximado (acumulado desde ene-2023)
+    # 2023: factor = 1.0 (base), 2024: ~3.0 (inflación ~211% en 2023), 2025: ~6.0, 2026: ~8.5+
+    # Se usan valores de la serie macro si están disponibles, si no estimados
+    FACTORES_ANIO = {
+        2023: 1.0,
+        2024: 3.05,   # IPC dic-2023: ~211% interanual
+        2025: 5.60,   # IPC dic-2024: ~118% interanual
+        2026: factor_total,  # acumulado actual
+    }
+
+    resultado = {}
+    for anio in [2023, 2024, 2025, 2026]:
+        q = db.query(
+            func.sum(models.PresupuestoBase.monto_original if anio == 2023 else models.PresupuestoBase.monto_vigente).label("total"),
+        ).filter(models.PresupuestoBase.ejercicio == anio)
+        if jurisdiccion_id:
+            q = q.filter(models.PresupuestoBase.jurisdiccion_id == jurisdiccion_id)
+        if inciso_id:
+            q = q.filter(models.PresupuestoBase.inciso_id == inciso_id)
+        row = q.first()
+        total_raw = float(row.total or 0) if row else 0.0
+
+        # Normalizar a pesos completos
+        if anio == 2023:
+            total_nominal = total_raw
+        else:
+            total_nominal = total_raw * 1_000_000
+
+        factor = FACTORES_ANIO.get(anio, factor_total)
+        total_real = total_nominal / factor if factor else total_nominal
+
+        resultado[anio] = {
+            "ejercicio":      anio,
+            "total_nominal":  round(total_nominal, 0),
+            "total_real":     round(total_real, 0),
+            "factor_ipc":     round(factor, 4),
+        }
+
+    # Calcular variaciones YoY
+    salida = []
+    prev_real = None
+    for anio in [2023, 2024, 2025, 2026]:
+        d = resultado[anio]
+        var_real_pct = None
+        if prev_real and prev_real > 0:
+            var_real_pct = round(((d["total_real"] / prev_real) - 1) * 100, 2)
+        d["variacion_real_pct_yoy"] = var_real_pct
+        prev_real = d["total_real"]
+        salida.append(d)
+
+    return salida
+
+
+
 
 @app.post(
     "/api/v1/scrape/trigger",

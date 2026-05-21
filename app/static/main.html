@@ -218,6 +218,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
     <button class="tab active" onclick="sw('ranking',this)">ranking</button>
     <button class="tab" onclick="sw('inciso',this)">por inciso</button>
     <button class="tab" onclick="sw('scatter',this)">nominal vs real</button>
+    <button class="tab" onclick="sw('evolucion',this);loadEvolucion()">📈 evolución real</button>
     <button class="tab" onclick="sw('detalle',this)">detalle de partidas</button>
     <button class="tab" onclick="sw('base-monetaria',this)">💵 base monetaria</button>
     <button class="tab tab-resumen" onclick="sw('resumen',this)">📊 resumen</button>
@@ -288,10 +289,27 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
     </div>
   </div>
 
+  <!-- EVOLUCIÓN REAL -->
+  <div class="panel" id="tab-evolucion">
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">evolución del gasto público real — pesos constantes enero 2023</div>
+      <p style="font-size:12px;color:#aaa;margin-bottom:14px;">
+        Gasto total vigente deflactado por IPC acumulado desde enero 2023. Permite comparar el poder de compra real del Estado en cada ejercicio.
+      </p>
+      <div id="evol-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;"></div>
+      <div style="position:relative;height:340px;"><canvas id="cEvolucion"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">variación real interanual — cuánto cambió el gasto en términos reales</div>
+      <div id="evol-tabla" style="margin-top:8px;font-size:13px;"></div>
+    </div>
+  </div>
+
   <!-- DETALLE -->
   <div class="panel" id="tab-detalle">
     <div class="card">
       <div class="card-title">detalle completo de partidas</div>
+
       <div class="filters">
         <select id="djur" onchange="renderDetalle()"><option value="">todas las jurisdicciones</option></select>
         <select id="dest" onchange="renderDetalle()"><option value="">todos</option><option value="REDUCCIÓN">solo reducciones</option><option value="INCREMENTO">solo incrementos</option></select>
@@ -651,14 +669,28 @@ const C = {
   gray:      '#94a3b8',
 };
 
-const SECTOR_JURIS = {
+// Mapeo sectorial por jurisdiccion_id (evita solapamiento por nombre)
+// APN 2024+: Capital Humano (88) absorbió Educación, Trabajo y Desarrollo Social
+// Criterio de exclusividad: cada programa va al sector más específico
+const SECTOR_IDS = {
+  salud:          { ids: ['80'], programas: null },           // Ministerio de Salud
+  jubilaciones:   { ids: ['88', '91'], programas: ['16','17','20','21','30','31','99'] }, // progs previsionales de Cap.Humano + Obligaciones
+  ninez:          { ids: ['88'], programas: ['19','32','38','49','26'] }, // Asignaciones Familiares, 1000 días, etc.
+  'obra-publica': { ids: ['25','30','50'], programas: null, keywords: ['obra','infraestructura','transporte','vial','agua','vivienda'] },
+  salario:        { ids: null, inciso: '1' },                 // inciso 1 = Personal, todas las jurisdicciones
+  educacion:      { ids: ['88'], programas: ['26','29','40','49','23'], keywords: ['educac','universit','becas','alfabetizac'] },
+};
+
+// Fallback por nombre para datos 2023 (ministerios anteriores a la fusión)
+const SECTOR_JURIS_LEGACY = {
   salud:          ['ministerio de salud'],
-  jubilaciones:   ['ministerio de capital humano', 'obligaciones a cargo del tesoro'],
-  ninez:          ['ministerio de capital humano', 'ministerio de desarrollo social'],
+  jubilaciones:   ['ministerio de capital humano', 'obligaciones a cargo del tesoro', 'ministerio de trabajo'],
+  ninez:          ['ministerio de desarrollo social', 'ministerio de capital humano'],
   'obra-publica': ['ministerio de obras públicas', 'ministerio de obras publicas', 'ministerio de infraestructura', 'ministerio de transporte'],
   salario:        null,
   educacion:      ['ministerio de educación', 'ministerio de educacion', 'ministerio de capital humano'],
 };
+
 
 const _sectCharts = {};
 
@@ -699,9 +731,34 @@ function sw(name, btn) {
 }
 
 function filtrarSector(sector) {
-  const juris = SECTOR_JURIS[sector];
-  if (sector === 'salario') return D.filter(d => String(d.inciso_id) === '1');
+  const cfg = SECTOR_IDS[sector];
+  if (!cfg) return [];
+
+  // salario: filtra solo por inciso (todas las jurisdicciones)
+  if (cfg.inciso) return D.filter(d => String(d.inciso_id) === cfg.inciso);
+
   return D.filter(d => {
+    // Si el dato tiene jurisdiccion_id (API nueva), usarlo
+    const jid = d.jurisdiccion_id ? String(d.jurisdiccion_id).trim() : null;
+    if (jid) {
+      // Filtrar por IDs de jurisdicción
+      if (cfg.ids && !cfg.ids.includes(jid)) return false;
+      // Si hay restricción por programa_id específico, aplicarla
+      if (cfg.programas) {
+        const pid = String(d.programa_id || '').trim();
+        return cfg.programas.includes(pid);
+      }
+      // Si hay restricción por keywords en descripción del programa
+      if (cfg.keywords) {
+        const desc = (d.programa_desc || '').toLowerCase();
+        return cfg.keywords.some(kw => desc.includes(kw));
+      }
+      return true;
+    }
+
+    // Fallback: filtrar por nombre de jurisdicción (datos legacy 2023)
+    const juris = SECTOR_JURIS_LEGACY[sector];
+    if (!juris) return false;
     const j = (d.jurisdiccion || '').toLowerCase();
     return juris.some(jj => j.includes(jj.toLowerCase()));
   });
@@ -1016,6 +1073,123 @@ async function cargarBaseMonetaria() {
 }
 
 let socialLoaded = false;
+let _evolCargado = false;
+let _cEvolucion = null;
+
+async function loadEvolucion() {
+  if (_evolCargado) return;
+  _evolCargado = true;
+  try {
+    const data = await fetch('/api/v1/evolucion-real').then(r => r.json());
+    // KPIs
+    const kpisEl = document.getElementById('evol-kpis');
+    const anios = data.map(d => d.ejercicio);
+    const reales = data.map(d => d.total_real);
+    const nominales = data.map(d => d.total_nominal);
+
+    const base2023 = data.find(d => d.ejercicio === 2023);
+    const ultimo   = data[data.length - 1];
+    const varTotal = base2023 && base2023.total_real > 0
+      ? ((ultimo.total_real / base2023.total_real) - 1) * 100 : null;
+
+    kpisEl.innerHTML = data.map(d => {
+      const varY = d.variacion_real_pct_yoy;
+      const color = varY === null ? '' : varY < 0 ? 'red' : 'green';
+      const varStr = varY !== null ? `<div class="kpi-sub ${color}">${varY > 0 ? '+' : ''}${varY.toFixed(1)}% vs año anterior</div>` : '<div class="kpi-sub">base</div>';
+      return `<div class="kpi">
+        <div class="kpi-label">${d.ejercicio} — gasto real</div>
+        <div class="kpi-value" style="font-size:20px;">${fmtM(d.total_real)}</div>
+        ${varStr}
+        <div class="kpi-sub" style="color:#bbb;">pesos ene-2023 · IPC ×${d.factor_ipc.toFixed(1)}</div>
+      </div>`;
+    }).join('');
+
+    // Gráfico
+    const ctx = document.getElementById('cEvolucion').getContext('2d');
+    _cEvolucion = new Chart(ctx, {
+      data: {
+        labels: anios.map(String),
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Nominal (pesos corrientes)',
+            data: nominales.map(v => v / 1e12),
+            backgroundColor: 'rgba(91,45,142,0.25)',
+            borderColor: 'rgba(91,45,142,0.6)',
+            borderWidth: 1,
+            yAxisID: 'yNom',
+            order: 2,
+          },
+          {
+            type: 'line',
+            label: 'Real (pesos ene-2023)',
+            data: reales.map(v => v / 1e12),
+            borderColor: '#c0392b',
+            backgroundColor: 'rgba(192,57,43,0.08)',
+            borderWidth: 2.5,
+            pointRadius: 6,
+            fill: true,
+            tension: 0.3,
+            yAxisID: 'yReal',
+            order: 1,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: 'top', labels: { font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const v = ctx.raw;
+                return `${ctx.dataset.label}: $${v.toFixed(2)} billones`;
+              }
+            }
+          }
+        },
+        scales: {
+          yNom: {
+            type: 'linear', position: 'left',
+            title: { display: true, text: 'billones $ nominales', font: { size: 11 } },
+            ticks: { callback: v => '$' + v.toFixed(0) + 'B' },
+            grid: { color: '#f5f5f0' },
+          },
+          yReal: {
+            type: 'linear', position: 'right',
+            title: { display: true, text: 'billones $ constantes ene-2023', font: { size: 11 } },
+            ticks: { callback: v => '$' + v.toFixed(0) + 'B' },
+            grid: { drawOnChartArea: false },
+          },
+        }
+      }
+    });
+
+    // Tabla de variaciones
+    const tablaEl = document.getElementById('evol-tabla');
+    tablaEl.innerHTML = `
+      <div class="th" style="grid-template-columns:80px 1fr 1fr 1fr 1fr;">
+        <span>Ejercicio</span><span class="nr">Nominal</span><span class="nr">Real (ene-2023)</span><span class="nr">Factor IPC</span><span class="nr">Var. real YoY</span>
+      </div>
+      ${data.map(d => {
+        const varY = d.variacion_real_pct_yoy;
+        const color = varY === null ? '' : varY < 0 ? 'color:#c0392b;' : 'color:#27ae60;';
+        const varStr = varY !== null ? `<strong style="${color}">${varY > 0 ? '+' : ''}${varY.toFixed(1)}%</strong>` : '<span style="color:#aaa;">base</span>';
+        return `<div class="tr" style="grid-template-columns:80px 1fr 1fr 1fr 1fr;">
+          <span><strong>${d.ejercicio}</strong></span>
+          <span class="nr">${fmtAbs(d.total_nominal)}</span>
+          <span class="nr">${fmtAbs(d.total_real)}</span>
+          <span class="nr">×${d.factor_ipc.toFixed(2)}</span>
+          <span class="nr">${varStr}</span>
+        </div>`;
+      }).join('')}
+    `;
+  } catch (e) {
+    document.getElementById('evol-kpis').innerHTML = `<div style="color:#c0392b;font-size:13px;">Error cargando datos: ${e.message}</div>`;
+  }
+}
+
 async function loadSocial() {
   if (socialLoaded) return;
   const grid = document.getElementById('social-grid');
