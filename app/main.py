@@ -1,22 +1,22 @@
 # app/main.py
 """
-FastAPI — Monitor de Ajuste Presupuestario (MAP) v2.2.1
+FastAPI - Monitor de Ajuste Presupuestario (MAP) v2.2.1
 Endpoints:
-  GET  /                                → Health JSON (para el dashboard)
-  GET  /dashboard                       → Sirve main.html
-  GET  /api/v1/partidas/                → Listado con filtros
-  GET  /api/v1/analisis/ranking         → Top N partidas más ajustadas
-  GET  /api/v1/analisis/por-inciso      → Ajuste agregado por inciso
-  GET  /api/v1/analisis/evolucion-real  → Evolución gasto real por año
-  GET  /api/v1/analisis/sector          → Comparativa sectorial 2023→2026
-  GET  /api/v1/macro/series             → IPC y USD desde BCRA
-  GET  /api/v1/macro/base-monetaria     → Base Monetaria en vivo BCRA
-  GET  /api/v1/normativa/               → Listado de normas JGM
-  GET  /api/v1/normativa/{id}           → Detalle de una norma
-  GET  /api/v1/normativa/{id}/partidas  → Partidas afectadas por norma
-  GET  /api/v1/comparativa/             → Gasto nominal vs real vs inflación vs USD
-  POST /api/v1/scrape/trigger           → Dispara scraper BORA (async)
-  GET  /health                          → Health check
+  GET  /                                -> Health JSON (para el dashboard)
+  GET  /dashboard                       -> Sirve main.html
+  GET  /api/v1/partidas/                -> Listado con filtros
+  GET  /api/v1/analisis/ranking         -> Top N partidas mas ajustadas
+  GET  /api/v1/analisis/por-inciso      -> Ajuste agregado por inciso
+  GET  /api/v1/analisis/evolucion-real  -> Evolucion gasto real por anio
+  GET  /api/v1/analisis/sector          -> Comparativa sectorial 2023->2026
+  GET  /api/v1/macro/series             -> IPC y USD desde BCRA
+  GET  /api/v1/macro/base-monetaria     -> Base Monetaria en vivo BCRA
+  GET  /api/v1/normativa/               -> Listado de normas JGM
+  GET  /api/v1/normativa/{id}           -> Detalle de una norma
+  GET  /api/v1/normativa/{id}/partidas  -> Partidas afectadas por norma
+  GET  /api/v1/comparativa/             -> Gasto nominal vs real vs inflacion vs USD
+  POST /api/v1/scrape/trigger           -> Dispara scraper BORA (async)
+  GET  /health                          -> Health check
 
 NOTA v2.2.1: ranking y por-inciso usan SQL directo sobre presupuesto_base
   (AnalizadorPresupuestario no tiene calcular_ranking ni por_inciso)
@@ -43,17 +43,17 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Monitor de Ajuste Presupuestario (MAP)",
-    description="Análisis del ajuste presupuestario 2023-2026.",
+    description="Analisis del ajuste presupuestario 2023-2026.",
     version="2.2.1",
 )
 
-# ── Archivos estáticos ─────────────────────────────────────────────────────────
+# Archivos estaticos
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
-# ── DB dependency ──────────────────────────────────────────────────────────────
+# DB dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -62,12 +62,10 @@ def get_db():
         db.close()
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# MAPEO SECTORIAL DEFINITIVO — verificado contra sql_app.db mayo 2026
-# ══════════════════════════════════════════════════════════════════════════════
+# MAPEO SECTORIAL DEFINITIVO - verificado contra sql_app.db mayo 2026
 SECTORES: Dict[str, dict] = {
     "obra_publica": {
-        "label": "Obra Pública / Infraestructura",
+        "label": "Obra Publica / Infraestructura",
         "icon": "🏗️",
         "color": "#1a3a6e",
         "jur_2023": [64, 57, 65],
@@ -94,7 +92,7 @@ SECTORES: Dict[str, dict] = {
         "prg_2026": [16, 18, 19, 20, 21, 22],
     },
     "capital_humano": {
-        "label": "Capital Humano (Educ + Niñez + Empleo)",
+        "label": "Capital Humano (Educ + Ninez + Empleo)",
         "icon": "📚",
         "color": "#7a4500",
         "jur_2023": [70, 75, 85],
@@ -133,14 +131,20 @@ SECTORES: Dict[str, dict] = {
     },
 }
 
-IPC_FACTOR_FALLBACK = 10.53
-TC_USD_INICIO_2023  = 187.0
-TC_USD_FALLBACK     = 1200.0
+# CONSTANTES MACRO - actualizadas mayo 2026
+IPC_FACTOR_ACUMULADO_FALLBACK = 10.53   # escalar total 2023->hoy, para _get_ipc_factor()
+TC_USD_INICIO_2023            = 187.0
+TC_USD_FALLBACK               = 1395    # TC oficial may-2026
+
+IPC_POR_ANIO_FALLBACK = {
+    2023: 1.0,
+    2024: 3.2,
+    2025: 4.21,   # 3.2 x 1.315 (inflacion 2025: 31.5% segun INDEC)
+    2026: 4.21    # provisorio hasta datos INDEC may-2026
+}
 
 
-# ══════════════════════════════════════════════════════════════════════════════
 # HELPERS
-# ══════════════════════════════════════════════════════════════════════════════
 
 def _sumar_presupuesto(
     db: Session,
@@ -191,13 +195,13 @@ def _get_ipc_factor(db: Session) -> float:
             .all()
         )
         if not filas:
-            return IPC_FACTOR_FALLBACK
+            return IPC_FACTOR_ACUMULADO_FALLBACK
         factor = 1.0
         for f in filas:
             factor *= 1 + (float(f.valor) / 100)
         return factor
     except Exception:
-        return IPC_FACTOR_FALLBACK
+        return IPC_FACTOR_ACUMULADO_FALLBACK
 
 
 def _get_tc_usd(db: Session) -> float:
@@ -213,9 +217,7 @@ def _get_tc_usd(db: Session) -> float:
         return TC_USD_FALLBACK
 
 
-# ══════════════════════════════════════════════════════════════════════════════
 # ROOT
-# ══════════════════════════════════════════════════════════════════════════════
 @app.get("/", tags=["Home"], include_in_schema=False)
 async def root(db: Session = Depends(get_db)):
     ipc = _get_ipc_factor(db)
@@ -236,10 +238,8 @@ async def dashboard():
     return HTMLResponse("<h1>Dashboard no encontrado. Copiar main.html a app/static/</h1>")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# RANKING — SQL directo sobre presupuesto_base
-# ══════════════════════════════════════════════════════════════════════════════
-@app.get("/api/v1/analisis/ranking", tags=["Análisis"])
+# RANKING
+@app.get("/api/v1/analisis/ranking", tags=["Analisis"])
 async def ranking_ajuste(
     top_n: int = Query(20, ge=1, le=500, alias="top_n"),
     top: int = Query(20, ge=1, le=500),
@@ -312,14 +312,14 @@ async def ranking_ajuste(
             "ajuste_nominal_abs":       round(vig - orig, 0),
             "ajuste_real_abs":          round(vig / ipc_factor - orig, 0),
             "ajuste_usd_abs":           None,
-            "estado_ajuste":            "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
+            "estado_ajuste":            "REDUCCION" if var_real < 0 else "INCREMENTO",
             "cantidad_modificaciones":  0,
         })
 
     return {
         "advertencia": (
             "Cruce por programa_id+inciso_id. "
-            "Inválido para jur fusionadas (64/57/65/70/75/85→50/88). "
+            "Invalido para jur fusionadas (64/57/65/70/75/85->50/88). "
             "Usar /api/v1/analisis/sector para sectores correctos."
         ),
         "ipc_factor": round(ipc_factor, 4),
@@ -327,10 +327,8 @@ async def ranking_ajuste(
     }
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# POR INCISO — SQL directo sobre presupuesto_base
-# ══════════════════════════════════════════════════════════════════════════════
-@app.get("/api/v1/analisis/por-inciso", tags=["Análisis"])
+# POR INCISO
+@app.get("/api/v1/analisis/por-inciso", tags=["Analisis"])
 async def analisis_por_inciso(
     anio: int = Query(2026),
     db: Session = Depends(get_db),
@@ -372,10 +370,8 @@ async def analisis_por_inciso(
     return resultado
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTOR — mapeo definitivo 2023→2026
-# ══════════════════════════════════════════════════════════════════════════════
-@app.get("/api/v1/analisis/sector", tags=["Análisis"])
+# SECTOR
+@app.get("/api/v1/analisis/sector", tags=["Analisis"])
 async def analisis_sector(
     sector: Optional[str] = Query(None),
     db: Session = Depends(get_db),
@@ -440,17 +436,15 @@ async def analisis_sector(
         "tc_usd_vigente":        round(tc_usd, 2),
         "tc_usd_inicio_2023":    TC_USD_INICIO_2023,
         "advertencia_mapeo": (
-            "Obra pública 2026 en jur 50 prg específicos. "
-            "Jubilaciones: jur 75→88. Capital Humano: jur 70+75+85→88."
+            "Obra publica 2026 en jur 50 prg especificos. "
+            "Jubilaciones: jur 75->88. Capital Humano: jur 70+75+85->88."
         ),
         "sectores": resultados,
     }
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# EVOLUCIÓN REAL — SQL directo
-# ══════════════════════════════════════════════════════════════════════════════
-@app.get("/api/v1/analisis/evolucion-real", tags=["Análisis"])
+# EVOLUCION REAL
+@app.get("/api/v1/analisis/evolucion-real", tags=["Analisis"])
 async def evolucion_real(
     jurisdiccion_id: Optional[int] = None,
     db: Session = Depends(get_db),
@@ -472,8 +466,8 @@ async def evolucion_real(
     params = {"jur": jurisdiccion_id} if jurisdiccion_id else {}
     rows = db.execute(sql, params).fetchall()
 
-    # Factor IPC por año (aproximado lineal)
-    IPC_POR_ANIO = {2023: 1.0, 2024: 3.2, 2025: 7.1, 2026: ipc_factor}
+    # Factor IPC por anio - actualizado mayo 2026
+    IPC_POR_ANIO = {2023: 1.0, 2024: 3.2, 2025: 4.21, 2026: ipc_factor}
 
     base_nom = None
     resultado = []
@@ -503,9 +497,7 @@ async def evolucion_real(
     return resultado
 
 
-# ══════════════════════════════════════════════════════════════════════════════
 # MACRO
-# ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/v1/macro/series", tags=["Macro"])
 async def macro_series():
     async with httpx.AsyncClient(timeout=10) as client:
@@ -537,7 +529,7 @@ async def base_monetaria(db: Session = Depends(get_db)):
                 "https://api.bcra.gob.ar/estadisticas/v3.0/monetarias",
                 params={"idVariable": 15, "limit": 24},
             )
-            data      = r.json() if r.status_code == 200 else {}
+            data       = r.json() if r.status_code == 200 else {}
             resultados = data.get("results", [])
             if not resultados:
                 raise ValueError("Sin datos BCRA")
@@ -551,7 +543,7 @@ async def base_monetaria(db: Session = Depends(get_db)):
             )
             bm_inicio = float(inicio_dato.get("valor", 0)) * 1e6
 
-            var_pct      = (bm_actual / bm_inicio - 1) * 100 if bm_inicio else 0
+            var_pct       = (bm_actual / bm_inicio - 1) * 100 if bm_inicio else 0
             multiplicador = bm_actual / bm_inicio if bm_inicio else 1
 
             serie_mensual = []
@@ -581,22 +573,20 @@ async def base_monetaria(db: Session = Depends(get_db)):
                 "variacion_pct":  round(var_pct, 1),
                 "multiplicador":  round(multiplicador, 2),
                 "nota": (
-                    f"Base Monetaria creció {round(multiplicador, 2)}x desde dic-2023. "
-                    f"Variación acumulada: +{round(var_pct, 1)}%."
+                    f"Base Monetaria crecio {round(multiplicador, 2)}x desde dic-2023. "
+                    f"Variacion acumulada: +{round(var_pct, 1)}%."
                 ),
                 "serie_mensual": serie_mensual,
             }
 
         except Exception as e:
             return {
-                "error":          f"No se pudo obtener Base Monetaria: {e}",
+                "error":           f"No se pudo obtener Base Monetaria: {e}",
                 "tc_usd_fallback": TC_USD_FALLBACK,
             }
 
 
-# ══════════════════════════════════════════════════════════════════════════════
 # NORMATIVA
-# ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/v1/normativa/", tags=["Normativa"])
 async def listar_normativa(
     skip: int = 0, limit: int = 50, db: Session = Depends(get_db),
@@ -622,9 +612,7 @@ async def partidas_por_norma(norma_id: int, db: Session = Depends(get_db)):
     return {"norma_id": norma_id, "partidas": norma.partidas}
 
 
-# ══════════════════════════════════════════════════════════════════════════════
 # COMPARATIVA
-# ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/v1/comparativa/", tags=["Comparativa"])
 async def comparativa(db: Session = Depends(get_db)):
     analizador = AnalizadorPresupuestario(db)
@@ -633,9 +621,7 @@ async def comparativa(db: Session = Depends(get_db)):
     return analizador.comparativa_total(ipc_factor=ipc_factor, tc_usd=tc_usd)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
 # PARTIDAS
-# ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/v1/partidas/", tags=["Partidas"])
 async def listar_partidas(
     jurisdiccion_id: Optional[int] = None,
@@ -657,9 +643,7 @@ async def listar_partidas(
     return {"total": total, "skip": skip, "limit": limit, "items": items}
 
 
-# ══════════════════════════════════════════════════════════════════════════════
 # SCRAPING / HEALTH
-# ══════════════════════════════════════════════════════════════════════════════
 @app.post("/api/v1/scrape/trigger", tags=["Scraping"])
 async def trigger_scrape(background_tasks: BackgroundTasks):
     from scripts.scraper_bora import scrape_bora
