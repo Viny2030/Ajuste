@@ -38,20 +38,19 @@ class PresupuestoBase(Base):
     actividad_id = Column(String(5), nullable=True)
     obra_id = Column(String(5), nullable=True)
 
-    # Clasificación económica (la más granular para análisis de ajuste)
-    inciso_id = Column(String(2))
-    inciso_desc = Column(String(100))
-    principal_id = Column(String(3))
-    principal_desc = Column(String(100))
-    parcial_id = Column(String(4), nullable=True)
-    parcial_desc = Column(String(100), nullable=True)
-    subparcial_id = Column(String(5), nullable=True)
-    subparcial_desc = Column(String(100), nullable=True)
-
+   # Clasificación económica (la más granular para análisis de ajuste)
+    inciso_id = Column(String(5))
+    inciso_desc = Column(String(500))
+    principal_id = Column(String(5))
+    principal_desc = Column(String(500))
+    parcial_id = Column(String(10), nullable=True)
+    parcial_desc = Column(String(500), nullable=True)
+    subparcial_id = Column(String(10), nullable=True)
+    subparcial_desc = Column(String(500), nullable=True)
     # Financiamiento
-    fuente_financiamiento_id = Column(String(2))
-    fuente_financiamiento_desc = Column(String(100))
-    ubicacion_geografica_id = Column(String(5), nullable=True)
+    fuente_financiamiento_id = Column(String(10))
+    fuente_financiamiento_desc = Column(String(500))
+    ubicacion_geografica_id = Column(String(10), nullable=True)
 
     # Montos
     monto_original = Column(Float)   # Crédito Inicial
