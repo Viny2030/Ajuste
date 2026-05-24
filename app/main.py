@@ -240,6 +240,12 @@ async def dashboard():
     return HTMLResponse("<h1>Dashboard no encontrado.</h1>")
 
 
+@app.get("/manual", tags=["Home"], include_in_schema=False)
+async def manual():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="https://github.com/Viny2030/Ajuste#readme")
+
+
 # ── RANKING ───────────────────────────────────────────────────────────────────
 
 @app.get("/api/v1/analisis/ranking", tags=["Analisis"])
