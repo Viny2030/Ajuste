@@ -24,8 +24,7 @@ from app.database import models, schemas
 from app.database.session import SessionLocal, engine
 from app.core.engine import AnalizadorPresupuestario, cargar_macro_indices
 from app.core.viz import generar_grafico_ajuste
-from scripts.social.router_social import router as social_router
-app.include_router(social_router)
+
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -38,6 +37,10 @@ app = FastAPI(
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+# Router social — DESPUÉS de que app esté definido
+from scripts.social.router_social import router as social_router
+app.include_router(social_router)
 
 
 # DB dependency
@@ -143,7 +146,7 @@ def _sumar_presupuesto(
     prg_excluir: Optional[Dict[int, List[int]]] = None,
 ) -> float:
     campo = "monto_original" if ejercicio == 2023 else "monto_vigente"
-    jur_in = ", ".join(f"'{j}'" for j in jurisdicciones)  # VARCHAR en DB
+    jur_in = ", ".join(f"'{j}'" for j in jurisdicciones)
 
     prg_clause = ""
     if programas:
@@ -313,12 +316,11 @@ async def ranking_ajuste(
     }
 
 
-# ── POR INCISO (fix HAVING para Postgres) ─────────────────────────────────────
+# ── POR INCISO ────────────────────────────────────────────────────────────────
 
 def _calcular_por_inciso(anio: int, db: Session) -> list:
     ipc_factor = _get_ipc_factor(db)
 
-    # FIX: Postgres no acepta aliases del SELECT en HAVING — repetir la expresión
     sql = text("""
         SELECT
             inciso_id,
@@ -362,25 +364,19 @@ async def analisis_por_inciso(
     return _calcular_por_inciso(anio, db)
 
 
-# NUEVO: alias con query param inciso_id para el frontend
 @app.get("/api/v1/analisis/inciso", tags=["Analisis"])
 async def analisis_inciso(
-    inciso_id: Optional[str] = Query(None, description="ID del inciso (ej: 1). Si no se pasa, devuelve todos."),
+    inciso_id: Optional[str] = Query(None),
     anio: int = Query(2026),
     db: Session = Depends(get_db),
 ):
-    """
-    Alias de /por-inciso con filtro opcional por inciso_id.
-    Ejemplo: /api/v1/analisis/inciso?inciso_id=1
-    """
     todos = _calcular_por_inciso(anio, db)
     if inciso_id is not None:
         filtrado = [x for x in todos if str(x["inciso_id"]) == str(inciso_id)]
         if not filtrado:
             raise HTTPException(
                 status_code=404,
-                detail=f"inciso_id='{inciso_id}' no encontrado. "
-                       f"IDs disponibles: {[x['inciso_id'] for x in todos]}"
+                detail=f"inciso_id='{inciso_id}' no encontrado."
             )
         return filtrado
     return todos
@@ -403,7 +399,6 @@ async def analisis_sector(
     tc_usd     = _get_tc_usd(db)
     sectores_a_calcular = {sector: SECTORES[sector]} if sector else SECTORES
 
-    # check si hay datos 2026
     hay_2026 = db.execute(
         text("SELECT COUNT(*) FROM presupuesto_base WHERE ejercicio = 2026")
     ).scalar() or 0
@@ -475,13 +470,11 @@ async def evolucion_real(
     db: Session = Depends(get_db),
 ):
     ipc_factor = _get_ipc_factor(db)
-
     jur_clause = "AND jurisdiccion_id = :jur" if jurisdiccion_id else ""
     sql = text(f"""
-        SELECT
-            ejercicio,
-            SUM(monto_original) AS total_original,
-            SUM(monto_vigente)  AS total_vigente
+        SELECT ejercicio,
+               SUM(monto_original) AS total_original,
+               SUM(monto_vigente)  AS total_vigente
         FROM presupuesto_base
         WHERE 1=1 {jur_clause}
         GROUP BY ejercicio
@@ -517,7 +510,7 @@ async def evolucion_real(
     return resultado
 
 
-# ── PARTIDAS (fix: usa presupuesto_base directamente) ─────────────────────────
+# ── PARTIDAS ──────────────────────────────────────────────────────────────────
 
 @app.get("/api/v1/partidas/", tags=["Partidas"])
 async def listar_partidas(
@@ -542,24 +535,16 @@ async def listar_partidas(
         params["inciso_id"] = str(inciso_id)
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
-
     total = db.execute(
         text(f"SELECT COUNT(*) FROM presupuesto_base {where}"),
         {k: v for k, v in params.items() if k not in ("skip", "limit")}
     ).scalar()
-
     rows = db.execute(
-        text(f"""
-            SELECT * FROM presupuesto_base
-            {where}
-            ORDER BY id
-            OFFSET :skip LIMIT :limit
-        """),
+        text(f"SELECT * FROM presupuesto_base {where} ORDER BY id OFFSET :skip LIMIT :limit"),
         params
     ).fetchall()
 
-    items = [dict(r._mapping) for r in rows]
-    return {"total": total, "skip": skip, "limit": limit, "items": items}
+    return {"total": total, "skip": skip, "limit": limit, "items": [dict(r._mapping) for r in rows]}
 
 
 # ── MACRO ─────────────────────────────────────────────────────────────────────
@@ -568,18 +553,12 @@ async def listar_partidas(
 async def macro_series():
     async with httpx.AsyncClient(timeout=10) as client:
         try:
-            r_ipc = await client.get(
-                "https://api.bcra.gob.ar/estadisticas/v3.0/monetarias",
-                params={"idVariable": 27, "desde": "2023-01-01"},
-            )
+            r_ipc = await client.get("https://api.bcra.gob.ar/estadisticas/v3.0/monetarias", params={"idVariable": 27, "desde": "2023-01-01"})
             ipc_data = r_ipc.json() if r_ipc.status_code == 200 else []
         except Exception:
             ipc_data = []
         try:
-            r_tc = await client.get(
-                "https://api.bcra.gob.ar/estadisticas/v3.0/monetarias",
-                params={"idVariable": 4, "desde": "2023-01-01"},
-            )
+            r_tc = await client.get("https://api.bcra.gob.ar/estadisticas/v3.0/monetarias", params={"idVariable": 4, "desde": "2023-01-01"})
             tc_data = r_tc.json() if r_tc.status_code == 200 else []
         except Exception:
             tc_data = []
@@ -591,36 +570,22 @@ async def base_monetaria(db: Session = Depends(get_db)):
     tc_usd = _get_tc_usd(db)
     async with httpx.AsyncClient(timeout=10) as client:
         try:
-            r = await client.get(
-                "https://api.bcra.gob.ar/estadisticas/v3.0/monetarias",
-                params={"idVariable": 15, "limit": 24},
-            )
+            r = await client.get("https://api.bcra.gob.ar/estadisticas/v3.0/monetarias", params={"idVariable": 15, "limit": 24})
             data       = r.json() if r.status_code == 200 else {}
             resultados = data.get("results", [])
             if not resultados:
                 raise ValueError("Sin datos BCRA")
-
             ultimo    = resultados[-1]
             bm_actual = float(ultimo.get("valor", 0)) * 1e6
-            inicio_dato = next(
-                (x for x in resultados if str(x.get("fecha", "")).startswith("2023-12")),
-                resultados[0],
-            )
+            inicio_dato = next((x for x in resultados if str(x.get("fecha", "")).startswith("2023-12")), resultados[0])
             bm_inicio    = float(inicio_dato.get("valor", 0)) * 1e6
             var_pct      = (bm_actual / bm_inicio - 1) * 100 if bm_inicio else 0
             multiplicador = bm_actual / bm_inicio if bm_inicio else 1
-
             serie_mensual = []
             for item in resultados:
                 bm   = float(item.get("valor", 0)) * 1e6
                 mult = bm / bm_inicio if bm_inicio else 1
-                serie_mensual.append({
-                    "label":   str(item.get("fecha", ""))[:7],
-                    "bm_bill": round(bm / 1e12, 2),
-                    "var_pct": round((bm / bm_inicio - 1) * 100, 1) if bm_inicio else 0,
-                    "mult":    round(mult, 2),
-                })
-
+                serie_mensual.append({"label": str(item.get("fecha", ""))[:7], "bm_bill": round(bm / 1e12, 2), "var_pct": round((bm / bm_inicio - 1) * 100, 1) if bm_inicio else 0, "mult": round(mult, 2)})
             return {
                 "inicio":        {"label": str(inicio_dato.get("fecha", ""))[:7], "bm_billones": round(bm_inicio / 1e12, 2)},
                 "actual":        {"label": str(ultimo.get("fecha", ""))[:7], "bm_billones": round(bm_actual / 1e12, 2), "bm_usd_mm": round(bm_actual / tc_usd / 1e6, 0) if tc_usd else None},
