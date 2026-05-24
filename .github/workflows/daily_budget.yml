@@ -12,7 +12,6 @@ jobs:
       contents: write
 
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PYTHONPATH: .
 
     steps:
@@ -35,13 +34,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Set DATABASE_URL default si no hay secret
+      - name: Set DATABASE_URL
         run: |
-          if [ -z "$DATABASE_URL" ]; then
+          SECRET="${{ secrets.DATABASE_URL }}"
+          if [ -z "$SECRET" ]; then
             echo "DATABASE_URL=sqlite:///sql_app.db" >> $GITHUB_ENV
-            echo "No hay secret, usando sqlite:///sql_app.db"
+            echo "Usando SQLite por defecto."
           else
-            echo "DATABASE_URL ya configurada desde secret."
+            echo "DATABASE_URL=$SECRET" >> $GITHUB_ENV
+            echo "Usando DATABASE_URL desde secret."
           fi
 
       - name: Seed base 2023 si no existe DB
