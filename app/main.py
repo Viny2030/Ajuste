@@ -212,7 +212,16 @@ def _get_tc_usd(db: Session) -> float:
 # ── ROOT ──────────────────────────────────────────────────────────────────────
 
 @app.get("/", tags=["Home"], include_in_schema=False)
-async def root(db: Session = Depends(get_db)):
+async def root():
+    for nombre in ("main.html", "index.html"):
+        path = os.path.join(static_dir, nombre)
+        if os.path.exists(path):
+            return FileResponse(path)
+    return HTMLResponse("<h1>Dashboard no encontrado.</h1>")
+
+
+@app.get("/api/v1/status", tags=["Health"])
+async def status(db: Session = Depends(get_db)):
     ipc = _get_ipc_factor(db)
     return {
         "app": "Monitor de Ajuste Presupuestario",
