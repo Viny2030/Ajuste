@@ -847,7 +847,7 @@ async function loadSocial(){
 async function init(){
   try{
     const [root,rank,inc]=await Promise.all([
-      fetch('/',{headers:{'Accept':'application/json'}}).then(r=>r.json()),
+      fetch('/api/v1/status').then(r=>r.json()),
       fetch(API+'/analisis/ranking?top_n=500').then(r=>r.json()),
       fetch(API+'/analisis/por-inciso').then(r=>r.json()),
     ]);
