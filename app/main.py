@@ -24,7 +24,8 @@ from app.database import models, schemas
 from app.database.session import SessionLocal, engine
 from app.core.engine import AnalizadorPresupuestario, cargar_macro_indices
 from app.core.viz import generar_grafico_ajuste
-
+from scripts.social.router_social import router as social_router
+app.include_router(social_router)
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
