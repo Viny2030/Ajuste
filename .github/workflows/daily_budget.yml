@@ -11,6 +11,10 @@ jobs:
     permissions:
       contents: write
 
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PYTHONPATH: .
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -31,6 +35,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Set DATABASE_URL default si no hay secret
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL=sqlite:///sql_app.db" >> $GITHUB_ENV
+            echo "No hay secret, usando sqlite:///sql_app.db"
+          else
+            echo "DATABASE_URL ya configurada desde secret."
+          fi
+
       - name: Seed base 2023 si no existe DB
         run: |
           if [ ! -f sql_app.db ]; then
@@ -38,9 +51,6 @@ jobs:
           else
             echo "DB ya existe, salteando seed 2023."
           fi
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL || 'sqlite:///sql_app.db' }}
-          PYTHONPATH: .
 
       - name: Cargar presupuesto base 2026 si no existe
         run: |
@@ -54,15 +64,9 @@ jobs:
               print(f'Filas 2026 en DB: {n}')
               exit(0 if n > 0 else 1)
           " && echo "2026 ya está en DB." || python -m scripts.load_2026_to_db
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL || 'sqlite:///sql_app.db' }}
-          PYTHONPATH: .
 
       - name: Sincronizar crédito vigente 2024/2025/2026
         run: python -m scripts.sync_modificaciones
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL || 'sqlite:///sql_app.db' }}
-          PYTHONPATH: .
 
       - name: Commit DB actualizada
         run: |
