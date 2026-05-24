@@ -39,7 +39,7 @@ jobs:
             echo "DB ya existe, salteando seed 2023."
           fi
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'sqlite:///sql_app.db' }}
           PYTHONPATH: .
 
       - name: Cargar presupuesto base 2026 si no existe
@@ -47,20 +47,21 @@ jobs:
           python -c "
           from sqlalchemy import create_engine, text
           import os
-          engine = create_engine(os.environ.get('DATABASE_URL', 'sqlite:///sql_app.db'))
+          url = os.environ.get('DATABASE_URL', 'sqlite:///sql_app.db')
+          engine = create_engine(url)
           with engine.connect() as c:
               n = c.execute(text('SELECT COUNT(1) FROM presupuesto_base WHERE ejercicio=2026')).scalar()
               print(f'Filas 2026 en DB: {n}')
               exit(0 if n > 0 else 1)
           " && echo "2026 ya está en DB." || python -m scripts.load_2026_to_db
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'sqlite:///sql_app.db' }}
           PYTHONPATH: .
 
       - name: Sincronizar crédito vigente 2024/2025/2026
         run: python -m scripts.sync_modificaciones
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'sqlite:///sql_app.db' }}
           PYTHONPATH: .
 
       - name: Commit DB actualizada
