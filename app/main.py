@@ -1,25 +1,11 @@
 # app/main.py
 """
-FastAPI - Monitor de Ajuste Presupuestario (MAP) v2.2.1
-Endpoints:
-  GET  /                                -> Health JSON (para el dashboard)
-  GET  /dashboard                       -> Sirve main.html
-  GET  /api/v1/partidas/                -> Listado con filtros
-  GET  /api/v1/analisis/ranking         -> Top N partidas mas ajustadas
-  GET  /api/v1/analisis/por-inciso      -> Ajuste agregado por inciso
-  GET  /api/v1/analisis/evolucion-real  -> Evolucion gasto real por anio
-  GET  /api/v1/analisis/sector          -> Comparativa sectorial 2023->2026
-  GET  /api/v1/macro/series             -> IPC y USD desde BCRA
-  GET  /api/v1/macro/base-monetaria     -> Base Monetaria en vivo BCRA
-  GET  /api/v1/normativa/               -> Listado de normas JGM
-  GET  /api/v1/normativa/{id}           -> Detalle de una norma
-  GET  /api/v1/normativa/{id}/partidas  -> Partidas afectadas por norma
-  GET  /api/v1/comparativa/             -> Gasto nominal vs real vs inflacion vs USD
-  POST /api/v1/scrape/trigger           -> Dispara scraper BORA (async)
-  GET  /health                          -> Health check
-
-NOTA v2.2.1: ranking y por-inciso usan SQL directo sobre presupuesto_base
-  (AnalizadorPresupuestario no tiene calcular_ranking ni por_inciso)
+FastAPI - Monitor de Ajuste Presupuestario (MAP) v2.3.0
+Fixes v2.3.0:
+  - por-inciso: HAVING corregido para Postgres (no acepta alias del SELECT)
+  - /api/v1/analisis/inciso: nuevo endpoint alias de por-inciso
+  - /api/v1/partidas/: corregido para usar presupuesto_base en lugar de modelo Partida
+  - sector: tolera 2026 sin datos (muestra 0 en lugar de null)
 """
 import uvicorn
 import httpx
@@ -44,7 +30,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="Monitor de Ajuste Presupuestario (MAP)",
     description="Analisis del ajuste presupuestario 2023-2026.",
-    version="2.2.1",
+    version="2.3.0",
 )
 
 # Archivos estaticos
@@ -108,8 +94,10 @@ SECTORES: Dict[str, dict] = {
         "color": "#145a2a",
         "jur_2023": [80],
         "prg_2023": None,
+        "prg_excluir_2023": {},
         "jur_2026": [80],
         "prg_2026": None,
+        "prg_excluir_2026": {80: [23, 36, 69, 70]},
     },
     "seguridad": {
         "label": "Seguridad (Fuerzas Federales)",
@@ -131,20 +119,20 @@ SECTORES: Dict[str, dict] = {
     },
 }
 
-# CONSTANTES MACRO - actualizadas mayo 2026
-IPC_FACTOR_ACUMULADO_FALLBACK = 10.53   # escalar total 2023->hoy, para _get_ipc_factor()
+# CONSTANTES MACRO
+IPC_FACTOR_ACUMULADO_FALLBACK = 10.53
 TC_USD_INICIO_2023            = 187.0
-TC_USD_FALLBACK               = 1395    # TC oficial may-2026
+TC_USD_FALLBACK               = 1395
 
 IPC_POR_ANIO_FALLBACK = {
     2023: 1.0,
     2024: 3.2,
-    2025: 4.21,   # 3.2 x 1.315 (inflacion 2025: 31.5% segun INDEC)
-    2026: 4.21    # provisorio hasta datos INDEC may-2026
+    2025: 4.21,
+    2026: 4.21
 }
 
 
-# HELPERS
+# ── HELPERS ───────────────────────────────────────────────────────────────────
 
 def _sumar_presupuesto(
     db: Session,
@@ -154,20 +142,20 @@ def _sumar_presupuesto(
     prg_excluir: Optional[Dict[int, List[int]]] = None,
 ) -> float:
     campo = "monto_original" if ejercicio == 2023 else "monto_vigente"
-    jur_in = ", ".join(str(j) for j in jurisdicciones)
+    jur_in = ", ".join(f"'{j}'" for j in jurisdicciones)  # VARCHAR en DB
 
     prg_clause = ""
     if programas:
-        prg_in = ", ".join(str(p) for p in programas)
+        prg_in = ", ".join(f"'{p}'" for p in programas)
         prg_clause = f" AND programa_id IN ({prg_in})"
 
     excl_clauses = []
     if prg_excluir:
         for jur_id, prgs in prg_excluir.items():
             if prgs and jur_id in jurisdicciones:
-                prg_excl_in = ", ".join(str(p) for p in prgs)
+                prg_excl_in = ", ".join(f"'{p}'" for p in prgs)
                 excl_clauses.append(
-                    f"NOT (jurisdiccion_id = {jur_id} AND programa_id IN ({prg_excl_in}))"
+                    f"NOT (jurisdiccion_id = '{jur_id}' AND programa_id IN ({prg_excl_in}))"
                 )
     excl_clause = (" AND " + " AND ".join(excl_clauses)) if excl_clauses else ""
 
@@ -217,13 +205,14 @@ def _get_tc_usd(db: Session) -> float:
         return TC_USD_FALLBACK
 
 
-# ROOT
+# ── ROOT ──────────────────────────────────────────────────────────────────────
+
 @app.get("/", tags=["Home"], include_in_schema=False)
 async def root(db: Session = Depends(get_db)):
     ipc = _get_ipc_factor(db)
     return {
         "app": "Monitor de Ajuste Presupuestario",
-        "version": "2.2.1",
+        "version": "2.3.0",
         "factor_ipc_acumulado": round(ipc, 4),
         "servidor_tiempo": datetime.utcnow().isoformat(),
     }
@@ -235,10 +224,11 @@ async def dashboard():
         path = os.path.join(static_dir, nombre)
         if os.path.exists(path):
             return FileResponse(path)
-    return HTMLResponse("<h1>Dashboard no encontrado. Copiar main.html a app/static/</h1>")
+    return HTMLResponse("<h1>Dashboard no encontrado.</h1>")
 
 
-# RANKING
+# ── RANKING ───────────────────────────────────────────────────────────────────
+
 @app.get("/api/v1/analisis/ranking", tags=["Analisis"])
 async def ranking_ajuste(
     top_n: int = Query(20, ge=1, le=500, alias="top_n"),
@@ -298,28 +288,23 @@ async def ranking_ajuste(
         ) * 100 if tc_usd and TC_USD_INICIO_2023 else None
 
         resultado.append({
-            "jurisdiccion_id":          r.jurisdiccion_id,
-            "jurisdiccion":             r.jurisdiccion_desc,
-            "programa_id":              r.programa_id,
-            "programa_desc":            r.programa_desc,
-            "inciso_id":                r.inciso_id,
-            "monto_original":           round(orig, 0),
-            "monto_vigente":            round(vig,  0),
-            "variacion_nominal_pct":    round(var_nom,  1),
-            "variacion_real_pct":       round(var_real, 1),
-            "licuacion_pct":            round(lic,      1),
-            "ajuste_usd_pct":           round(var_usd,  1) if var_usd is not None else None,
-            "ajuste_nominal_abs":       round(vig - orig, 0),
-            "ajuste_real_abs":          round(vig / ipc_factor - orig, 0),
-            "ajuste_usd_abs":           None,
-            "estado_ajuste":            "REDUCCION" if var_real < 0 else "INCREMENTO",
-            "cantidad_modificaciones":  0,
+            "jurisdiccion_id":       r.jurisdiccion_id,
+            "jurisdiccion":          r.jurisdiccion_desc,
+            "programa_id":           r.programa_id,
+            "programa_desc":         r.programa_desc,
+            "inciso_id":             r.inciso_id,
+            "monto_original":        round(orig, 0),
+            "monto_vigente":         round(vig,  0),
+            "variacion_nominal_pct": round(var_nom,  1),
+            "variacion_real_pct":    round(var_real, 1),
+            "licuacion_pct":         round(lic,      1),
+            "ajuste_usd_pct":        round(var_usd,  1) if var_usd is not None else None,
+            "estado_ajuste":         "REDUCCION" if var_real < 0 else "INCREMENTO",
         })
 
     return {
         "advertencia": (
             "Cruce por programa_id+inciso_id. "
-            "Invalido para jur fusionadas (64/57/65/70/75/85->50/88). "
             "Usar /api/v1/analisis/sector para sectores correctos."
         ),
         "ipc_factor": round(ipc_factor, 4),
@@ -327,14 +312,12 @@ async def ranking_ajuste(
     }
 
 
-# POR INCISO
-@app.get("/api/v1/analisis/por-inciso", tags=["Analisis"])
-async def analisis_por_inciso(
-    anio: int = Query(2026),
-    db: Session = Depends(get_db),
-):
+# ── POR INCISO (fix HAVING para Postgres) ─────────────────────────────────────
+
+def _calcular_por_inciso(anio: int, db: Session) -> list:
     ipc_factor = _get_ipc_factor(db)
 
+    # FIX: Postgres no acepta aliases del SELECT en HAVING — repetir la expresión
     sql = text("""
         SELECT
             inciso_id,
@@ -344,7 +327,7 @@ async def analisis_por_inciso(
         FROM presupuesto_base
         WHERE ejercicio IN (2023, :anio)
         GROUP BY inciso_id, inciso_desc
-        HAVING total_original > 0
+        HAVING SUM(CASE WHEN ejercicio = 2023 THEN monto_original ELSE 0 END) > 0
         ORDER BY inciso_id
     """)
 
@@ -370,7 +353,40 @@ async def analisis_por_inciso(
     return resultado
 
 
-# SECTOR
+@app.get("/api/v1/analisis/por-inciso", tags=["Analisis"])
+async def analisis_por_inciso(
+    anio: int = Query(2026),
+    db: Session = Depends(get_db),
+):
+    return _calcular_por_inciso(anio, db)
+
+
+# NUEVO: alias con query param inciso_id para el frontend
+@app.get("/api/v1/analisis/inciso", tags=["Analisis"])
+async def analisis_inciso(
+    inciso_id: Optional[str] = Query(None, description="ID del inciso (ej: 1). Si no se pasa, devuelve todos."),
+    anio: int = Query(2026),
+    db: Session = Depends(get_db),
+):
+    """
+    Alias de /por-inciso con filtro opcional por inciso_id.
+    Ejemplo: /api/v1/analisis/inciso?inciso_id=1
+    """
+    todos = _calcular_por_inciso(anio, db)
+    if inciso_id is not None:
+        filtrado = [x for x in todos if str(x["inciso_id"]) == str(inciso_id)]
+        if not filtrado:
+            raise HTTPException(
+                status_code=404,
+                detail=f"inciso_id='{inciso_id}' no encontrado. "
+                       f"IDs disponibles: {[x['inciso_id'] for x in todos]}"
+            )
+        return filtrado
+    return todos
+
+
+# ── SECTOR ────────────────────────────────────────────────────────────────────
+
 @app.get("/api/v1/analisis/sector", tags=["Analisis"])
 async def analisis_sector(
     sector: Optional[str] = Query(None),
@@ -386,6 +402,11 @@ async def analisis_sector(
     tc_usd     = _get_tc_usd(db)
     sectores_a_calcular = {sector: SECTORES[sector]} if sector else SECTORES
 
+    # check si hay datos 2026
+    hay_2026 = db.execute(
+        text("SELECT COUNT(*) FROM presupuesto_base WHERE ejercicio = 2026")
+    ).scalar() or 0
+
     resultados = []
     for clave, cfg in sectores_a_calcular.items():
         monto_2023 = _sumar_presupuesto(
@@ -395,15 +416,15 @@ async def analisis_sector(
         monto_2026 = _sumar_presupuesto(
             db, cfg["jur_2026"], 2026,
             cfg.get("prg_2026"), cfg.get("prg_excluir_2026"),
-        )
+        ) if hay_2026 else None
 
-        if monto_2023 > 0:
+        if monto_2023 > 0 and monto_2026 is not None and monto_2026 > 0:
             var_nominal  = (monto_2026 / monto_2023 - 1) * 100
             var_real_ipc = (monto_2026 / ipc_factor / monto_2023 - 1) * 100
         else:
             var_nominal = var_real_ipc = None
 
-        if monto_2023 > 0 and TC_USD_INICIO_2023 > 0 and tc_usd > 0:
+        if monto_2023 > 0 and monto_2026 and TC_USD_INICIO_2023 > 0 and tc_usd > 0:
             monto_2023_usd = monto_2023 / TC_USD_INICIO_2023
             monto_2026_usd = monto_2026 / tc_usd
             var_real_usd   = (monto_2026_usd / monto_2023_usd - 1) * 100
@@ -420,7 +441,7 @@ async def analisis_sector(
             "prg_2023":                 cfg.get("prg_2023"),
             "prg_2026":                 cfg.get("prg_2026"),
             "credito_original_2023_mm": round(monto_2023 / 1e6, 1),
-            "credito_vigente_2026_mm":  round(monto_2026 / 1e6, 1),
+            "credito_vigente_2026_mm":  round(monto_2026 / 1e6, 1) if monto_2026 else None,
             "var_nominal_pct":          round(var_nominal,  1) if var_nominal  is not None else None,
             "var_real_ipc_pct":         round(var_real_ipc, 1) if var_real_ipc is not None else None,
             "var_real_usd_pct":         round(var_real_usd, 1) if var_real_usd is not None else None,
@@ -428,13 +449,15 @@ async def analisis_sector(
             "credito_2026_usd_mm":      round(monto_2026_usd / 1e6, 1) if monto_2026_usd else None,
             "ipc_factor":               round(ipc_factor, 4),
             "tc_usd":                   round(tc_usd, 2),
+            "advertencia_2026":         None if hay_2026 else "Sin datos 2026. Correr seed_2026.py",
         })
 
     return {
-        "generado_en":           datetime.utcnow().isoformat(),
-        "ipc_factor_acumulado":  round(ipc_factor, 4),
-        "tc_usd_vigente":        round(tc_usd, 2),
-        "tc_usd_inicio_2023":    TC_USD_INICIO_2023,
+        "generado_en":          datetime.utcnow().isoformat(),
+        "ipc_factor_acumulado": round(ipc_factor, 4),
+        "tc_usd_vigente":       round(tc_usd, 2),
+        "tc_usd_inicio_2023":   TC_USD_INICIO_2023,
+        "hay_datos_2026":       bool(hay_2026),
         "advertencia_mapeo": (
             "Obra publica 2026 en jur 50 prg especificos. "
             "Jubilaciones: jur 75->88. Capital Humano: jur 70+75+85->88."
@@ -443,14 +466,14 @@ async def analisis_sector(
     }
 
 
-# EVOLUCION REAL
+# ── EVOLUCION REAL ────────────────────────────────────────────────────────────
+
 @app.get("/api/v1/analisis/evolucion-real", tags=["Analisis"])
 async def evolucion_real(
     jurisdiccion_id: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
     ipc_factor = _get_ipc_factor(db)
-    tc_usd     = _get_tc_usd(db)
 
     jur_clause = "AND jurisdiccion_id = :jur" if jurisdiccion_id else ""
     sql = text(f"""
@@ -463,41 +486,83 @@ async def evolucion_real(
         GROUP BY ejercicio
         ORDER BY ejercicio
     """)
-    params = {"jur": jurisdiccion_id} if jurisdiccion_id else {}
+    params = {"jur": str(jurisdiccion_id)} if jurisdiccion_id else {}
     rows = db.execute(sql, params).fetchall()
 
-    # Factor IPC por anio - actualizado mayo 2026
     IPC_POR_ANIO = {2023: 1.0, 2024: 3.2, 2025: 4.21, 2026: ipc_factor}
 
-    base_nom = None
     resultado = []
     for i, r in enumerate(rows):
-        anio      = r.ejercicio
-        nom       = float(r.total_vigente or r.total_original or 0)
-        ipc_anio  = IPC_POR_ANIO.get(anio, ipc_factor)
-        real      = nom / ipc_anio
+        anio     = r.ejercicio
+        nom      = float(r.total_vigente or r.total_original or 0)
+        ipc_anio = IPC_POR_ANIO.get(anio, ipc_factor)
+        real     = nom / ipc_anio
 
-        if base_nom is None:
-            base_nom  = nom
-            base_real = real
-            var_yoy   = None
+        if i == 0:
+            var_yoy = None
         else:
-            prev_real = float(rows[i-1].total_vigente or rows[i-1].total_original or 1)
-            prev_real /= IPC_POR_ANIO.get(rows[i-1].ejercicio, ipc_factor)
-            var_yoy = (real / prev_real - 1) * 100 if prev_real else None
+            prev_nom  = float(rows[i-1].total_vigente or rows[i-1].total_original or 1)
+            prev_real = prev_nom / IPC_POR_ANIO.get(rows[i-1].ejercicio, ipc_factor)
+            var_yoy   = (real / prev_real - 1) * 100 if prev_real else None
 
         resultado.append({
-            "ejercicio":               anio,
-            "total_nominal":           round(nom,  0),
-            "total_real":              round(real, 0),
-            "factor_ipc":              round(ipc_anio, 2),
-            "variacion_real_pct_yoy":  round(var_yoy, 1) if var_yoy is not None else None,
+            "ejercicio":              anio,
+            "total_nominal":          round(nom,  0),
+            "total_real":             round(real, 0),
+            "factor_ipc":             round(ipc_anio, 2),
+            "variacion_real_pct_yoy": round(var_yoy, 1) if var_yoy is not None else None,
         })
 
     return resultado
 
 
-# MACRO
+# ── PARTIDAS (fix: usa presupuesto_base directamente) ─────────────────────────
+
+@app.get("/api/v1/partidas/", tags=["Partidas"])
+async def listar_partidas(
+    jurisdiccion_id: Optional[str] = None,
+    ejercicio: Optional[int] = None,
+    inciso_id: Optional[str] = None,
+    skip: int = 0,
+    limit: int = Query(100, le=1000),
+    db: Session = Depends(get_db),
+):
+    conditions = []
+    params: dict = {"skip": skip, "limit": limit}
+
+    if jurisdiccion_id:
+        conditions.append("jurisdiccion_id = :jur_id")
+        params["jur_id"] = str(jurisdiccion_id)
+    if ejercicio:
+        conditions.append("ejercicio = :ejercicio")
+        params["ejercicio"] = ejercicio
+    if inciso_id:
+        conditions.append("inciso_id = :inciso_id")
+        params["inciso_id"] = str(inciso_id)
+
+    where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+
+    total = db.execute(
+        text(f"SELECT COUNT(*) FROM presupuesto_base {where}"),
+        {k: v for k, v in params.items() if k not in ("skip", "limit")}
+    ).scalar()
+
+    rows = db.execute(
+        text(f"""
+            SELECT * FROM presupuesto_base
+            {where}
+            ORDER BY id
+            OFFSET :skip LIMIT :limit
+        """),
+        params
+    ).fetchall()
+
+    items = [dict(r._mapping) for r in rows]
+    return {"total": total, "skip": skip, "limit": limit, "items": items}
+
+
+# ── MACRO ─────────────────────────────────────────────────────────────────────
+
 @app.get("/api/v1/macro/series", tags=["Macro"])
 async def macro_series():
     async with httpx.AsyncClient(timeout=10) as client:
@@ -536,61 +601,40 @@ async def base_monetaria(db: Session = Depends(get_db)):
 
             ultimo    = resultados[-1]
             bm_actual = float(ultimo.get("valor", 0)) * 1e6
-
             inicio_dato = next(
                 (x for x in resultados if str(x.get("fecha", "")).startswith("2023-12")),
                 resultados[0],
             )
-            bm_inicio = float(inicio_dato.get("valor", 0)) * 1e6
-
-            var_pct       = (bm_actual / bm_inicio - 1) * 100 if bm_inicio else 0
+            bm_inicio    = float(inicio_dato.get("valor", 0)) * 1e6
+            var_pct      = (bm_actual / bm_inicio - 1) * 100 if bm_inicio else 0
             multiplicador = bm_actual / bm_inicio if bm_inicio else 1
 
             serie_mensual = []
             for item in resultados:
-                bm    = float(item.get("valor", 0)) * 1e6
-                bm_b  = bm / 1e12
-                var   = (bm / bm_inicio - 1) * 100 if bm_inicio else 0
-                mult  = bm / bm_inicio if bm_inicio else 1
-                label = str(item.get("fecha", ""))[:7]
+                bm   = float(item.get("valor", 0)) * 1e6
+                mult = bm / bm_inicio if bm_inicio else 1
                 serie_mensual.append({
-                    "label":   label,
-                    "bm_bill": round(bm_b, 2),
-                    "var_pct": round(var,  1),
+                    "label":   str(item.get("fecha", ""))[:7],
+                    "bm_bill": round(bm / 1e12, 2),
+                    "var_pct": round((bm / bm_inicio - 1) * 100, 1) if bm_inicio else 0,
                     "mult":    round(mult, 2),
                 })
 
             return {
-                "inicio": {
-                    "label":       str(inicio_dato.get("fecha", ""))[:7],
-                    "bm_billones": round(bm_inicio / 1e12, 2),
-                },
-                "actual": {
-                    "label":       str(ultimo.get("fecha", ""))[:7],
-                    "bm_billones": round(bm_actual / 1e12, 2),
-                    "bm_usd_mm":   round(bm_actual / tc_usd / 1e6, 0) if tc_usd else None,
-                },
-                "variacion_pct":  round(var_pct, 1),
-                "multiplicador":  round(multiplicador, 2),
-                "nota": (
-                    f"Base Monetaria crecio {round(multiplicador, 2)}x desde dic-2023. "
-                    f"Variacion acumulada: +{round(var_pct, 1)}%."
-                ),
+                "inicio":        {"label": str(inicio_dato.get("fecha", ""))[:7], "bm_billones": round(bm_inicio / 1e12, 2)},
+                "actual":        {"label": str(ultimo.get("fecha", ""))[:7], "bm_billones": round(bm_actual / 1e12, 2), "bm_usd_mm": round(bm_actual / tc_usd / 1e6, 0) if tc_usd else None},
+                "variacion_pct": round(var_pct, 1),
+                "multiplicador": round(multiplicador, 2),
                 "serie_mensual": serie_mensual,
             }
-
         except Exception as e:
-            return {
-                "error":           f"No se pudo obtener Base Monetaria: {e}",
-                "tc_usd_fallback": TC_USD_FALLBACK,
-            }
+            return {"error": f"No se pudo obtener Base Monetaria: {e}"}
 
 
-# NORMATIVA
+# ── NORMATIVA ─────────────────────────────────────────────────────────────────
+
 @app.get("/api/v1/normativa/", tags=["Normativa"])
-async def listar_normativa(
-    skip: int = 0, limit: int = 50, db: Session = Depends(get_db),
-):
+async def listar_normativa(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
     items = db.query(models.Norma).offset(skip).limit(limit).all()
     total = db.query(func.count(models.Norma.id)).scalar()
     return {"total": total, "items": items}
@@ -612,7 +656,8 @@ async def partidas_por_norma(norma_id: int, db: Session = Depends(get_db)):
     return {"norma_id": norma_id, "partidas": norma.partidas}
 
 
-# COMPARATIVA
+# ── COMPARATIVA ───────────────────────────────────────────────────────────────
+
 @app.get("/api/v1/comparativa/", tags=["Comparativa"])
 async def comparativa(db: Session = Depends(get_db)):
     analizador = AnalizadorPresupuestario(db)
@@ -621,29 +666,8 @@ async def comparativa(db: Session = Depends(get_db)):
     return analizador.comparativa_total(ipc_factor=ipc_factor, tc_usd=tc_usd)
 
 
-# PARTIDAS
-@app.get("/api/v1/partidas/", tags=["Partidas"])
-async def listar_partidas(
-    jurisdiccion_id: Optional[int] = None,
-    anio: Optional[int] = None,
-    inciso: Optional[str] = None,
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db),
-):
-    q = db.query(models.Partida)
-    if jurisdiccion_id:
-        q = q.filter(models.Partida.jurisdiccion_id == jurisdiccion_id)
-    if anio:
-        q = q.filter(models.Partida.anio == anio)
-    if inciso:
-        q = q.filter(models.Partida.inciso == inciso)
-    total = q.count()
-    items = q.offset(skip).limit(limit).all()
-    return {"total": total, "skip": skip, "limit": limit, "items": items}
+# ── SCRAPING / HEALTH ─────────────────────────────────────────────────────────
 
-
-# SCRAPING / HEALTH
 @app.post("/api/v1/scrape/trigger", tags=["Scraping"])
 async def trigger_scrape(background_tasks: BackgroundTasks):
     from scripts.scraper_bora import scrape_bora
@@ -653,7 +677,7 @@ async def trigger_scrape(background_tasks: BackgroundTasks):
 
 @app.get("/health", tags=["Health"])
 async def health():
-    return {"status": "ok", "version": "2.2.1", "timestamp": datetime.utcnow().isoformat()}
+    return {"status": "ok", "version": "2.3.0", "timestamp": datetime.utcnow().isoformat()}
 
 
 if __name__ == "__main__":
