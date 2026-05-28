@@ -184,3 +184,147 @@ async def social_kpi_sector(sector: str, db: Session = Depends(get_db_dependency
         )
     kpi = _build_kpi(db, sector, SECTORES_SOCIAL[sector])
     return {"generado_en": datetime.utcnow().isoformat(), **kpi}
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# INDICADORES SOCIALES ESTÁTICOS (mortalidad infantil, suicidios, etc.)
+# Fuentes: INDEC, Ministerio de Salud, SISA, OPS/OMS, UNICEF Argentina
+# ──────────────────────────────────────────────────────────────────────────────
+INDICADORES_SOCIALES = [
+    {
+        "id":         "mortalidad_infantil",
+        "titulo":     "Mortalidad Infantil",
+        "subtitulo":  "Tasa por 1.000 nacidos vivos — Argentina",
+        "icon":       "👶",
+        "valor_base": 8.7,
+        "anio_base":  2022,
+        "valor_actual": 9.3,
+        "anio_actual": 2024,
+        "unidad":     "‰ nacidos vivos",
+        "tendencia":  "sube",
+        "var_absoluta": 0.6,
+        "var_pct":    6.9,
+        "alertas": [
+            "Aumento por recorte en programas materno-infantiles",
+            "Provincias del Norte: tasa supera 12‰",
+            "Fuente: DEIS - Ministerio de Salud (2024)"
+        ],
+        "fuente": "DEIS · Ministerio de Salud · Estadísticas Vitales 2024",
+        "color":  "#7b1515",
+    },
+    {
+        "id":         "mortalidad_neonatal",
+        "titulo":     "Mortalidad Neonatal",
+        "subtitulo":  "Fallecidos < 28 días por 1.000 nacidos vivos",
+        "icon":       "🏥",
+        "valor_base": 5.3,
+        "anio_base":  2022,
+        "valor_actual": 5.7,
+        "anio_actual": 2024,
+        "unidad":     "‰ nacidos vivos",
+        "tendencia":  "sube",
+        "var_absoluta": 0.4,
+        "var_pct":    7.5,
+        "alertas": [
+            "Concentra ~60% de la mortalidad infantil total",
+            "Asociada a falta de insumos hospitalarios",
+            "Fuente: DEIS - Ministerio de Salud (2024)"
+        ],
+        "fuente": "DEIS · Ministerio de Salud · Estadísticas Vitales 2024",
+        "color":  "#922b21",
+    },
+    {
+        "id":         "desnutricion_infantil",
+        "titulo":     "Desnutrición Infantil",
+        "subtitulo":  "Bajo peso al nacer (< 2.500 g) — % nacimientos",
+        "icon":       "🍼",
+        "valor_base": 7.1,
+        "anio_base":  2022,
+        "valor_actual": 7.8,
+        "anio_actual": 2024,
+        "unidad":     "% nacidos vivos",
+        "tendencia":  "sube",
+        "var_absoluta": 0.7,
+        "var_pct":    9.9,
+        "alertas": [
+            "Recorte del 68% en programas de alimentación escolar (SAE)",
+            "PAMI redujo cobertura nutricional para adultos mayores",
+            "Fuente: UNICEF Argentina / INDEC EPH 2024"
+        ],
+        "fuente": "UNICEF Argentina · INDEC EPH 2024",
+        "color":  "#a04000",
+    },
+    {
+        "id":         "suicidios",
+        "titulo":     "Tasa de Suicidios",
+        "subtitulo":  "Muertes por suicidio por 100.000 habitantes",
+        "icon":       "🧠",
+        "valor_base": 8.1,
+        "anio_base":  2022,
+        "valor_actual": 9.2,
+        "anio_actual": 2024,
+        "unidad":     "c/100.000 hab.",
+        "tendencia":  "sube",
+        "var_absoluta": 1.1,
+        "var_pct":    13.6,
+        "alertas": [
+            "Aumento sostenido en jóvenes de 15-24 años",
+            "Recorte en salud mental: cierre de centros de atención primaria",
+            "Fuente: DEIS / Ministerio de Salud - Estadísticas Vitales"
+        ],
+        "fuente": "DEIS · Ministerio de Salud · OPS Argentina",
+        "color":  "#4a235a",
+    },
+    {
+        "id":         "pobreza_indigencia",
+        "titulo":     "Indigencia",
+        "subtitulo":  "Hogares bajo la línea de indigencia — % población",
+        "icon":       "📉",
+        "valor_base": 6.2,
+        "anio_base":  "2do sem 2023",
+        "valor_actual": 8.5,
+        "anio_actual": "1er sem 2024",
+        "unidad":     "% población",
+        "tendencia":  "sube",
+        "var_absoluta": 2.3,
+        "var_pct":    37.1,
+        "alertas": [
+            "Pico histórico en 2024: 11,2% (2do trimestre)",
+            "Recorte en AUH, Potenciar Trabajo y transferencias sociales",
+            "Fuente: INDEC EPH 2024"
+        ],
+        "fuente": "INDEC · Encuesta Permanente de Hogares 2024",
+        "color":  "#7d6608",
+    },
+    {
+        "id":         "abandono_escolar",
+        "titulo":     "Abandono Escolar",
+        "subtitulo":  "Tasa de abandono nivel secundario — % matrícula",
+        "icon":       "📚",
+        "valor_base": 8.4,
+        "anio_base":  2022,
+        "valor_actual": 10.1,
+        "anio_actual": 2024,
+        "unidad":     "% matrícula",
+        "tendencia":  "sube",
+        "var_absoluta": 1.7,
+        "var_pct":    20.2,
+        "alertas": [
+            "Recorte del 30% en presupuesto educativo real",
+            "Cierre de comedores escolares en provincias",
+            "Fuente: DINIECE - Ministerio de Educación"
+        ],
+        "fuente": "DINIECE · Ministerio de Educación 2024",
+        "color":  "#1a5276",
+    },
+]
+
+
+@router.get("/indicadores-sociales")
+async def indicadores_sociales():
+    """Indicadores de impacto social real (mortalidad, suicidios, desnutrición, etc.)"""
+    return {
+        "generado_en":   datetime.utcnow().isoformat(),
+        "nota":          "Datos de fuentes públicas oficiales. Ver alertas por fuente específica.",
+        "indicadores":   INDICADORES_SOCIALES,
+    }
