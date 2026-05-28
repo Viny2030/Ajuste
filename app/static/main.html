@@ -170,6 +170,29 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
 .social-fuente{font-size:10px;color:#bbb;margin-top:10px;font-style:italic;}
 .social-status{background:white;border-radius:8px;border:1px solid #e8e8e4;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:12px;color:#666;}
 .social-dot{width:8px;height:8px;border-radius:50%;background:#27ae60;flex-shrink:0;}
+/* INDICADORES SOCIALES REALES */
+.indic-section-title{font-size:13px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.07em;margin:24px 0 12px 0;padding-bottom:6px;border-bottom:2px solid #f0e8ff;}
+.indic-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+@media(max-width:900px){.indic-grid{grid-template-columns:1fr;}}
+.indic-card{background:white;border-radius:8px;border:1px solid #e8e8e4;padding:20px;border-top:3px solid #c0392b;}
+.indic-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+.indic-card-title{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;}
+.indic-badge-sube{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:#fdecea;color:#7b1515;}
+.indic-badge-baja{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:#eafaf1;color:#145a2a;}
+.indic-main-value{font-size:36px;font-weight:500;color:#c0392b;line-height:1;}
+.indic-main-sub{font-size:11px;color:#aaa;margin-top:4px;margin-bottom:14px;}
+.indic-compare{display:flex;gap:10px;margin-bottom:12px;}
+.indic-compare-box{flex:1;background:#f8f8f4;border-radius:6px;padding:8px 12px;}
+.indic-compare-label{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.04em;}
+.indic-compare-val{font-size:15px;font-weight:600;color:#1a1a1a;margin-top:2px;}
+.indic-compare-val.red{color:#c0392b;}
+.indic-var{font-size:13px;margin-bottom:10px;}
+.indic-var-abs{font-weight:600;color:#c0392b;}
+.indic-var-pct{color:#888;}
+.indic-alertas{border-top:1px solid #f0f0ea;padding-top:10px;margin-top:8px;}
+.indic-alerta{font-size:11px;color:#7b1515;background:#fdecea;border-radius:4px;padding:4px 8px;margin-bottom:5px;line-height:1.4;}
+.indic-fuente{font-size:10px;color:#bbb;margin-top:8px;font-style:italic;}
+.indic-nota{font-size:11px;color:#888;background:#fffbf0;border:1px solid #fdebd0;border-radius:6px;padding:10px 14px;margin-bottom:16px;}
 </style>
 </head>
 <body>
@@ -413,6 +436,10 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
   <div class="panel" id="tab-social">
     <div class="social-status" id="social-status"><div class="social-dot" id="social-dot"></div><span id="social-status-txt">Cargando indicadores…</span></div>
     <div class="social-grid" id="social-grid"><div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">Cargando…</div></div>
+    <!-- INDICADORES SOCIALES REALES -->
+    <div class="indic-section-title">📊 Indicadores de Impacto Social Real</div>
+    <div class="indic-nota">⚠️ Indicadores de resultado social (mortalidad, desnutrición, suicidios, abandono escolar). Fuentes públicas oficiales: DEIS, INDEC EPH, UNICEF, DINIECE. Los valores reflejan la evolución 2022→2024 como proxy del período de ajuste.</div>
+    <div class="indic-grid" id="indic-grid"><div style="grid-column:1/-1;text-align:center;padding:30px;color:#aaa;">Cargando indicadores sociales…</div></div>
   </div>
 
   <!-- AUTOR + DONACIONES -->
@@ -841,6 +868,36 @@ async function loadSocial(){
       return '<div class="social-card"><div class="social-card-header"><div class="social-card-title">'+k.titulo+'</div><div class="social-badge">↑ sube</div></div><div class="social-main-value">'+(k.tasa_actual!=null?k.tasa_actual.toFixed(1):k.valor_actual||0)+'</div><div class="social-main-sub">'+k.subtitulo+'</div><div class="social-compare"><div class="social-compare-box"><div class="social-compare-label">Base dic-2023</div><div class="social-compare-val">'+(k.valor_base||0).toLocaleString('es-AR')+'</div></div><div class="social-compare-box"><div class="social-compare-label">Último dato</div><div class="social-compare-val red">'+(k.valor_actual||0).toLocaleString('es-AR')+'</div></div></div><div class="social-var"><span class="social-var-abs">'+varAbs+'</span> <span class="social-var-pct">('+varPct+')</span></div><div class="social-alertas">'+( k.alertas||[]).map(a=>'<div class="social-alerta">⚠ '+a+'</div>').join('')+'</div><div class="social-fuente">'+(k.fuente||'')+'</div></div>';
     }).join('');
   }catch(e){dot.style.background='#e74c3c';txt.textContent='Error: '+e.message;grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">No se pudo conectar con /api/social/kpis<br><small>'+e.message+'</small></div>';}
+  loadIndicadoresSociales();
+}
+
+// ══ INDICADORES SOCIALES REALES ════════════════════════════════════════════════
+let indicSocialLoaded=false;
+async function loadIndicadoresSociales(){
+  if(indicSocialLoaded)return;
+  const grid=document.getElementById('indic-grid');
+  try{
+    const r=await fetch('/api/social/indicadores-sociales');if(!r.ok)throw new Error('HTTP '+r.status);
+    const data=await r.json();indicSocialLoaded=true;
+    grid.innerHTML=(data.indicadores||[]).map(k=>{
+      const tendUp=k.tendencia==='sube';
+      const badge=tendUp?'<div class="indic-badge-sube">↑ sube</div>':'<div class="indic-badge-baja">↓ baja</div>';
+      const varAbs=(k.var_absoluta>=0?'+':'')+k.var_absoluta.toLocaleString('es-AR');
+      const varPct=(k.var_pct>=0?'+':'')+k.var_pct.toFixed(1)+'%';
+      const colorBorder=tendUp?'#c0392b':'#27ae60';
+      return '<div class="indic-card" style="border-top-color:'+colorBorder+'"><div class="indic-card-header"><div class="indic-card-title">'+k.icon+' '+k.titulo+'</div>'+badge+'</div>'
+        +'<div class="indic-main-value" style="color:'+colorBorder+'">'+k.valor_actual+'</div>'
+        +'<div class="indic-main-sub">'+k.unidad+' · '+k.subtitulo+'</div>'
+        +'<div class="indic-compare">'
+          +'<div class="indic-compare-box"><div class="indic-compare-label">Base '+k.anio_base+'</div><div class="indic-compare-val">'+k.valor_base+'</div></div>'
+          +'<div class="indic-compare-box"><div class="indic-compare-label">Último ('+k.anio_actual+')</div><div class="indic-compare-val red">'+k.valor_actual+'</div></div>'
+        +'</div>'
+        +'<div class="indic-var"><span class="indic-var-abs">'+varAbs+'</span> <span class="indic-var-pct">('+varPct+')</span></div>'
+        +'<div class="indic-alertas">'+(k.alertas||[]).map(a=>'<div class="indic-alerta">⚠ '+a+'</div>').join('')+'</div>'
+        +'<div class="indic-fuente">'+(k.fuente||'')+'</div>'
+      +'</div>';
+    }).join('');
+  }catch(e){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#aaa;">No se pudo cargar indicadores sociales<br><small>'+e.message+'</small></div>';}
 }
 
 // ══ INIT ══════════════════════════════════════════════════════════════════════
