@@ -1,9 +1,24 @@
 # app/core/engine.py
 """
 Motor de Cálculo — fuentes macro:
-  1. estadisticasbcra.com  (primaria, sin SSL issues)
-  2. api.bcra.gob.ar        (fallback)
-  3. Valores hardcodeados   (último recurso)
+  1. api.bcra.gob.ar v4.0   (oficial, primaria — reemplaza a v2.0/v3.0, deprecadas)
+  2. estadisticasbcra.com   (secundaria, best-effort — requiere token propio hoy)
+  3. Valores hardcodeados   (último recurso — SIEMPRE loguea WARNING si se usa)
+
+Nota (2026-07): las fuentes que usaba este módulo antes dejaron de funcionar:
+  - api.bcra.gob.ar v2.0 → 410 Gone ("Método deprecado")
+  - api.bcra.gob.ar v3.0 → 410 Gone ("Método deprecado")
+  - api.estadisticasbcra.com → ipc_ng_itcrm da 404, usd_of pide token de acceso
+La API vigente y gratuita, sin autenticación, es v4.0 ("Estadísticas Monetarias"):
+  https://api.bcra.gob.ar/estadisticas/v4.0/monetarias/{idVariable}?desde=...&hasta=...
+IDs usados acá (confirmados contra el catálogo real, ver
+  https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias):
+  - id 5  = "Tipo de cambio mayorista de referencia" (diario) → usd_oficial
+  - id 27 = "Inflación mensual" (% mensual, no es un nivel/índice) → se compone
+            manualmente en un índice acumulado (ver _fetch_ipc)
+⚠️ Los IDs de variable NO son estables entre versiones de la API — si esto
+vuelve a romperse, no asumir que los números 5/27 siguen significando lo
+mismo; volver a consultar el catálogo primero.
 """
 import requests
 import pandas as pd
@@ -12,6 +27,10 @@ from functools import lru_cache
 import logging
 
 logger = logging.getLogger(__name__)
+
+BCRA_V4_BASE = "https://api.bcra.gob.ar/estadisticas/v4.0/monetarias"
+ID_USD_MAYORISTA = 5
+ID_INFLACION_MENSUAL = 27
 
 # ─────────────────────────────────────────────────
 #  FUENTES DE DATOS MACRO
@@ -28,57 +47,81 @@ def _get(url, **kwargs) -> list:
         return []
 
 
+def _fetch_bcra_v4(id_variable: int, desde: str = "2023-01-01") -> list[dict]:
+    """
+    Consulta una serie de la API oficial BCRA v4.0. Devuelve lista de
+    {"fecha": "YYYY-MM-DD", "valor": float} ordenada ascendente, o [] si falla.
+    No requiere autenticación (API pública).
+    """
+    hoy = date.today().isoformat()
+    url = f"{BCRA_V4_BASE}/{id_variable}?desde={desde}&hasta={hoy}"
+    data = _get(url, headers={"Accept": "application/json"}, verify=True)
+    if not data or not isinstance(data, dict):
+        return []
+    resultados = data.get("results", [])
+    if not resultados:
+        return []
+    detalle = resultados[0].get("detalle", [])
+    return sorted(detalle, key=lambda r: r["fecha"])
+
+
 def _fetch_ipc() -> pd.DataFrame:
-    """IPC mensual desde estadisticasbcra.com → [{d, v}]"""
-    data = _get("https://api.estadisticasbcra.com/ipc_ng_itcrm")
-    if not data:
-        # fallback: BCRA oficial
-        hoy = date.today().isoformat()
-        data = _get(
-            f"https://api.bcra.gob.ar/estadisticas/v2.0/datosvariable/27/2023-01-01/{hoy}",
-            headers={"Accept": "application/json"},
-            verify=False,
-        )
-        if data and isinstance(data, dict):
-            data = data.get("results", [])
+    """
+    Índice de nivel de precios mensual, compuesto a partir de la Inflación
+    mensual (%) oficial del BCRA v4.0 (la API no publica un nivel/índice
+    directo, solo la variación % mes a mes).
+    Base = 100 en el primer mes disponible desde 2023-01.
+    """
+    detalle = _fetch_bcra_v4(ID_INFLACION_MENSUAL)
+
+    if not detalle:
+        logger.warning("IPC no disponible desde BCRA v4.0 — intentando estadisticasbcra.com")
+        data = _get("https://api.estadisticasbcra.com/ipc_ng_itcrm")
         if data:
             df = pd.DataFrame(data)
+            if "d" in df.columns and "v" in df.columns:
+                df = df.rename(columns={"d": "fecha", "v": "ipc_nivel"})
             df["fecha"] = pd.to_datetime(df["fecha"])
-            df = df.rename(columns={"valor": "ipc_nivel"})
             return df[["fecha", "ipc_nivel"]].sort_values("fecha")
         return pd.DataFrame(columns=["fecha", "ipc_nivel"])
 
-    df = pd.DataFrame(data)
-    # estadisticasbcra devuelve {"d": "2023-01-01", "v": 123.4}
-    if "d" in df.columns and "v" in df.columns:
-        df = df.rename(columns={"d": "fecha", "v": "ipc_nivel"})
-    df["fecha"] = pd.to_datetime(df["fecha"])
-    return df[["fecha", "ipc_nivel"]].sort_values("fecha")
+    nivel = 100.0
+    filas = []
+    for row in detalle:
+        fecha = pd.to_datetime(row["fecha"])
+        if fecha.strftime("%Y-%m") != "2023-01":
+            # el mes base (2023-01) no aplica su propia inflación
+            nivel *= (1 + row["valor"] / 100)
+        filas.append({"fecha": fecha, "ipc_nivel": nivel})
+
+    df = pd.DataFrame(filas)
+    logger.info(f"IPC compuesto desde BCRA v4.0: {len(df)} meses, "
+                f"nivel final={df['ipc_nivel'].iloc[-1]:.2f}")
+    return df.sort_values("fecha")
 
 
 def _fetch_usd() -> pd.DataFrame:
-    """USD oficial diario desde estadisticasbcra.com → [{d, v}]"""
-    data = _get("https://api.estadisticasbcra.com/usd_of")
-    if not data:
-        hoy = date.today().isoformat()
-        data = _get(
-            f"https://api.bcra.gob.ar/estadisticas/v2.0/datosvariable/1/2023-01-01/{hoy}",
-            headers={"Accept": "application/json"},
-            verify=False,
-        )
-        if data and isinstance(data, dict):
-            data = data.get("results", [])
+    """
+    Tipo de cambio mayorista de referencia (diario), desde la API oficial
+    BCRA v4.0.
+    """
+    detalle = _fetch_bcra_v4(ID_USD_MAYORISTA)
+
+    if not detalle:
+        logger.warning("USD no disponible desde BCRA v4.0 — intentando estadisticasbcra.com")
+        data = _get("https://api.estadisticasbcra.com/usd_of")
         if data:
             df = pd.DataFrame(data)
+            if "d" in df.columns and "v" in df.columns:
+                df = df.rename(columns={"d": "fecha", "v": "usd_oficial"})
             df["fecha"] = pd.to_datetime(df["fecha"])
-            df = df.rename(columns={"valor": "usd_oficial"})
             return df[["fecha", "usd_oficial"]].sort_values("fecha")
         return pd.DataFrame(columns=["fecha", "usd_oficial"])
 
-    df = pd.DataFrame(data)
-    if "d" in df.columns and "v" in df.columns:
-        df = df.rename(columns={"d": "fecha", "v": "usd_oficial"})
+    df = pd.DataFrame(detalle).rename(columns={"valor": "usd_oficial"})
     df["fecha"] = pd.to_datetime(df["fecha"])
+    logger.info(f"USD cargado desde BCRA v4.0: {len(df)} registros, "
+                f"último={df['usd_oficial'].iloc[-1]:.2f} ({df['fecha'].iloc[-1].date()})")
     return df[["fecha", "usd_oficial"]].sort_values("fecha")
 
 
@@ -116,15 +159,18 @@ def cargar_macro_indices() -> dict:
         factor_actual = float(df_ipc_m["ipc_acum_vs_ene23"].iloc[-1])
         logger.info(f"IPC cargado: {len(df_ipc_m)} meses, factor={factor_actual:.4f}")
     else:
-        logger.warning("IPC no disponible — usando fallback calculado con datos INDEC")
-        # Factor calculado con IPC mensual INDEC:
-        # 2023 (feb-dic): 6.6,7.7,8.4,7.8,6.0,6.3,12.4,12.7,8.3,12.8,25.5
-        # 2024: 20.6,13.2,11.0,8.8,4.2,4.6,4.0,4.2,3.5,2.4,2.4,2.7
-        # 2025: 2.4,2.4,3.7,3.2,3.3,3.7,3.0,3.0,3.0,3.0,3.0,3.0
-        # 2026 (ene-may): 2.3,2.4,3.4,3.0,3.2
-        # Factor acumulado ene-2023 → may-2026 ≈ 10.53× (953% acumulado)
+        logger.error(
+            "⚠️  IPC no disponible de NINGUNA fuente (BCRA v4.0 y estadisticasbcra.com "
+            "fallaron). Usando factor hardcodeado — este valor NO se actualiza solo y "
+            "va a quedar desactualizado con el tiempo. Revisar por qué fallaron las "
+            "fuentes en vez de confiar en este número por mucho tiempo."
+        )
+        # Factor acumulado ene-2023 → may-2026, calculado con la inflación
+        # mensual oficial del BCRA v4.0 (id_variable=27) el 2026-07-02.
+        # Recalcular si esta rama llega a usarse: no hardcodear un valor nuevo
+        # sin volver a consultar la fuente real primero.
         df_ipc_m = pd.DataFrame(columns=["fecha", "ipc_nivel", "ipc_acum_vs_ene23", "var_mensual_pct"])
-        factor_actual = 10.53  # 953% inflación acumulada ene-2023 → may-2026 (INDEC)
+        factor_actual = 9.6368  # 863.68% acumulado ene-2023 → may-2026 (BCRA v4.0, id 27)
 
     # ── USD ──────────────────────────────────────
     df_usd_raw = _fetch_usd()
