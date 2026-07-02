@@ -9,6 +9,7 @@ Fixes v2.3.0:
 """
 import uvicorn
 import httpx
+import logging
 from datetime import datetime, date
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -197,10 +198,32 @@ def _get_ipc_factor(db: Session) -> float:
 
 
 def _get_tc_usd(db: Session) -> float:
+    """
+    Devuelve el USD oficial actual.
+
+    Nota (2026-07): esta función antes filtraba MacroIndice.tipo == "TC_USD_oficial",
+    pero el modelo real usa el campo `indicador` (no `tipo`) — eso lanzaba
+    AttributeError, silenciado por el except de abajo. Además la tabla
+    macro_indices en Postgres (producción) nunca se puebla: el único script
+    que la llena (scripts/seed_macro_indices.py) escribe en un sqlite3 local,
+    no en la base de Railway. El resultado neto era devolver siempre
+    TC_USD_FALLBACK = 1395 sin que nadie se enterara.
+
+    Se prioriza ahora cargar_macro_indices() (app/core/engine.py), que sí
+    consulta la API oficial BCRA v4.0 en vivo. La tabla MacroIndice queda
+    como fallback por si en algún momento se la puebla correctamente.
+    """
+    try:
+        macro = cargar_macro_indices()
+        if macro.get("usd_actual"):
+            return float(macro["usd_actual"])
+    except Exception as e:
+        logging.getLogger("map.macro").warning(f"cargar_macro_indices() falló en _get_tc_usd: {e}")
+
     try:
         fila = (
             db.query(models.MacroIndice)
-            .filter(models.MacroIndice.tipo == "TC_USD_oficial")
+            .filter(models.MacroIndice.indicador == "TC_oficial_venta")
             .order_by(models.MacroIndice.fecha.desc())
             .first()
         )
@@ -564,46 +587,88 @@ async def listar_partidas(
 
 # ── MACRO ─────────────────────────────────────────────────────────────────────
 
+BCRA_V4_BASE = "https://api.bcra.gob.ar/estadisticas/v4.0/monetarias"
+
+
+async def _fetch_bcra_v4_async(client: httpx.AsyncClient, id_variable: int, desde: str = "2023-01-01") -> list[dict]:
+    """
+    Consulta una serie BCRA v4.0 y devuelve su 'detalle' (lista de
+    {"fecha","valor"}) ordenado ascendente, o [] si falla.
+
+    Nota (2026-07): v3.0 y v2.0 fueron deprecadas por el BCRA (410 Gone).
+    v4.0 además anida la respuesta distinto: los datos están en
+    results[0]["detalle"], no directamente en "results" como antes.
+    """
+    try:
+        r = await client.get(f"{BCRA_V4_BASE}/{id_variable}", params={"desde": desde})
+        if r.status_code != 200:
+            return []
+        data = r.json()
+        resultados = data.get("results", [])
+        if not resultados:
+            return []
+        detalle = resultados[0].get("detalle", [])
+        return sorted(detalle, key=lambda x: x["fecha"])
+    except Exception:
+        return []
+
+
 @app.get("/api/v1/macro/series", tags=["Macro"])
 async def macro_series():
-    async with httpx.AsyncClient(timeout=10) as client:
-        try:
-            r_ipc = await client.get("https://api.bcra.gob.ar/estadisticas/v3.0/monetarias", params={"idVariable": 27, "desde": "2023-01-01"})
-            ipc_data = r_ipc.json() if r_ipc.status_code == 200 else []
-        except Exception:
-            ipc_data = []
-        try:
-            r_tc = await client.get("https://api.bcra.gob.ar/estadisticas/v3.0/monetarias", params={"idVariable": 4, "desde": "2023-01-01"})
-            tc_data = r_tc.json() if r_tc.status_code == 200 else []
-        except Exception:
-            tc_data = []
+    async with httpx.AsyncClient(timeout=15) as client:
+        ipc_data = await _fetch_bcra_v4_async(client, 27)   # Inflación mensual (%)
+        tc_data = await _fetch_bcra_v4_async(client, 4)     # TC minorista (promedio vendedor)
     return {"ipc": ipc_data, "tipo_cambio": tc_data}
 
 
 @app.get("/api/v1/macro/base-monetaria", tags=["Macro"])
 async def base_monetaria(db: Session = Depends(get_db)):
     tc_usd = _get_tc_usd(db)
-    async with httpx.AsyncClient(timeout=10) as client:
+    async with httpx.AsyncClient(timeout=15) as client:
         try:
-            r = await client.get("https://api.bcra.gob.ar/estadisticas/v3.0/monetarias", params={"idVariable": 15, "limit": 24})
-            data       = r.json() if r.status_code == 200 else {}
-            resultados = data.get("results", [])
-            if not resultados:
+            # id 15 = Base monetaria, periodicidad DIARIA — pedir por rango de
+            # fecha (no "limit=24", que traería solo los últimos 24 días, no
+            # los últimos 24 meses) y resamplear a mensual acá.
+            detalle = await _fetch_bcra_v4_async(client, 15, desde="2023-12-01")
+            if not detalle:
                 raise ValueError("Sin datos BCRA")
-            ultimo    = resultados[-1]
-            bm_actual = float(ultimo.get("valor", 0)) * 1e6
-            inicio_dato = next((x for x in resultados if str(x.get("fecha", "")).startswith("2023-12")), resultados[0])
-            bm_inicio    = float(inicio_dato.get("valor", 0)) * 1e6
-            var_pct      = (bm_actual / bm_inicio - 1) * 100 if bm_inicio else 0
+
+            import pandas as pd
+            df = pd.DataFrame(detalle)
+            df["fecha"] = pd.to_datetime(df["fecha"])
+            df_mensual = (
+                df.set_index("fecha")["valor"]
+                .resample("ME").last()
+                .dropna()
+                .reset_index()
+            )
+            if df_mensual.empty:
+                raise ValueError("Sin datos BCRA tras resamplear")
+
+            ultimo = df_mensual.iloc[-1]
+            bm_actual = float(ultimo["valor"]) * 1e6
+
+            inicio_rows = df_mensual[df_mensual["fecha"].dt.strftime("%Y-%m") == "2023-12"]
+            inicio_row = inicio_rows.iloc[0] if not inicio_rows.empty else df_mensual.iloc[0]
+            bm_inicio = float(inicio_row["valor"]) * 1e6
+
+            var_pct = (bm_actual / bm_inicio - 1) * 100 if bm_inicio else 0
             multiplicador = bm_actual / bm_inicio if bm_inicio else 1
+
             serie_mensual = []
-            for item in resultados:
-                bm   = float(item.get("valor", 0)) * 1e6
+            for _, row in df_mensual.iterrows():
+                bm = float(row["valor"]) * 1e6
                 mult = bm / bm_inicio if bm_inicio else 1
-                serie_mensual.append({"label": str(item.get("fecha", ""))[:7], "bm_bill": round(bm / 1e12, 2), "var_pct": round((bm / bm_inicio - 1) * 100, 1) if bm_inicio else 0, "mult": round(mult, 2)})
+                serie_mensual.append({
+                    "label": row["fecha"].strftime("%Y-%m"),
+                    "bm_bill": round(bm / 1e12, 2),
+                    "var_pct": round((bm / bm_inicio - 1) * 100, 1) if bm_inicio else 0,
+                    "mult": round(mult, 2),
+                })
+
             return {
-                "inicio":        {"label": str(inicio_dato.get("fecha", ""))[:7], "bm_billones": round(bm_inicio / 1e12, 2)},
-                "actual":        {"label": str(ultimo.get("fecha", ""))[:7], "bm_billones": round(bm_actual / 1e12, 2), "bm_usd_mm": round(bm_actual / tc_usd / 1e6, 0) if tc_usd else None},
+                "inicio": {"label": inicio_row["fecha"].strftime("%Y-%m"), "bm_billones": round(bm_inicio / 1e12, 2)},
+                "actual": {"label": ultimo["fecha"].strftime("%Y-%m"), "bm_billones": round(bm_actual / 1e12, 2), "bm_usd_mm": round(bm_actual / tc_usd / 1e6, 0) if tc_usd else None},
                 "variacion_pct": round(var_pct, 1),
                 "multiplicador": round(multiplicador, 2),
                 "serie_mensual": serie_mensual,
