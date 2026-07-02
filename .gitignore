@@ -19,3 +19,8 @@ test-results/
 pw_screenshots/
 data/processed/infoleg_normativa.csv
 data/presupuesto_base/credito_mensual_2026.csv
+
+# Cache local de descargas grandes (se recrean solos al correr los scripts)
+credito2026.zip
+*.zip
+!archive/**/*.zip
