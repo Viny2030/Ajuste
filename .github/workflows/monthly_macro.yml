@@ -21,6 +21,18 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Set DATABASE_URL
+        run: |
+          SECRET="${{ secrets.DATABASE_URL }}"
+          if [ -z "$SECRET" ]; then
+            echo "DATABASE_URL=sqlite:///sql_app.db" >> $GITHUB_ENV
+            echo "Sin secret DATABASE_URL configurado — usando SQLite local."
+            echo "Esto solo actualiza data/seeds/macro_indices.csv, NO la Postgres de producción."
+          else
+            echo "DATABASE_URL=$SECRET" >> $GITHUB_ENV
+            echo "Usando DATABASE_URL desde secret — esto va a escribir en la Postgres real."
+          fi
+
       - name: Run seed_macro_indices
         run: python scripts/seed_macro_indices.py
 

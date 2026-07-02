@@ -1,14 +1,21 @@
-# archive/debug_scripts_2026/
+# archive/scripts_exploratorios_2026/
 
-Scripts de debugging y exploración puntual (scraping del BORA, inspección de
-PDFs, chequeos ad-hoc de la base) generados durante el desarrollo. Ninguno es
-importado por `app/` ni por `scripts/`, y el `Procfile` solo ejecuta
-`uvicorn app.main:app` — o sea, nada de esto corre en producción.
+Scripts exploratorios y de una sola vez que vivían dentro de `scripts/`:
+pruebas puntuales contra la API del BORA/Infoleg (`test_*.py`), visores
+manuales de avisos/normas (`ver_*.py`), un diagnóstico de sectores, un
+descargador manual con IDs de BORA hardcodeados, y una copia vieja de
+`discover_bora.py` (la que realmente usa el workflow de GitHub Actions
+`daily_discover.yml` vive en `.github/scripts/discover_bora.py`, no acá).
 
-Se movieron acá (2026-07) para limpiar la raíz del repo, en vez de borrarlos,
-por si alguno sirve de referencia para depurar el scraper del BORA en el
-futuro. Si después de un tiempo nadie los necesita, es seguro borrar esta
-carpeta entera.
+Ninguno de estos es importado por `app/` ni referenciado por ningún workflow
+de `.github/workflows/`. Se movieron acá (2026-07) para limpiar `scripts/`,
+que ahora solo tiene los módulos con uso real:
 
-No incluye `analisis.py` (se queda en la raíz — es una herramienta real de
-consultas manuales sobre la base, documentada en su propio docstring).
+  - seed_2023.py, seed_2026.py, seed_presupuesto_base.py,
+    seed_macro_indices.py — cargan datos base
+  - ingest_presupuesto_2026.py, load_2026_to_db.py — ingesta del crédito 2026
+  - sync_modificaciones.py — sincroniza crédito vigente 2024/2025/2026
+  - migrations/, social/ — submódulos activos
+
+Ver también `archive/debug_scripts_2026/` para los que estaban sueltos en
+la raíz del repo (mismo criterio, distinta tanda de limpieza).
