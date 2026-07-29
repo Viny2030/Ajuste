@@ -3,19 +3,15 @@
 Script liviano para GitHub Actions — solo usa httpx, sin dependencias del proyecto.
 Descubre DAs presupuestarias en el BORA de los últimos 30 días y guarda en
 data/nuevas_das.json.
-
 No requiere DB ni pdfplumber — solo scraping del listado del BORA.
 """
-
 from __future__ import annotations
-
 import asyncio
 import json
 import os
 import re
 from datetime import date, datetime, timedelta
 from pathlib import Path
-
 import httpx
 
 BORA_BASE = "https://www.boletinoficial.gob.ar"
@@ -29,7 +25,6 @@ HEADERS_AJAX = {
     "Accept": "application/json, text/javascript, */*; q=0.01",
     "X-Requested-With": "XMLHttpRequest",
 }
-
 _KEYWORDS_OK = ["presupuest", "crédito", "credito", "modificac", "reasign"]
 _DESCARTE    = ["designacion", "designación", "estructura organizativa", "modulos", "módulos"]
 
@@ -38,10 +33,40 @@ def _limpiar(s: str) -> str:
     return re.sub(r'\s+', ' ', s).strip()
 
 
+async def _get_con_reintentos(
+    client: httpx.AsyncClient,
+    url: str,
+    *,
+    intentos: int = 4,
+    espera_base: float = 3.0,
+    **kwargs,
+) -> httpx.Response | None:
+    """
+    GET con reintentos y backoff exponencial.
+    Absorbe fallos transitorios de red/DNS (ej. "Temporary failure in name
+    resolution" en runners de GitHub Actions) para que no tumben todo el job.
+    Devuelve None si falla en todos los intentos, en vez de propagar la excepción.
+    """
+    ultimo_error: Exception | None = None
+    for intento in range(intentos):
+        try:
+            return await client.get(url, **kwargs)
+        except (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout, httpx.TimeoutException) as e:
+            ultimo_error = e
+            if intento < intentos - 1:
+                espera = espera_base * (2 ** intento)
+                print(f"  ⚠️  Error de red en {url} (intento {intento + 1}/{intentos}): {e}. Reintentando en {espera:.0f}s...")
+                await asyncio.sleep(espera)
+    print(f"  ❌ Falló definitivamente {url} tras {intentos} intentos: {ultimo_error}")
+    return None
+
+
 async def _obtener_fechas_anio(client: httpx.AsyncClient, anio: int, cookies: dict) -> list[str]:
     url = f"{BORA_BASE}/calendario/dias_publicacion/{anio}/primera"
     try:
-        r = await client.get(url, cookies=cookies, headers=HEADERS_AJAX, timeout=15)
+        r = await _get_con_reintentos(client, url, cookies=cookies, headers=HEADERS_AJAX, timeout=15)
+        if r is None:
+            return []
         raw = r.text.replace("&quot;", '"')
         parsed = json.loads(raw)
         if isinstance(parsed, str):
@@ -54,13 +79,13 @@ async def _obtener_fechas_anio(client: httpx.AsyncClient, anio: int, cookies: di
 async def _resolver_numero_da(client: httpx.AsyncClient, id_aviso: str, fecha_str: str, anio: str) -> tuple[str, str]:
     url = f"{BORA_BASE}/detalleAviso/primera/{id_aviso}/{fecha_str}"
     try:
-        r = await client.get(url, headers=HEADERS_HTML, timeout=15)
+        r = await _get_con_reintentos(client, url, headers=HEADERS_HTML, timeout=15)
+        if r is None:
+            return id_aviso, anio
         texto = r.text
-
         # No es una DA si contiene Ley NNNNN
         if re.search(r'\bley\s+\d+', texto[:500], re.IGNORECASE):
             return "", anio
-
         for pat in [
             r'Decisi[oó]n\s+Administrativa\s+N[°º]?\s*(\d+)[/\-](\d{4})',
             r'Decisi[oó]n\s+Administrativa\s+(\d+)/(\d{4})',
@@ -78,27 +103,29 @@ async def _resolver_numero_da(client: httpx.AsyncClient, id_aviso: str, fecha_st
 
 
 async def _scraper_fecha(client: httpx.AsyncClient, fecha_str: str) -> list[dict]:
-    try:
-        r = await client.get(f"{BORA_BASE}/seccion/primera/{fecha_str}", headers=HEADERS_HTML, timeout=15)
-        cookies = dict(r.cookies)
-    except Exception:
+    r = await _get_con_reintentos(client, f"{BORA_BASE}/seccion/primera/{fecha_str}", headers=HEADERS_HTML, timeout=15)
+    if r is None:
         return []
+    cookies = dict(r.cookies)
 
     html_total = ""
     for pag in range(1, 6):
+        r2 = await _get_con_reintentos(
+            client,
+            f"{BORA_BASE}/seccion/actualizar/primera",
+            params={"pag": str(pag), "fecha": fecha_str},
+            headers={**HEADERS_AJAX, "Referer": f"{BORA_BASE}/seccion/primera/{fecha_str}"},
+            cookies=cookies,
+            timeout=20,
+        )
+        if r2 is None:
+            break
         try:
-            r2 = await client.get(
-                f"{BORA_BASE}/seccion/actualizar/primera",
-                params={"pag": str(pag), "fecha": fecha_str},
-                headers={**HEADERS_AJAX, "Referer": f"{BORA_BASE}/seccion/primera/{fecha_str}"},
-                cookies=cookies,
-                timeout=20,
-            )
             data = r2.json()
-            html_total += data.get("html", "")
-            if not data.get("hay_mas_datos"):
-                break
         except Exception:
+            break
+        html_total += data.get("html", "")
+        if not data.get("hay_mas_datos"):
             break
         await asyncio.sleep(0.2)
 
@@ -108,7 +135,6 @@ async def _scraper_fecha(client: httpx.AsyncClient, fecha_str: str) -> list[dict
     anio = fecha_str[:4]
     resultados = []
     ids_con_anexo = set(re.findall(rf'detalleAviso/primera/(\d+)/{fecha_str}\?anexos=1', html_total))
-
     for id_aviso in ids_con_anexo:
         pos = html_total.find(f'href="/detalleAviso/primera/{id_aviso}/{fecha_str}"')
         if pos == -1:
@@ -117,7 +143,6 @@ async def _scraper_fecha(client: httpx.AsyncClient, fecha_str: str) -> list[dict
         if pos_div == -1 or pos_div > pos + 500:
             continue
         bloque = html_total[pos_div:html_total.find('</div>', pos_div) + 10]
-
         items  = re.findall(r'<p class="item">([^<]+)</p>', bloque)
         smalls = re.findall(r'<small>([^<]+)</small>', bloque)
         titulo    = _limpiar(items[0])  if items          else ""
@@ -166,7 +191,6 @@ async def _scraper_fecha(client: httpx.AsyncClient, fecha_str: str) -> list[dict
             "id_aviso_bora": id_aviso,
             "url_bora":      f"{BORA_BASE}/detalleAviso/primera/{id_aviso}/{fecha_str}",
         })
-
     return resultados
 
 
@@ -180,8 +204,8 @@ async def main():
             desde_dt = date.today() - timedelta(days=30)
     else:
         desde_dt = date.today() - timedelta(days=30)
-
     hasta_dt = date.today()
+
     desde_str = desde_dt.strftime("%Y%m%d")
     hasta_str = hasta_dt.strftime("%Y%m%d")
 
@@ -192,7 +216,10 @@ async def main():
         anios = list(range(desde_dt.year, hasta_dt.year + 1))
         fechas_habilitadas: set[str] = set()
         for anio in anios:
-            r = await client.get(f"{BORA_BASE}/seccion/primera/{anio}0102", headers=HEADERS_HTML, timeout=15)
+            r = await _get_con_reintentos(client, f"{BORA_BASE}/seccion/primera/{anio}0102", headers=HEADERS_HTML, timeout=15)
+            if r is None:
+                print(f"  ⚠️  No se pudo conectar al BORA para el año {anio} tras varios reintentos, se omite.")
+                continue
             cookies = dict(r.cookies)
             fechas = await _obtener_fechas_anio(client, anio, cookies)
             fechas_habilitadas.update(fechas)
