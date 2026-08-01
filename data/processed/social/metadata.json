@@ -1,20 +1,20 @@
 {
   "deis_publicaciones": {
     "url": "https://www.argentina.gob.ar/salud/deis/publicaciones",
-    "hash": "8c959c71202c0f59b9f81605494956a90c59f6bdb71eca3a5802c0bf1c919aef",
-    "ultima_revision": "2026-07-15T10:53:21.578765+00:00",
+    "hash": "27c88765a481743ef98f5465d8d0e2fc2350f00426354d319e6922961a7a7c4d",
+    "ultima_revision": "2026-08-01T10:29:31.228391+00:00",
     "cambio_detectado": true
   },
   "deis_datos_abiertos": {
     "url": "https://datos.salud.gob.ar/dataset/tasa-de-mortalidad-infantil",
     "hash": null,
-    "ultima_revision": "2026-07-15T10:53:22.117513+00:00",
+    "ultima_revision": "2026-08-01T10:29:31.750143+00:00",
     "cambio_detectado": false
   },
   "snic_suicidios": {
     "url": "https://www.argentina.gob.ar/seguridad/estadisticascriminales/datos",
     "hash": null,
-    "ultima_revision": "2026-07-15T10:53:23.729503+00:00",
+    "ultima_revision": "2026-08-01T10:29:32.941062+00:00",
     "cambio_detectado": false
   }
 }
