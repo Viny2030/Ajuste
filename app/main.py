@@ -1,11 +1,24 @@
 # app/main.py
 """
-FastAPI - Monitor de Ajuste Presupuestario (MAP) v2.3.0
+FastAPI - Monitor de Ajuste Presupuestario (MAP) v2.3.1
 Fixes v2.3.0:
   - por-inciso: HAVING corregido para Postgres (no acepta alias del SELECT)
   - /api/v1/analisis/inciso: nuevo endpoint alias de por-inciso
   - /api/v1/partidas/: corregido para usar presupuesto_base en lugar de modelo Partida
   - sector: tolera 2026 sin datos (muestra 0 en lugar de null)
+Fixes v2.3.1:
+  - Los endpoints que solo hacen consultas SQLAlchemy sincronicas (ranking,
+    por-inciso, inciso, sector, evolucion-real, partidas, normativa,
+    comparativa, status) pasan de "async def" a "def". FastAPI los corre
+    entonces en el threadpool en lugar de en el event loop: antes, al ser
+    "async def" con db.execute() bloqueante adentro, cada request bloqueaba
+    el event loop entero y las 3 llamadas concurrentes que dispara el
+    dashboard (status + ranking + por-inciso) se serializaban en vez de
+    correr en paralelo. Eso es lo que explica los 500 / timeouts
+    intermitentes bajo carga concurrente (ej. mientras corre el sync diario).
+  - base-monetaria (que sí necesita seguir siendo async por httpx.AsyncClient)
+    ahora corre su unica consulta sincrona (_get_tc_usd) via run_in_threadpool
+    en lugar de bloquear el loop directamente.
 """
 import uvicorn
 import httpx
@@ -18,6 +31,7 @@ from typing import List, Optional, Dict
 
 from fastapi import FastAPI, Depends, HTTPException, Query, BackgroundTasks
 from fastapi.responses import HTMLResponse
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, text
 
@@ -31,7 +45,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="Monitor de Ajuste Presupuestario (MAP)",
     description="Analisis del ajuste presupuestario 2023-2026.",
-    version="2.3.0",
+    version="2.3.1",
 )
 
 # Archivos estaticos
@@ -244,11 +258,11 @@ async def root():
 
 
 @app.get("/api/v1/status", tags=["Health"])
-async def status(db: Session = Depends(get_db)):
+def status(db: Session = Depends(get_db)):
     ipc = _get_ipc_factor(db)
     return {
         "app": "Monitor de Ajuste Presupuestario",
-        "version": "2.3.0",
+        "version": "2.3.1",
         "factor_ipc_acumulado": round(ipc, 4),
         "servidor_tiempo": datetime.utcnow().isoformat(),
     }
@@ -272,7 +286,7 @@ async def manual():
 # ── RANKING ───────────────────────────────────────────────────────────────────
 
 @app.get("/api/v1/analisis/ranking", tags=["Analisis"])
-async def ranking_ajuste(
+def ranking_ajuste(
     top_n: int = Query(20, ge=1, le=500, alias="top_n"),
     top: int = Query(20, ge=1, le=500),
     anio_base: int = Query(2023),
@@ -395,7 +409,7 @@ def _calcular_por_inciso(anio: int, db: Session) -> list:
 
 
 @app.get("/api/v1/analisis/por-inciso", tags=["Analisis"])
-async def analisis_por_inciso(
+def analisis_por_inciso(
     anio: int = Query(2026),
     db: Session = Depends(get_db),
 ):
@@ -403,7 +417,7 @@ async def analisis_por_inciso(
 
 
 @app.get("/api/v1/analisis/inciso", tags=["Analisis"])
-async def analisis_inciso(
+def analisis_inciso(
     inciso_id: Optional[str] = Query(None),
     anio: int = Query(2026),
     db: Session = Depends(get_db),
@@ -423,7 +437,7 @@ async def analisis_inciso(
 # ── SECTOR ────────────────────────────────────────────────────────────────────
 
 @app.get("/api/v1/analisis/sector", tags=["Analisis"])
-async def analisis_sector(
+def analisis_sector(
     sector: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
@@ -503,7 +517,7 @@ async def analisis_sector(
 # ── EVOLUCION REAL ────────────────────────────────────────────────────────────
 
 @app.get("/api/v1/analisis/evolucion-real", tags=["Analisis"])
-async def evolucion_real(
+def evolucion_real(
     jurisdiccion_id: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
@@ -551,7 +565,7 @@ async def evolucion_real(
 # ── PARTIDAS ──────────────────────────────────────────────────────────────────
 
 @app.get("/api/v1/partidas/", tags=["Partidas"])
-async def listar_partidas(
+def listar_partidas(
     jurisdiccion_id: Optional[str] = None,
     ejercicio: Optional[int] = None,
     inciso_id: Optional[str] = None,
@@ -623,7 +637,7 @@ async def macro_series():
 
 @app.get("/api/v1/macro/base-monetaria", tags=["Macro"])
 async def base_monetaria(db: Session = Depends(get_db)):
-    tc_usd = _get_tc_usd(db)
+    tc_usd = await run_in_threadpool(_get_tc_usd, db)
     async with httpx.AsyncClient(timeout=15) as client:
         try:
             # id 15 = Base monetaria, periodicidad DIARIA — pedir por rango de
@@ -680,14 +694,14 @@ async def base_monetaria(db: Session = Depends(get_db)):
 # ── NORMATIVA ─────────────────────────────────────────────────────────────────
 
 @app.get("/api/v1/normativa/", tags=["Normativa"])
-async def listar_normativa(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
+def listar_normativa(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
     items = db.query(models.Norma).offset(skip).limit(limit).all()
     total = db.query(func.count(models.Norma.id)).scalar()
     return {"total": total, "items": items}
 
 
 @app.get("/api/v1/normativa/{norma_id}", tags=["Normativa"])
-async def detalle_normativa(norma_id: int, db: Session = Depends(get_db)):
+def detalle_normativa(norma_id: int, db: Session = Depends(get_db)):
     norma = db.query(models.Norma).filter(models.Norma.id == norma_id).first()
     if not norma:
         raise HTTPException(status_code=404, detail="Norma no encontrada")
@@ -695,7 +709,7 @@ async def detalle_normativa(norma_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/api/v1/normativa/{norma_id}/partidas", tags=["Normativa"])
-async def partidas_por_norma(norma_id: int, db: Session = Depends(get_db)):
+def partidas_por_norma(norma_id: int, db: Session = Depends(get_db)):
     norma = db.query(models.Norma).filter(models.Norma.id == norma_id).first()
     if not norma:
         raise HTTPException(status_code=404, detail="Norma no encontrada")
@@ -705,7 +719,7 @@ async def partidas_por_norma(norma_id: int, db: Session = Depends(get_db)):
 # ── COMPARATIVA ───────────────────────────────────────────────────────────────
 
 @app.get("/api/v1/comparativa/", tags=["Comparativa"])
-async def comparativa(db: Session = Depends(get_db)):
+def comparativa(db: Session = Depends(get_db)):
     analizador = AnalizadorPresupuestario(db)
     ipc_factor = _get_ipc_factor(db)
     tc_usd     = _get_tc_usd(db)
@@ -723,7 +737,7 @@ async def trigger_scrape(background_tasks: BackgroundTasks):
 
 @app.get("/health", tags=["Health"])
 async def health():
-    return {"status": "ok", "version": "2.3.0", "timestamp": datetime.utcnow().isoformat()}
+    return {"status": "ok", "version": "2.3.1", "timestamp": datetime.utcnow().isoformat()}
 
 
 if __name__ == "__main__":
