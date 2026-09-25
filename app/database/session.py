@@ -13,6 +13,14 @@ if not DATABASE_URL:
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+# Forzar el driver psycopg2 (es el que está en requirements.txt), aunque la
+# variable venga como postgresql+psycopg:// (psycopg v3, no instalado)
+# Ojo: desde SQLAlchemy 2.1 "postgresql://" usa psycopg v3 por defecto,
+# asi que tambien hay que convertir el prefijo plano.
+for _prefijo in ("postgresql://", "postgresql+psycopg://", "postgresql+psycopg3://"):
+    if DATABASE_URL.startswith(_prefijo):
+        DATABASE_URL = DATABASE_URL.replace(_prefijo, "postgresql+psycopg2://", 1)
+
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
