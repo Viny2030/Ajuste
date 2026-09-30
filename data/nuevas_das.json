@@ -30,16 +30,6 @@
     "url_bora": "https://www.boletinoficial.gob.ar/detalleAviso/primera/344407/20260716"
   },
   {
-    "norma_id": "DA-867-2026",
-    "numero": "867",
-    "anio": 2026,
-    "fecha_boletin": "2026-09-04",
-    "titulo": "PRESUPUESTO",
-    "sumario": "DNU-2026-867-APN-PTE - Modificación.",
-    "id_aviso_bora": "346909",
-    "url_bora": "https://www.boletinoficial.gob.ar/detalleAviso/primera/346909/20260904"
-  },
-  {
     "norma_id": "DA-26-2026",
     "numero": "26",
     "anio": 2026,
@@ -48,5 +38,15 @@
     "sumario": "DA-2026-26-APN-JGM - Modificación.",
     "id_aviso_bora": "346911",
     "url_bora": "https://www.boletinoficial.gob.ar/detalleAviso/primera/346911/20260904"
+  },
+  {
+    "norma_id": "DA-867-2026",
+    "numero": "867",
+    "anio": 2026,
+    "fecha_boletin": "2026-09-04",
+    "titulo": "PRESUPUESTO",
+    "sumario": "DNU-2026-867-APN-PTE - Modificación.",
+    "id_aviso_bora": "346909",
+    "url_bora": "https://www.boletinoficial.gob.ar/detalleAviso/primera/346909/20260904"
   }
 ]
