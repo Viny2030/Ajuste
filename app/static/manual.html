@@ -791,7 +791,7 @@ total_orig = Σ(monto_original) para todos los programas del sector
         <div class="step-list">
           <div class="step">
             <div class="step-num">1</div>
-            <div class="step-content"><strong>Presupuesto:</strong> Los datos de crédito vigente se actualizan manualmente cuando el Ministerio de Economía publica nuevos archivos en Presupuesto Abierto. Se puede disparar manualmente desde el endpoint <code>/api/v1/scrape/trigger</code>.</div>
+            <div class="step-content"><strong>Presupuesto:</strong> El crédito vigente 2026 se actualiza todos los días con el workflow <em>Daily Budget Monitor</em>, que baja el dataset de Presupuesto Abierto (Ministerio de Economía). Las cifras reales usan un deflactor de precios promedio anuales (IPC del INDEC vía BCRA) y comparan crédito vigente contra crédito vigente.</div>
           </div>
           <div class="step">
             <div class="step-num">2</div>

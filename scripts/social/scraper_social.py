@@ -110,11 +110,11 @@ ULTIMO_DATO_CONOCIDO = {
     "suicidios": {
         "anio": 2024,
         "casos": 4249,
-        "tasa_por_100k": 9.8,
+        "tasa_por_100k": 9.0,  # ~9 c/100.000 según SNIC (antes 9,8: inconsistente con 4.249 casos)
         "var_absoluta_casos": 44,
         "var_pct_casos": 1.0,
-        "var_absoluta_tasa": 0.8,
-        "var_pct_tasa": 8.9,
+        "var_absoluta_tasa": 0.0,
+        "var_pct_tasa": 0.0,
         "es_record_historico": True,
         "principal_causa_muerte_violenta": True,
         "intentos_notificados_2023_2025": 15807,
@@ -366,7 +366,6 @@ def construir_payload(
                 "alertas": [
                     "21.276 muertes adicionales en mayores de 65 años vs. 2023",
                     "Los mayores de 85 años son el grupo más afectado (+10%)",
-                    "Vinculado a discontinuación de medicamentos PAMI y recortes en cobertura",
                 ],
             },
 
@@ -392,7 +391,6 @@ def construir_payload(
                     },
                 },
                 "contexto": {
-                    "vs_media_oms"             : "Tasa argentina (9,8) supera media global OMS (8,2)",
                     "principal_muerte_violenta": True,
                     "tendencia_decada"         : "Crecimiento del 27% desde 2014 (3.296 casos)",
                     "intentos_2023_2025"       : "15.807 intentos notificados (22/día promedio)",
@@ -400,7 +398,6 @@ def construir_payload(
                 "alertas": [
                     "Récord histórico absoluto en 2024",
                     "Primera causa de muerte violenta en Argentina desde 2023",
-                    "Tasa supera por primera vez el promedio mundial OMS",
                 ],
             },
         },

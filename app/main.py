@@ -735,47 +735,42 @@ async def base_monetaria(db: Session = Depends(get_db)):
 
 
 # ── NORMATIVA ─────────────────────────────────────────────────────────────────
+# Antes estos endpoints consultaban models.Norma (no existe: el modelo es
+# NormaJGM, y la tabla normas_jgm está vacía) y /comparativa llamaba a
+# AnalizadorPresupuestario.comparativa_total(), que no existe: los cuatro
+# daban error 500. Ahora /normativa/ sirve las normas presupuestarias que
+# descubre el workflow diario (data/nuevas_das.json) y el histórico procesado
+# (data/processed/das_presupuesto_2023_2026.json). /comparativa se quitó:
+# lo cubre /api/v1/analisis/sector.
+import json as _json
+from pathlib import Path as _Path
+
+_DATA = _Path(__file__).resolve().parents[1] / "data"
+
+
+def _leer_lista(ruta: _Path) -> list:
+    try:
+        d = _json.loads(ruta.read_text(encoding="utf-8"))
+        return d if isinstance(d, list) else []
+    except Exception:
+        return []
+
 
 @app.get("/api/v1/normativa/", tags=["Normativa"])
-def listar_normativa(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
-    items = db.query(models.Norma).offset(skip).limit(limit).all()
-    total = db.query(func.count(models.Norma.id)).scalar()
-    return {"total": total, "items": items}
-
-
-@app.get("/api/v1/normativa/{norma_id}", tags=["Normativa"])
-def detalle_normativa(norma_id: int, db: Session = Depends(get_db)):
-    norma = db.query(models.Norma).filter(models.Norma.id == norma_id).first()
-    if not norma:
-        raise HTTPException(status_code=404, detail="Norma no encontrada")
-    return norma
-
-
-@app.get("/api/v1/normativa/{norma_id}/partidas", tags=["Normativa"])
-def partidas_por_norma(norma_id: int, db: Session = Depends(get_db)):
-    norma = db.query(models.Norma).filter(models.Norma.id == norma_id).first()
-    if not norma:
-        raise HTTPException(status_code=404, detail="Norma no encontrada")
-    return {"norma_id": norma_id, "partidas": norma.partidas}
-
-
-# ── COMPARATIVA ───────────────────────────────────────────────────────────────
-
-@app.get("/api/v1/comparativa/", tags=["Comparativa"])
-def comparativa(db: Session = Depends(get_db)):
-    analizador = AnalizadorPresupuestario(db)
-    ipc_factor = _get_ipc_factor(db)
-    tc_usd     = _tc_promedio(2026)
-    return analizador.comparativa_total(ipc_factor=ipc_factor, tc_usd=tc_usd)
+def listar_normativa(skip: int = 0, limit: int = Query(50, le=500)):
+    recientes = _leer_lista(_DATA / "nuevas_das.json")
+    historico = _leer_lista(_DATA / "processed" / "das_presupuesto_2023_2026.json")
+    items = sorted(recientes + historico,
+                   key=lambda x: str(x.get("fecha_boletin", "")), reverse=True)
+    return {"total": len(items), "recientes_desde_bora": len(recientes),
+            "items": items[skip: skip + limit]}
 
 
 # ── SCRAPING / HEALTH ─────────────────────────────────────────────────────────
 
-@app.post("/api/v1/scrape/trigger", tags=["Scraping"])
-async def trigger_scrape(background_tasks: BackgroundTasks):
-    from scripts.scraper_bora import scrape_bora
-    background_tasks.add_task(scrape_bora)
-    return {"status": "scraping iniciado", "timestamp": datetime.utcnow().isoformat()}
+# Se quitó POST /api/v1/scrape/trigger: era público (sin autenticación) e
+# importaba scripts.scraper_bora, que no existe. El descubrimiento de normas
+# corre en el workflow "Daily BORA Discovery".
 
 
 @app.get("/health", tags=["Health"])

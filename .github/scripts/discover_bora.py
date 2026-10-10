@@ -181,8 +181,12 @@ async def _scraper_fecha(client: httpx.AsyncClient, fecha_str: str) -> list[dict
             if not numero or numero == id_aviso:
                 continue  # no se pudo resolver, skip
 
+        # Tipo real de norma: el BORA también publica DNU presupuestarios en
+        # esta búsqueda y antes todos quedaban etiquetados "DA-".
+        tipo = "DNU" if re.search(r"\bDNU-", sumario, re.IGNORECASE) else "DA"
         resultados.append({
-            "norma_id":      f"DA-{numero}-{anio_da}",
+            "norma_id":      f"{tipo}-{numero}-{anio_da}",
+            "tipo":          tipo,
             "numero":        numero,
             "anio":          int(anio_da),
             "fecha_boletin": f"{fecha_str[:4]}-{fecha_str[4:6]}-{fecha_str[6:]}",
@@ -236,7 +240,9 @@ async def main():
                     print(f"  ✅ {a['norma_id']} — {a['fecha_boletin']}")
             await asyncio.sleep(0.3)
 
-    normas = sorted(resultados.values(), key=lambda x: x["fecha_boletin"])
+    # Orden estable (fecha + id): antes dos normas del mismo día podían cambiar
+    # de orden entre corridas y generaban un commit diario sin datos nuevos.
+    normas = sorted(resultados.values(), key=lambda x: (x["fecha_boletin"], x["norma_id"]))
     print(f"\nTotal: {len(normas)} DAs encontradas")
 
     # Guardar resultado
