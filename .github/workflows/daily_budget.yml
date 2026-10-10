@@ -45,29 +45,33 @@ jobs:
             echo "Usando DATABASE_URL desde secret."
           fi
 
-      - name: Seed base 2023 si no existe DB
-        run: |
-          if [ ! -f sql_app.db ]; then
-            python -m scripts.seed_2023
-          else
-            echo "DB ya existe, salteando seed 2023."
-          fi
-
-      - name: Cargar presupuesto base 2026 si no existe
+      # Sólo carga 2023 si la tabla no tiene ese año. Antes miraba si existía
+      # el archivo sql_app.db, que en el runner nunca existe: con el secret
+      # configurado habría insertado 2023 completo otra vez cada día.
+      - name: Seed base 2023 sólo si falta
         run: |
           python -c "
-          from sqlalchemy import create_engine, text
-          import os
-          url = os.environ.get('DATABASE_URL', 'sqlite:///sql_app.db')
-          engine = create_engine(url)
+          from sqlalchemy import text
+          from app.database.session import engine
+          from app.database import models
+          models.Base.metadata.create_all(bind=engine)
           with engine.connect() as c:
-              n = c.execute(text('SELECT COUNT(1) FROM presupuesto_base WHERE ejercicio=2026')).scalar()
-              print(f'Filas 2026 en DB: {n}')
-              exit(0 if n > 0 else 1)
-          " && echo "2026 ya está en DB." || python -m scripts.load_2026_to_db
+              n = c.execute(text('SELECT COUNT(1) FROM presupuesto_base WHERE ejercicio=2023')).scalar()
+          print(f'Filas 2023 en DB: {n}')
+          raise SystemExit(0 if n > 0 else 1)
+          " && echo "2023 ya está cargado." || python -m scripts.seed_2023
 
-      - name: Sincronizar crédito vigente 2024/2025/2026
-        run: python -m scripts.sync_modificaciones
+      # Reemplaza 2026 con el dataset del día (antes sólo se cargaba "si no
+      # existía", así que quedaba congelado). Sin el secret DATABASE_URL
+      # (URL pública de la Postgres de Railway) esto escribiría en un SQLite
+      # descartable del runner: en ese caso se avisa y no se hace nada.
+      - name: Actualizar presupuesto 2026 en la base de producción
+        run: |
+          if [ -z "${{ secrets.DATABASE_URL }}" ]; then
+            echo "::warning::Falta el secret DATABASE_URL: no se actualiza la base de producción."
+            exit 0
+          fi
+          python -m scripts.actualizar_presupuesto --anio 2026
 
       - name: Commit DB actualizada
         run: |

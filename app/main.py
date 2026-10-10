@@ -39,6 +39,7 @@ from app.database import models, schemas
 from app.database.session import SessionLocal, engine
 from app.core.engine import AnalizadorPresupuestario, cargar_macro_indices
 from app.core.viz import generar_grafico_ajuste
+from app.core import deflactor
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -140,7 +141,6 @@ SECTORES: Dict[str, dict] = {
 
 # CONSTANTES MACRO
 IPC_FACTOR_ACUMULADO_FALLBACK = 10.53
-TC_USD_INICIO_2023            = 187.0
 TC_USD_FALLBACK               = 1395
 
 IPC_POR_ANIO_FALLBACK = {
@@ -160,7 +160,9 @@ def _sumar_presupuesto(
     programas: Optional[List[int]] = None,
     prg_excluir: Optional[Dict[int, List[int]]] = None,
 ) -> float:
-    campo = "monto_original" if ejercicio == 2023 else "monto_vigente"
+    # Se compara crédito VIGENTE contra crédito VIGENTE (antes: original 2023
+    # contra vigente 2026, que mezcla dos conceptos distintos).
+    campo = "monto_vigente"
     jur_in = ", ".join(f"'{j}'" for j in jurisdicciones)
 
     prg_clause = ""
@@ -190,60 +192,25 @@ def _sumar_presupuesto(
     return float(resultado or 0)
 
 
-def _get_ipc_factor(db: Session) -> float:
-    try:
-        filas = (
-            db.query(models.MacroIndice)
-            .filter(and_(
-                models.MacroIndice.tipo == "IPC_variacion_mensual",
-                models.MacroIndice.fecha >= date(2023, 1, 1),
-            ))
-            .order_by(models.MacroIndice.fecha)
-            .all()
-        )
-        if not filas:
-            return IPC_FACTOR_ACUMULADO_FALLBACK
-        factor = 1.0
-        for f in filas:
-            factor *= 1 + (float(f.valor) / 100)
-        return factor
-    except Exception:
-        return IPC_FACTOR_ACUMULADO_FALLBACK
+def _get_ipc_factor(db: Session = None, anio_base: int = 2023, anio_comp: int = 2026) -> float:
+    """Factor para pasar pesos de anio_comp a pesos de anio_base.
 
-
-def _get_tc_usd(db: Session) -> float:
+    Antes filtraba MacroIndice.tipo (campo inexistente: se llama "indicador"),
+    fallaba en silencio y devolvía siempre la constante 10,53 (inflación punta
+    a punta dic-2022 → may-2026). Ahora usa app/core/deflactor.py: relación de
+    precios promedio anuales, con datos del BCRA (o el CSV de respaldo).
     """
-    Devuelve el USD oficial actual.
+    return deflactor.factor(anio_base, anio_comp)
 
-    Nota (2026-07): esta función antes filtraba MacroIndice.tipo == "TC_USD_oficial",
-    pero el modelo real usa el campo `indicador` (no `tipo`) — eso lanzaba
-    AttributeError, silenciado por el except de abajo. Además la tabla
-    macro_indices en Postgres (producción) nunca se puebla: el único script
-    que la llena (scripts/seed_macro_indices.py) escribe en un sqlite3 local,
-    no en la base de Railway. El resultado neto era devolver siempre
-    TC_USD_FALLBACK = 1395 sin que nadie se enterara.
 
-    Se prioriza ahora cargar_macro_indices() (app/core/engine.py), que sí
-    consulta la API oficial BCRA v4.0 en vivo. La tabla MacroIndice queda
-    como fallback por si en algún momento se la puebla correctamente.
-    """
-    try:
-        macro = cargar_macro_indices()
-        if macro.get("usd_actual"):
-            return float(macro["usd_actual"])
-    except Exception as e:
-        logging.getLogger("map.macro").warning(f"cargar_macro_indices() falló en _get_tc_usd: {e}")
+def _get_tc_usd(db: Session = None) -> float:
+    """Tipo de cambio oficial actual (para valuar stocks del día, p. ej. base monetaria)."""
+    return deflactor.tc_actual() or TC_USD_FALLBACK
 
-    try:
-        fila = (
-            db.query(models.MacroIndice)
-            .filter(models.MacroIndice.indicador == "TC_oficial_venta")
-            .order_by(models.MacroIndice.fecha.desc())
-            .first()
-        )
-        return float(fila.valor) if fila else TC_USD_FALLBACK
-    except Exception:
-        return TC_USD_FALLBACK
+
+def _tc_promedio(anio: int) -> float:
+    """Tipo de cambio promedio del año, para pasar créditos anuales a dólares."""
+    return deflactor.tc_promedio(anio)
 
 
 # ── ROOT ──────────────────────────────────────────────────────────────────────
@@ -264,6 +231,7 @@ def status(db: Session = Depends(get_db)):
         "app": "Monitor de Ajuste Presupuestario",
         "version": "2.3.1",
         "factor_ipc_acumulado": round(ipc, 4),
+        "deflactor": deflactor.metadata(),
         "servidor_tiempo": datetime.utcnow().isoformat(),
     }
 
@@ -294,54 +262,58 @@ def ranking_ajuste(
     db: Session = Depends(get_db),
 ):
     n = top_n if top_n != 20 else top
-    ipc_factor = _get_ipc_factor(db)
-    tc_usd     = _get_tc_usd(db)
+    ipc_factor = _get_ipc_factor(db, anio_base, anio_comp)
+    tc_base    = _tc_promedio(anio_base)
+    tc_comp    = _tc_promedio(anio_comp)
 
+    # Se agrega cada año por separado y recién después se cruza. Antes se hacía
+    # un LEFT JOIN partida-a-partida y luego SUM, con lo que cada suma quedaba
+    # multiplicada por la cantidad de filas del otro año (cociente distorsionado).
     sql = text("""
-        SELECT
-            b.jurisdiccion_id,
-            b.jurisdiccion_desc,
-            b.programa_id,
-            b.programa_desc,
-            b.inciso_id,
-            b.inciso_desc,
-            COALESCE(SUM(b.monto_original), 0) AS monto_original,
-            COALESCE(SUM(c.monto_vigente),  0) AS monto_vigente
-        FROM presupuesto_base b
-        LEFT JOIN presupuesto_base c
-            ON  c.jurisdiccion_id = b.jurisdiccion_id
-            AND c.programa_id     = b.programa_id
-            AND c.inciso_id       = b.inciso_id
-            AND c.ejercicio       = :anio_comp
-        WHERE b.ejercicio = :anio_base
-          AND b.monto_original > 0
-        GROUP BY
-            b.jurisdiccion_id, b.jurisdiccion_desc,
-            b.programa_id,     b.programa_desc,
-            b.inciso_id,       b.inciso_desc
-        HAVING COALESCE(SUM(c.monto_vigente), 0) > 0
-        ORDER BY
-            (COALESCE(SUM(c.monto_vigente), 0) / :ipc / COALESCE(SUM(b.monto_original), 1)) ASC
+        WITH b AS (
+            SELECT jurisdiccion_id, programa_id, inciso_id,
+                   MAX(jurisdiccion_desc) AS jurisdiccion_desc,
+                   MAX(programa_desc)     AS programa_desc,
+                   MAX(inciso_desc)       AS inciso_desc,
+                   COALESCE(SUM(monto_vigente), 0)  AS base_vigente,
+                   COALESCE(SUM(monto_original), 0) AS base_original
+            FROM presupuesto_base
+            WHERE ejercicio = :anio_base
+            GROUP BY jurisdiccion_id, programa_id, inciso_id
+        ),
+        c AS (
+            SELECT jurisdiccion_id, programa_id, inciso_id,
+                   COALESCE(SUM(monto_vigente), 0) AS comp_vigente
+            FROM presupuesto_base
+            WHERE ejercicio = :anio_comp
+            GROUP BY jurisdiccion_id, programa_id, inciso_id
+        )
+        SELECT b.*, c.comp_vigente
+        FROM b
+        JOIN c ON  c.jurisdiccion_id = b.jurisdiccion_id
+               AND c.programa_id     = b.programa_id
+               AND c.inciso_id       = b.inciso_id
+        WHERE b.base_vigente > 0 AND c.comp_vigente > 0
+        ORDER BY (c.comp_vigente / b.base_vigente) ASC
         LIMIT :top_n
     """)
 
     rows = db.execute(sql, {
         "anio_base": anio_base,
         "anio_comp": anio_comp,
-        "ipc":       ipc_factor,
         "top_n":     n,
     }).fetchall()
 
     resultado = []
     for r in rows:
-        orig     = float(r.monto_original) or 1
-        vig      = float(r.monto_vigente)
-        var_nom  = (vig / orig - 1) * 100
-        var_real = (vig / ipc_factor / orig - 1) * 100
+        base     = float(r.base_vigente) or 1
+        vig      = float(r.comp_vigente)
+        var_nom  = (vig / base - 1) * 100
+        var_real = (vig / ipc_factor / base - 1) * 100
         lic      = var_nom - var_real
         var_usd  = (
-            (vig / tc_usd) / (orig / TC_USD_INICIO_2023) - 1
-        ) * 100 if tc_usd and TC_USD_INICIO_2023 else None
+            (vig / tc_comp) / (base / tc_base) - 1
+        ) * 100 if tc_comp and tc_base else None
 
         resultado.append({
             "jurisdiccion_id":       r.jurisdiccion_id,
@@ -349,7 +321,8 @@ def ranking_ajuste(
             "programa_id":           r.programa_id,
             "programa_desc":         r.programa_desc,
             "inciso_id":             r.inciso_id,
-            "monto_original":        round(orig, 0),
+            "monto_base":            round(base, 0),          # crédito vigente año base
+            "monto_original":        round(float(r.base_original), 0),  # referencia: crédito inicial ley
             "monto_vigente":         round(vig,  0),
             "variacion_nominal_pct": round(var_nom,  1),
             "variacion_real_pct":    round(var_real, 1),
@@ -364,6 +337,7 @@ def ranking_ajuste(
             "Usar /api/v1/analisis/sector para sectores correctos."
         ),
         "ipc_factor": round(ipc_factor, 4),
+        "deflactor":  deflactor.metadata(anio_base, anio_comp),
         "ranking":    resultado,
     }
 
@@ -371,18 +345,19 @@ def ranking_ajuste(
 # ── POR INCISO ────────────────────────────────────────────────────────────────
 
 def _calcular_por_inciso(anio: int, db: Session) -> list:
-    ipc_factor = _get_ipc_factor(db)
+    ipc_factor = _get_ipc_factor(db, 2023, anio)
 
     sql = text("""
         SELECT
             inciso_id,
-            inciso_desc,
+            MAX(inciso_desc) AS inciso_desc,
+            SUM(CASE WHEN ejercicio = 2023  THEN monto_vigente  ELSE 0 END) AS total_base,
             SUM(CASE WHEN ejercicio = 2023  THEN monto_original ELSE 0 END) AS total_original,
             SUM(CASE WHEN ejercicio = :anio THEN monto_vigente  ELSE 0 END) AS total_vigente
         FROM presupuesto_base
         WHERE ejercicio IN (2023, :anio)
-        GROUP BY inciso_id, inciso_desc
-        HAVING SUM(CASE WHEN ejercicio = 2023 THEN monto_original ELSE 0 END) > 0
+        GROUP BY inciso_id
+        HAVING SUM(CASE WHEN ejercicio = 2023 THEN monto_vigente ELSE 0 END) > 0
         ORDER BY inciso_id
     """)
 
@@ -390,15 +365,16 @@ def _calcular_por_inciso(anio: int, db: Session) -> list:
 
     resultado = []
     for r in rows:
-        orig     = float(r.total_original) or 1
+        base     = float(r.total_base) or 1
         vig      = float(r.total_vigente)
-        var_nom  = (vig / orig - 1) * 100
-        var_real = (vig / ipc_factor / orig - 1) * 100
+        var_nom  = (vig / base - 1) * 100
+        var_real = (vig / ipc_factor / base - 1) * 100
 
         resultado.append({
             "inciso_id":              r.inciso_id,
             "inciso_desc":            r.inciso_desc,
-            "total_original":         round(orig, 0),
+            "total_base_2023":        round(base, 0),   # crédito vigente 2023
+            "total_original":         round(float(r.total_original), 0),  # referencia
             "total_vigente":          round(vig,  0),
             "total_real_moneda_2023": round(vig / ipc_factor, 0),
             "variacion_nominal_pct":  round(var_nom,  1),
@@ -448,7 +424,8 @@ def analisis_sector(
         )
 
     ipc_factor = _get_ipc_factor(db)
-    tc_usd     = _get_tc_usd(db)
+    tc_usd     = _tc_promedio(2026)
+    tc_2023    = _tc_promedio(2023)
     sectores_a_calcular = {sector: SECTORES[sector]} if sector else SECTORES
 
     hay_2026 = db.execute(
@@ -472,8 +449,8 @@ def analisis_sector(
         else:
             var_nominal = var_real_ipc = None
 
-        if monto_2023 > 0 and monto_2026 and TC_USD_INICIO_2023 > 0 and tc_usd > 0:
-            monto_2023_usd = monto_2023 / TC_USD_INICIO_2023
+        if monto_2023 > 0 and monto_2026 and tc_2023 > 0 and tc_usd > 0:
+            monto_2023_usd = monto_2023 / tc_2023
             monto_2026_usd = monto_2026 / tc_usd
             var_real_usd   = (monto_2026_usd / monto_2023_usd - 1) * 100
         else:
@@ -488,7 +465,7 @@ def analisis_sector(
             "jur_2026":                 cfg["jur_2026"],
             "prg_2023":                 cfg.get("prg_2023"),
             "prg_2026":                 cfg.get("prg_2026"),
-            "credito_original_2023_mm": round(monto_2023 / 1e6, 1),
+            "credito_vigente_2023_mm":  round(monto_2023 / 1e6, 1),
             "credito_vigente_2026_mm":  round(monto_2026 / 1e6, 1) if monto_2026 else None,
             "var_nominal_pct":          round(var_nominal,  1) if var_nominal  is not None else None,
             "var_real_ipc_pct":         round(var_real_ipc, 1) if var_real_ipc is not None else None,
@@ -503,8 +480,9 @@ def analisis_sector(
     return {
         "generado_en":          datetime.utcnow().isoformat(),
         "ipc_factor_acumulado": round(ipc_factor, 4),
-        "tc_usd_vigente":       round(tc_usd, 2),
-        "tc_usd_inicio_2023":   TC_USD_INICIO_2023,
+        "tc_usd_vigente":       round(tc_usd, 2),   # promedio 2026
+        "tc_usd_inicio_2023":   round(tc_2023, 2),  # promedio 2023
+        "deflactor":            deflactor.metadata(),
         "hay_datos_2026":       bool(hay_2026),
         "advertencia_mapeo": (
             "Obra publica 2026 en jur 50 prg especificos. "
@@ -521,7 +499,6 @@ def evolucion_real(
     jurisdiccion_id: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
-    ipc_factor = _get_ipc_factor(db)
     jur_clause = "AND jurisdiccion_id = :jur" if jurisdiccion_id else ""
     sql = text(f"""
         SELECT ejercicio,
@@ -535,21 +512,17 @@ def evolucion_real(
     params = {"jur": str(jurisdiccion_id)} if jurisdiccion_id else {}
     rows = db.execute(sql, params).fetchall()
 
-    IPC_POR_ANIO = {2023: 1.0, 2024: 3.2, 2025: 4.21, 2026: ipc_factor}
-
+    # Mismo criterio para todos los años (antes: 3,2 / 4,21 / 10,53 mezclaba
+    # promedios anuales con inflación punta a punta y fabricaba un -55 % en 2026).
     resultado = []
-    for i, r in enumerate(rows):
+    prev_real = None
+    for r in rows:
         anio     = r.ejercicio
         nom      = float(r.total_vigente or r.total_original or 0)
-        ipc_anio = IPC_POR_ANIO.get(anio, ipc_factor)
-        real     = nom / ipc_anio
-
-        if i == 0:
-            var_yoy = None
-        else:
-            prev_nom  = float(rows[i-1].total_vigente or rows[i-1].total_original or 1)
-            prev_real = prev_nom / IPC_POR_ANIO.get(rows[i-1].ejercicio, ipc_factor)
-            var_yoy   = (real / prev_real - 1) * 100 if prev_real else None
+        ipc_anio = _get_ipc_factor(db, 2023, anio)
+        real     = nom / ipc_anio if ipc_anio else nom
+        var_yoy  = (real / prev_real - 1) * 100 if prev_real else None
+        prev_real = real
 
         resultado.append({
             "ejercicio":              anio,
@@ -722,7 +695,7 @@ def partidas_por_norma(norma_id: int, db: Session = Depends(get_db)):
 def comparativa(db: Session = Depends(get_db)):
     analizador = AnalizadorPresupuestario(db)
     ipc_factor = _get_ipc_factor(db)
-    tc_usd     = _get_tc_usd(db)
+    tc_usd     = _tc_promedio(2026)
     return analizador.comparativa_total(ipc_factor=ipc_factor, tc_usd=tc_usd)
 
 

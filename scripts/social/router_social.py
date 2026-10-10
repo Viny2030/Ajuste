@@ -10,9 +10,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from datetime import datetime
 
-IPC_FACTOR  = 10.53
-TC_USD_2023 = 187.0
-TC_USD_2026 = 1395.0
+from app.core import deflactor
+
+# Antes: IPC_FACTOR = 10.53, TC_USD_2023 = 187 y TC_USD_2026 = 1395 fijos.
+# Ahora se usan el deflactor de precios promedio y el TC promedio de cada año
+# (app/core/deflactor.py), igual que el resto de la API.
 
 SECTORES_SOCIAL = {
     "jubilaciones": {
@@ -32,10 +34,10 @@ SECTORES_SOCIAL = {
         "subtitulo": "Inciso 1 Personal — todas las jurisdicciones 2023 → 2026",
         "icon":      "👷",
         "color":     "#1a5276",
-        "jur_2023":  ["1","5","10","20","25","30","35","40","41","45","50","80","88","89","90","91"],
+        "jur_2023":  None,  # todas: la lista fija no coincidía entre 2023 y 2026
         "prg_2023":  None,
         "inciso":    "1",
-        "jur_2026":  ["1","5","10","20","25","30","35","40","41","45","50","80","88","89","90","91"],
+        "jur_2026":  None,
         "prg_2026":  None,
         "fuente":    "Presupuesto Abierto · Inciso 1 Personal",
         "alertas":   ["Incluye personal civil y fuerzas de seguridad", "No incluye empresas públicas"],
@@ -57,10 +59,10 @@ SECTORES_SOCIAL = {
         "subtitulo": "Inciso 1 Personal como proxy de dotación 2023 → 2026",
         "icon":      "🏛️",
         "color":     "#7d6608",
-        "jur_2023":  ["1","5","10","20","25","30","35","40","41","45","50","80","88","89","90","91"],
+        "jur_2023":  None,  # todas: la lista fija no coincidía entre 2023 y 2026
         "prg_2023":  None,
         "inciso":    "1",
-        "jur_2026":  ["1","5","10","20","25","30","35","40","41","45","50","80","88","89","90","91"],
+        "jur_2026":  None,
         "prg_2026":  None,
         "fuente":    "Presupuesto Abierto · Inciso 1 Personal (proxy dotación)",
         "alertas":   ["Dato estimado: masa salarial no refleja cantidad exacta de agentes", "Reducción real implica ajuste salarial y/o bajas de personal"],
@@ -84,9 +86,11 @@ SECTORES_SOCIAL = {
 def _sumar(db: Session, jurs: list, ejercicio: int,
            programas: list = None, excluir_prg: list = None,
            inciso: str = None) -> float:
-    campo = "monto_original" if ejercicio == 2023 else "monto_vigente"
-    jur_in = ", ".join(f"'{j}'" for j in jurs)
-    clauses = [f"ejercicio = {ejercicio}", f"jurisdiccion_id IN ({jur_in})"]
+    campo = "monto_vigente"  # vigente contra vigente (antes: original 2023)
+    clauses = [f"ejercicio = {ejercicio}"]
+    if jurs:
+        jur_in = ", ".join(f"'{j}'" for j in jurs)
+        clauses.append(f"jurisdiccion_id IN ({jur_in})")
     if programas:
         prg_in = ", ".join(f"'{p}'" for p in programas)
         clauses.append(f"programa_id IN ({prg_in})")
@@ -108,10 +112,13 @@ def _build_kpi(db: Session, clave: str, cfg: dict) -> dict:
                    excluir_prg=cfg.get("excluir_2026"),
                    inciso=cfg.get("inciso"))
 
+    ipc_factor = deflactor.factor(2023, 2026)
+    tc_2023 = deflactor.tc_promedio(2023)
+    tc_2026 = deflactor.tc_promedio(2026)
     var_nominal  = (m2026 / m2023 - 1) * 100 if m2023 > 0 and m2026 > 0 else None
-    var_real_ipc = (m2026 / IPC_FACTOR / m2023 - 1) * 100 if m2023 > 0 and m2026 > 0 else None
-    usd_2023 = m2023 / TC_USD_2023 if m2023 > 0 else None
-    usd_2026 = m2026 / TC_USD_2026 if m2026 > 0 else None
+    var_real_ipc = (m2026 / ipc_factor / m2023 - 1) * 100 if m2023 > 0 and m2026 > 0 else None
+    usd_2023 = m2023 / tc_2023 if m2023 > 0 and tc_2023 else None
+    usd_2026 = m2026 / tc_2026 if m2026 > 0 and tc_2026 else None
     var_usd  = (usd_2026 / usd_2023 - 1) * 100 if usd_2023 and usd_2026 else None
 
     # Formato compatible con main.html loadSocial()
@@ -142,9 +149,9 @@ def _build_kpi(db: Session, clave: str, cfg: dict) -> dict:
         "monto_2023_usd_mm": round(usd_2023 / 1e6, 1) if usd_2023 else None,
         "monto_2026_usd_mm": round(usd_2026 / 1e6, 1) if usd_2026 else None,
         "var_usd_pct":       round(var_usd, 1) if var_usd is not None else None,
-        "ipc_factor":        IPC_FACTOR,
-        "tc_usd_2023":       TC_USD_2023,
-        "tc_usd_2026":       TC_USD_2026,
+        "ipc_factor":        round(ipc_factor, 4),
+        "tc_usd_2023":       round(tc_2023, 2),
+        "tc_usd_2026":       round(tc_2026, 2),
     }
 
 
@@ -167,9 +174,10 @@ async def social_kpis(db: Session = Depends(get_db_dependency)):
         "generado_en":        datetime.utcnow().isoformat(),
         "ultima_actualizacion": datetime.utcnow().isoformat(),
         "comparativa":        "2023 vs 2026",
-        "ipc_acumulado":      IPC_FACTOR,
-        "tc_usd_2023":        TC_USD_2023,
-        "tc_usd_2026":        TC_USD_2026,
+        "ipc_acumulado":      round(deflactor.factor(2023, 2026), 4),
+        "tc_usd_2023":        round(deflactor.tc_promedio(2023), 2),
+        "tc_usd_2026":        round(deflactor.tc_promedio(2026), 2),
+        "deflactor":          deflactor.metadata(),
         "kpis":               kpis,
     }
 
