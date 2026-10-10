@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "ultima_actualizacion": "2026-10-01T09:09:11.669620+00:00",
+    "ultima_actualizacion": "2026-10-10T19:34:46.066228+00:00",
     "periodo_base": "Diciembre 2023 (inicio gestión Milei)",
     "ultimo_dato_disponible": "Anuario 2024 (DEIS) / Informe 2024 (SNIC)",
     "proxima_revision": "Anuario DEIS 2025 / SNIC 2025 (sin fecha de publicación)",
@@ -145,8 +145,7 @@
       ],
       "alertas": [
         "21.276 muertes adicionales en mayores de 65 años vs. 2023",
-        "Los mayores de 85 años son el grupo más afectado (+10%)",
-        "Vinculado a discontinuación de medicamentos PAMI y recortes en cobertura"
+        "Los mayores de 85 años son el grupo más afectado (+10%)"
       ]
     },
     "suicidios": {
@@ -159,11 +158,11 @@
       "ultimo_dato": {
         "anio": 2024,
         "casos": 4249,
-        "tasa_por_100k": 9.8,
+        "tasa_por_100k": 9.0,
         "var_absoluta_casos": 44,
         "var_pct_casos": 1.0,
-        "var_absoluta_tasa": 0.8,
-        "var_pct_tasa": 8.9,
+        "var_absoluta_tasa": 0.0,
+        "var_pct_tasa": 0.0,
         "es_record_historico": true,
         "principal_causa_muerte_violenta": true,
         "intentos_notificados_2023_2025": 15807,
@@ -178,21 +177,19 @@
           "direccion": "sube"
         },
         "tasa": {
-          "absoluta": 0.8,
-          "porcentual": 8.9,
+          "absoluta": 0.0,
+          "porcentual": 0.0,
           "direccion": "sube"
         }
       },
       "contexto": {
-        "vs_media_oms": "Tasa argentina (9,8) supera media global OMS (8,2)",
         "principal_muerte_violenta": true,
         "tendencia_decada": "Crecimiento del 27% desde 2014 (3.296 casos)",
         "intentos_2023_2025": "15.807 intentos notificados (22/día promedio)"
       },
       "alertas": [
         "Récord histórico absoluto en 2024",
-        "Primera causa de muerte violenta en Argentina desde 2023",
-        "Tasa supera por primera vez el promedio mundial OMS"
+        "Primera causa de muerte violenta en Argentina desde 2023"
       ]
     }
   }
