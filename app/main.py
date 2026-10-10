@@ -310,7 +310,8 @@ def ranking_ajuste(
         vig      = float(r.comp_vigente)
         var_nom  = (vig / base - 1) * 100
         var_real = (vig / ipc_factor / base - 1) * 100
-        lic      = var_nom - var_real
+        # Descomposición aditiva: real = recorte nominal + licuación (ver /analisis/licuacion)
+        lic      = var_real - min(var_nom, 0.0)
         var_usd  = (
             (vig / tc_comp) / (base / tc_base) - 1
         ) * 100 if tc_comp and tc_base else None
@@ -328,7 +329,12 @@ def ranking_ajuste(
             "variacion_real_pct":    round(var_real, 1),
             "licuacion_pct":         round(lic,      1),
             "ajuste_usd_pct":        round(var_usd,  1) if var_usd is not None else None,
-            "estado_ajuste":         "REDUCCION" if var_real < 0 else "INCREMENTO",
+            "ajuste_nominal_abs":    round(vig - base, 0),
+            "ajuste_real_abs":       round(vig / ipc_factor - base, 0),
+            "ajuste_usd_abs":        round(vig / tc_comp - base / tc_base, 0) if tc_comp and tc_base else None,
+            # Con tilde: es lo que compara la página (antes "REDUCCION" hacía que
+            # el filtro "solo reducciones" no devolviera nada)
+            "estado_ajuste":         "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
         })
 
     return {
@@ -533,6 +539,70 @@ def evolucion_real(
         })
 
     return resultado
+
+
+# ── LICUACIÓN VS RECORTE ──────────────────────────────────────────────────────
+
+@app.get("/api/v1/analisis/licuacion", tags=["Analisis"])
+def licuacion(
+    anio_base: int = Query(2023),
+    anio_comp: int = Query(2026),
+    db: Session = Depends(get_db),
+):
+    """Descomposición de la variación real por jurisdicción (todas las partidas,
+    ponderado por monto).
+
+        variación real (%) = recorte nominal (pp) + licuación (pp)
+        recorte nominal = variación nominal si es negativa (si no, 0)
+        licuación       = el resto: pérdida por no actualizar el crédito al
+                          ritmo de la inflación (negativa) o ganancia real (positiva)
+
+    Antes la página promediaba sin ponderar sólo los 500 programas con mayor
+    caída y llamaba "licuación" a la resta nominal − real.
+    Sólo se comparan jurisdicciones con el mismo código en ambos años; las
+    reorganizadas (p. ej. 57, 64, 65, 70, 75, 85 → 50/88) se listan aparte.
+    """
+    ipc = _get_ipc_factor(db, anio_base, anio_comp)
+    rows = db.execute(text("""
+        SELECT jurisdiccion_id, MAX(jurisdiccion_desc) AS jurisdiccion_desc,
+               SUM(CASE WHEN ejercicio = :b THEN monto_vigente ELSE 0 END) AS base,
+               SUM(CASE WHEN ejercicio = :c THEN monto_vigente ELSE 0 END) AS comp
+        FROM presupuesto_base
+        WHERE ejercicio IN (:b, :c)
+        GROUP BY jurisdiccion_id
+    """), {"b": anio_base, "c": anio_comp}).fetchall()
+
+    def fila(nombre, base, comp, jid=None):
+        nom = (comp / base - 1) * 100
+        real = (comp / ipc / base - 1) * 100
+        recorte = min(nom, 0.0)
+        return {
+            "jurisdiccion_id": jid, "jurisdiccion": nombre,
+            "base": round(base, 0), "vigente": round(comp, 0),
+            "variacion_nominal_pct": round(nom, 1),
+            "variacion_real_pct": round(real, 1),
+            "recorte_nominal_pp": round(recorte, 1),
+            "licuacion_pp": round(real - recorte, 1),
+        }
+
+    comparables, sin_equivalente = [], []
+    tb = tc = 0.0
+    for r in rows:
+        b, c = float(r.base or 0), float(r.comp or 0)
+        if b > 0 and c > 0:
+            comparables.append(fila(r.jurisdiccion_desc, b, c, r.jurisdiccion_id))
+            tb += b; tc += c
+        elif b > 0 or c > 0:
+            sin_equivalente.append({"jurisdiccion_id": r.jurisdiccion_id,
+                                    "jurisdiccion": r.jurisdiccion_desc,
+                                    "solo_en": anio_base if b > 0 else anio_comp})
+    comparables.sort(key=lambda x: x["variacion_real_pct"])
+    return {
+        "deflactor": deflactor.metadata(anio_base, anio_comp),
+        "total_comparable": fila("Total jurisdicciones comparables", tb, tc) if tb else None,
+        "jurisdicciones": comparables,
+        "sin_equivalente_directo": sin_equivalente,
+    }
 
 
 # ── PARTIDAS ──────────────────────────────────────────────────────────────────

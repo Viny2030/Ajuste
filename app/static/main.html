@@ -232,10 +232,9 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
     <div class="tab-sep"></div>
     <button class="tab tab-sector" onclick="sw('salud',this);loadSectorAPI('salud')">🏥 salud</button>
     <button class="tab tab-sector" onclick="sw('jubilaciones',this);loadSectorAPI('jubilaciones')">👴 jubilaciones</button>
-    <button class="tab tab-sector" onclick="sw('ninez',this);loadSectorAPI('ninez')">👶 niñez</button>
+    <button class="tab tab-sector" onclick="sw('ninez',this);loadSectorAPI('ninez')">📚 capital humano</button>
     <button class="tab tab-sector" onclick="sw('obra-publica',this);loadSectorAPI('obra-publica')">🏗️ obra pública</button>
     <button class="tab tab-sector" onclick="sw('salario',this);renderSector('salario')">💼 salario público</button>
-    <button class="tab tab-sector" onclick="sw('educacion',this);loadSectorAPI('educacion')">📚 educación</button>
     <div class="tab-sep"></div>
     <button class="tab" onclick="sw('social',this);loadSocial()">🏥 impacto social</button>
   </div>
@@ -324,13 +323,14 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
   <!-- LICUACIÓN VS RECORTE -->
   <div class="panel" id="tab-licuacion">
     <div class="kpi-grid" style="margin-bottom:16px;">
-      <div class="kpi" style="border-left:4px solid #b46414;"><div class="kpi-label">ajuste total nominal</div><div class="kpi-value amber" id="lv-kpi-nom">—</div></div>
-      <div class="kpi" style="border-left:4px solid #c0392b;"><div class="kpi-label">recorte real</div><div class="kpi-value red" id="lv-kpi-recorte">—</div></div>
-      <div class="kpi" style="border-left:4px solid #d97706;"><div class="kpi-label">licuación</div><div class="kpi-value amber" id="lv-kpi-lic">—</div></div>
-      <div class="kpi" style="border-left:4px solid #5b2d8e;"><div class="kpi-label">jurisdicciones</div><div class="kpi-value" id="lv-kpi-jur">—</div></div>
+      <div class="kpi" style="border-left:4px solid #b46414;"><div class="kpi-label">variación nominal total</div><div class="kpi-value amber" id="lv-kpi-nom">—</div></div>
+      <div class="kpi" style="border-left:4px solid #c0392b;"><div class="kpi-label">variación real total</div><div class="kpi-value red" id="lv-kpi-recorte">—</div></div>
+      <div class="kpi" style="border-left:4px solid #d97706;"><div class="kpi-label">licuación (pp)</div><div class="kpi-value amber" id="lv-kpi-lic">—</div></div>
+      <div class="kpi" style="border-left:4px solid #5b2d8e;"><div class="kpi-label">jurisdicciones comparables</div><div class="kpi-value" id="lv-kpi-jur">—</div></div>
     </div>
     <div class="card" style="margin-bottom:16px;">
       <div class="card-title">composición del ajuste por jurisdicción</div>
+      <div style="font-size:11px;color:#888;margin-bottom:8px;">Variación real = recorte nominal (baja en pesos) + licuación (crédito que no acompañó la inflación). Todas las partidas, ponderado por monto. <span id="lv-nota"></span></div>
       <div class="filters">
         <select id="lv-orden" onchange="renderLicuacion()"><option value="lic">por licuación</option><option value="recorte">por recorte real</option><option value="total">por ajuste total</option></select>
         <select id="lv-top" onchange="renderLicuacion()"><option value="15">top 15</option><option value="25" selected>top 25</option><option value="999">todas</option></select>
@@ -344,7 +344,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
     </div>
     <div class="card">
       <div class="card-title">tabla — jurisdicciones</div>
-      <div class="th" style="grid-template-columns:2fr 80px 80px 90px 90px 80px;"><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">recorte %</span><span class="nr">tipo</span></div>
+      <div class="th" style="grid-template-columns:2fr 80px 80px 90px 90px 80px;"><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación (pp)</span><span class="nr">recorte nominal (pp)</span><span class="nr">tipo</span></div>
       <div id="tbl-licuacion"></div>
     </div>
   </div>
@@ -362,7 +362,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
 
   <!-- JUBILACIONES -->
   <div class="panel sector-jubilaciones" id="tab-jubilaciones">
-    <div class="sector-header"><div class="sector-icon">👴</div><div><div class="sector-title">Jubilaciones y Previsión Social</div><div class="sector-subtitle">Mapeo correcto: jur 50 2023 → jur 50 2026 · Deflactado por IPC</div></div></div>
+    <div class="sector-header"><div class="sector-icon">👴</div><div><div class="sector-title">Jubilaciones y Previsión Social</div><div class="sector-subtitle">jur 75 Trabajo (2023) → jur 88 Capital Humano (2026) · programas previsionales 16, 17, 21, 30 y 31</div></div></div>
     <div class="sector-kpi-row" id="jubilaciones-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
       <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="jubilaciones-chart-wrap"><canvas id="cJubilaciones"></canvas></div></div>
@@ -373,7 +373,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
 
   <!-- NIÑEZ -->
   <div class="panel sector-ninez" id="tab-ninez">
-    <div class="sector-header"><div class="sector-icon">👶</div><div><div class="sector-title">Programas de Niñez y Familia</div><div class="sector-subtitle">Mapeo correcto: jur 85 (2023) → jur 88 Capital Humano (2026)</div></div></div>
+    <div class="sector-header"><div class="sector-icon">👶</div><div><div class="sector-title">Capital Humano (educación, niñez y empleo)</div><div class="sector-subtitle">jur 70 Educación + 75 Trabajo + 85 Desarrollo Social (2023) → jur 88 Capital Humano (2026), sin jubilaciones · No se puede separar niñez de educación: en 2026 están en la misma jurisdicción</div></div></div>
     <div class="sector-kpi-row" id="ninez-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
       <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="ninez-chart-wrap"><canvas id="cNinez"></canvas></div></div>
@@ -384,7 +384,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
 
   <!-- OBRA PÚBLICA -->
   <div class="panel sector-obra-publica" id="tab-obra-publica">
-    <div class="sector-header"><div class="sector-icon">🏗️</div><div><div class="sector-title">Obra Pública e Infraestructura</div><div class="sector-subtitle">Mapeo correcto: jur 64+57+65 (2023) → jur 77 (2026) · FIX DEFINITIVO</div></div></div>
+    <div class="sector-header"><div class="sector-icon">🏗️</div><div><div class="sector-title">Obra Pública e Infraestructura</div><div class="sector-subtitle">jur 64 Obras Públicas + 57 Transporte + 65 Desarrollo Territorial (2023) → jur 50 Economía, programas de infraestructura (2026)</div></div></div>
     <div class="sector-kpi-row" id="obra-publica-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
       <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="obra-publica-chart-wrap"><canvas id="cObraPublica"></canvas></div></div>
@@ -416,14 +416,15 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
       <div style="position:relative;height:320px;"><canvas id="cResumenComp"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-title">evolución acumulada estimada por sector</div>
-      <div style="position:relative;height:360px;"><canvas id="cResumenTimeline"></canvas></div>
+      <div class="card-title">gasto total de la APN a precios de 2023 — crédito vigente de cada año</div>
+      <div style="position:relative;height:300px;"><canvas id="cResumenTimeline"></canvas></div>
+      <div style="font-size:11px;color:#999;margin-top:6px;">Datos reales por año (Presupuesto Abierto). No hay serie anual por sector: las reorganizaciones ministeriales impiden un mapeo año a año.</div>
     </div>
   </div>
 
   <!-- EDUCACIÓN -->
   <div class="panel sector-educacion" id="tab-educacion">
-    <div class="sector-header"><div class="sector-icon">📚</div><div><div class="sector-title">Educación</div><div class="sector-subtitle">Mapeo correcto: jur 70+75+85 (2023) → jur 88 Capital Humano (2026)</div></div></div>
+    <div class="sector-header"><div class="sector-icon">📚</div><div><div class="sector-title">Educación</div><div class="sector-subtitle">Ver pestaña "capital humano"</div></div></div>
     <div class="sector-kpi-row" id="educacion-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
       <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="educacion-chart-wrap"><canvas id="cEducacion"></canvas></div></div>
@@ -438,7 +439,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
     <div class="social-grid" id="social-grid"><div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">Cargando…</div></div>
     <!-- INDICADORES SOCIALES REALES -->
     <div class="indic-section-title">📊 Indicadores de Impacto Social Real</div>
-    <div class="indic-nota">⚠️ Indicadores de resultado social (mortalidad, desnutrición, suicidios, abandono escolar). Fuentes públicas oficiales: DEIS, INDEC EPH, UNICEF, DINIECE. Los valores reflejan la evolución 2022→2024 como proxy del período de ajuste.</div>
+    <div class="indic-nota">Indicadores de resultado social con fuente oficial verificada (DEIS, INDEC, SNIC): último dato anterior al cambio de gestión y último dato disponible. Muestran la evolución, no una relación causal con el presupuesto. Fuentes enlazadas en cada tarjeta.</div>
     <div class="indic-grid" id="indic-grid"><div style="grid-column:1/-1;text-align:center;padding:30px;color:#aaa;">Cargando indicadores sociales…</div></div>
   </div>
 
@@ -523,7 +524,7 @@ const _sectCharts = {};
 function fmtM(n){if(!n&&n!==0)return'—';const a=Math.abs(n);if(a>=1e9)return(n/1e9).toFixed(1)+'B';if(a>=1e6)return(n/1e6).toFixed(1)+'M';if(a>=1e3)return(n/1e3).toFixed(1)+'K';return n.toFixed(0);}
 function fmtP(n){if(n===null||n===undefined)return'N/D';return(n>0?'+':'')+n.toFixed(1)+'%';}
 function fmtAbs(n){if(n===null||n===undefined)return'—';const sign=n>=0?'+':'-';const a=Math.abs(n);if(a>=1e12)return sign+'$'+(a/1e12).toFixed(2)+'B';if(a>=1e9)return sign+'$'+(a/1e9).toFixed(1)+'MM';if(a>=1e6)return sign+'$'+(a/1e6).toFixed(1)+'M';return sign+'$'+a.toFixed(0);}
-function fmtUSD(n){if(n===null||n===undefined)return'—';const sign=n>=0?'+':'-';const a=Math.abs(n);if(a>=1e9)return sign+'USD '+(a/1e9).toFixed(1)+'B';if(a>=1e6)return sign+'USD '+(a/1e6).toFixed(1)+'M';return sign+'USD '+a.toFixed(0);}
+function fmtUSD(n){if(n===null||n===undefined)return'—';const sign=n>=0?'+':'-';const a=Math.abs(n);if(a>=1e9)return sign+'USD '+(a/1e9).toFixed(1)+' mil M';if(a>=1e6)return sign+'USD '+(a/1e6).toFixed(1)+'M';return sign+'USD '+a.toFixed(0);}
 function varClass(v){if(v===null||v===undefined)return'';return v<-20?'red':v<0?'amber':'green';}
 
 let _tt=null;
@@ -538,7 +539,7 @@ function sw(name,btn){
   document.getElementById('tab-'+name).classList.add('active');
   btn.classList.add('active');
   if(name==='base-monetaria'&&!_bmCargado){_bmCargado=true;cargarBaseMonetaria();}
-  if(name==='licuacion'&&D.length>0)renderLicuacion();
+  if(name==='licuacion')renderLicuacion();
 }
 
 // ══ TAREA 1: loadSectorAPI — consume /api/v1/analisis/sector ══════════════════
@@ -690,20 +691,22 @@ function renderResumenAPIData(data) {
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}}}}
   });
 
-  // Gráfico timeline
-  const meses = ['ene-23','jun-23','dic-23','jun-24','dic-24','jun-25','dic-25'];
-  const nM = meses.length;
-  const cols = ['#145a2a','#3d1e6e','#b46414','#1a3a6e','#9b1c1c','#1a4a6e'];
-  const datasets = sectores.map((s,si) => {
-    const r = 1 + ((s.var_real_ipc_pct||0)/100);
-    return {label:s.icon+' '+s.label.split('(')[0].trim().slice(0,18), data:meses.map((_,i)=>+((Math.pow(r,i/(nM-1))-1)*100).toFixed(1)), borderColor:cols[si%cols.length], backgroundColor:cols[si%cols.length]+'18', borderWidth:2.5, pointRadius:3, fill:false, tension:0.35};
-  });
-  if (_cResumenTimeline) _cResumenTimeline.destroy();
-  const ctx2 = document.getElementById('cResumenTimeline');
-  if (ctx2) _cResumenTimeline = new Chart(ctx2, {
-    type:'line', data:{labels:meses, datasets},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'right',labels:{font:{size:11},boxWidth:14,padding:10}}},scales:{x:{ticks:{font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}}}}
-  });
+  // Gráfico de evolución: datos reales por año (antes se dibujaba una curva
+  // inventada interpolando el resultado final entre ene-23 y dic-25).
+  fetch(API + '/analisis/evolucion-real').then(r => r.json()).then(ev => {
+    if (_cResumenTimeline) _cResumenTimeline.destroy();
+    const ctx2 = document.getElementById('cResumenTimeline');
+    if (!ctx2 || !Array.isArray(ev)) return;
+    _cResumenTimeline = new Chart(ctx2, {
+      type:'bar',
+      data:{labels: ev.map(d => String(d.ejercicio)),
+            datasets:[{label:'billones de $ de 2023', data: ev.map(d => +(d.total_real/1e12).toFixed(2)),
+                       backgroundColor: ev.map((d,i) => i === 0 ? 'rgba(91,45,142,0.5)' : 'rgba(185,28,28,0.75)')}]},
+      options:{responsive:true,maintainAspectRatio:false,
+               plugins:{legend:{display:false},tooltip:{callbacks:{afterLabel:c=>{const v=ev[c.dataIndex].variacion_real_pct_yoy;return v==null?'base':('vs año anterior: '+(v>0?'+':'')+v+'%');}}}},
+               scales:{y:{ticks:{callback:v=>'$'+v+' billones',font:{size:11}},grid:{color:'#f0f0ea'}}}}
+    });
+  }).catch(()=>{});
 }
 
 // ══ SALARIO PÚBLICO — usa datos locales (inciso 1) ════════════════════════════
@@ -738,39 +741,46 @@ function renderSector(sector) {
 
 // ══ LICUACIÓN VS RECORTE ══════════════════════════════════════════════════════
 let _cLicuacion, _cLicuacionScatter, _cLicuacionPct;
-function calcJurStats(){
-  const byJur={};
-  D.forEach(d=>{const k=d.jurisdiccion||'Sin jurisdicción';if(!byJur[k])byJur[k]={nom:[],real:[],lic:[],n:0};byJur[k].nom.push(d.variacion_nominal_pct||0);byJur[k].real.push(d.variacion_real_pct||0);byJur[k].lic.push(d.licuacion_pct||0);byJur[k].n++;});
-  const avg=arr=>arr.reduce((s,v)=>s+v,0)/arr.length;
-  return Object.entries(byJur).map(([jur,v])=>{const nom=avg(v.nom),real=avg(v.real),lic=avg(v.lic),recorte=nom<0?nom:0;return{jur,nom,real,lic,recorte,n:v.n};});
-}
-function renderLicuacion(){
-  if(!D.length)return;
-  const rows=calcJurStats();
+// Licuación vs recorte: se calcula en el servidor con TODAS las partidas,
+// ponderado por monto (/api/v1/analisis/licuacion). Antes se promediaba sin
+// ponderar sólo los 500 programas con mayor caída y "licuación" era nominal − real.
+let _licData = null;
+async function renderLicuacion(){
+  if(!_licData){
+    try{ _licData = await (await fetch(API + '/analisis/licuacion')).json(); }
+    catch(e){ document.getElementById('tbl-licuacion').innerHTML='<div style="padding:20px;color:#c0392b">No se pudo cargar: '+e.message+'</div>'; return; }
+  }
+  const all = (_licData.jurisdicciones||[]).map(r=>({jur:r.jurisdiccion,nom:r.variacion_nominal_pct,real:r.variacion_real_pct,lic:r.licuacion_pp,recorte:r.recorte_nominal_pp,base:r.base}));
+  const tot = _licData.total_comparable;
   const orden=document.getElementById('lv-orden')?.value||'lic';
   const top=parseInt(document.getElementById('lv-top')?.value||'25');
-  const sorted=[...rows].sort((a,b)=>orden==='lic'?a.lic-b.lic:orden==='recorte'?a.real-b.real:a.nom-b.nom).slice(0,top);
-  const avgNom=rows.reduce((s,r)=>s+r.nom,0)/rows.length;
-  const avgReal=rows.reduce((s,r)=>s+r.real,0)/rows.length;
-  const avgLic=rows.reduce((s,r)=>s+r.lic,0)/rows.length;
-  document.getElementById('lv-kpi-nom').textContent=fmtP(avgNom);
-  document.getElementById('lv-kpi-recorte').textContent=fmtP(avgReal);
-  document.getElementById('lv-kpi-lic').textContent=avgLic.toFixed(1)+'%';
-  document.getElementById('lv-kpi-jur').textContent=rows.length;
+  const sorted=[...all].sort((a,b)=>orden==='lic'?a.lic-b.lic:orden==='recorte'?a.recorte-b.recorte:a.real-b.real).slice(0,top);
+  if(tot){
+    document.getElementById('lv-kpi-nom').textContent=fmtP(tot.variacion_nominal_pct);
+    document.getElementById('lv-kpi-recorte').textContent=fmtP(tot.variacion_real_pct);
+    document.getElementById('lv-kpi-lic').textContent=tot.licuacion_pp.toFixed(1);
+  }
+  document.getElementById('lv-kpi-jur').textContent=all.length;
+  const sinEq=(_licData.sin_equivalente_directo||[]).length;
+  const nota=document.getElementById('lv-nota'); if(nota&&sinEq) nota.textContent='No se incluyen '+sinEq+' jurisdicciones reorganizadas entre años (ver pestañas sectoriales).';
   const wrap=document.getElementById('lv-chart-wrap');if(wrap)wrap.style.height=Math.max(240,sorted.length*32+80)+'px';
   const labs=sorted.map(r=>r.jur.length>48?r.jur.slice(0,48)+'…':r.jur);
   if(_cLicuacion)_cLicuacion.destroy();
-  _cLicuacion=new Chart(document.getElementById('cLicuacion'),{type:'bar',data:{labels:labs,datasets:[{label:'licuación %',data:sorted.map(r=>+Math.max(0,r.lic).toFixed(1)),backgroundColor:'rgba(180,83,9,0.6)',borderWidth:1},{label:'recorte real %',data:sorted.map(r=>+Math.min(0,r.real).toFixed(1)),backgroundColor:'rgba(185,28,28,0.85)',borderWidth:1},{label:'ganancia real %',data:sorted.map(r=>+(r.real>0?r.real:0).toFixed(1)),backgroundColor:'rgba(21,128,61,0.85)',borderWidth:1}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
+  _cLicuacion=new Chart(document.getElementById('cLicuacion'),{type:'bar',data:{labels:labs,datasets:[
+    {label:'licuación (pp)',data:sorted.map(r=>+Math.min(0,r.lic).toFixed(1)),backgroundColor:'rgba(180,83,9,0.6)',borderWidth:1,stack:'a'},
+    {label:'recorte nominal (pp)',data:sorted.map(r=>+r.recorte.toFixed(1)),backgroundColor:'rgba(185,28,28,0.85)',borderWidth:1,stack:'a'},
+    {label:'ganancia real (pp)',data:sorted.map(r=>+Math.max(0,r.lic).toFixed(1)),backgroundColor:'rgba(21,128,61,0.85)',borderWidth:1,stack:'a'}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}}},scales:{x:{stacked:true,ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{stacked:true,ticks:{font:{size:11}},grid:{display:false}}}}});
   if(_cLicuacionScatter)_cLicuacionScatter.destroy();
-  const pts=rows.map(r=>({x:+r.lic.toFixed(1),y:+r.real.toFixed(1),label:r.jur}));
-  _cLicuacionScatter=new Chart(document.getElementById('cLicuacionScatter'),{type:'scatter',data:{datasets:[{data:pts,backgroundColor:pts.map(p=>p.y<-20?'rgba(185,28,28,0.8)':p.y<0?'rgba(180,83,9,0.6)':'rgba(21,128,61,0.8)'),pointRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${(c.raw.label||'').slice(0,35)}: lic ${c.raw.x}%, real ${c.raw.y}%`}}},scales:{x:{title:{display:true,text:'licuación %',font:{size:11}},ticks:{callback:v=>v+'%'},grid:{color:'#f0f0ea'}},y:{title:{display:true,text:'var. real %',font:{size:11}},ticks:{callback:v=>v+'%'},grid:{color:'#f0f0ea'}}}}});
-  const conAjuste=[...rows].filter(r=>r.real<0).sort((a,b)=>a.real-b.real).slice(0,15);
-  const pctLic=conAjuste.map(r=>{const t=Math.abs(r.lic)+Math.abs(r.recorte)||1;return+((Math.abs(r.lic)/t)*100).toFixed(1);});
+  const pts=all.map(r=>({x:+r.lic.toFixed(1),y:+r.real.toFixed(1),label:r.jur}));
+  _cLicuacionScatter=new Chart(document.getElementById('cLicuacionScatter'),{type:'scatter',data:{datasets:[{data:pts,backgroundColor:pts.map(p=>p.y<-20?'rgba(185,28,28,0.8)':p.y<0?'rgba(180,83,9,0.6)':'rgba(21,128,61,0.8)'),pointRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${(c.raw.label||'').slice(0,35)}: licuación ${c.raw.x} pp, real ${c.raw.y}%`}}},scales:{x:{title:{display:true,text:'licuación (pp)',font:{size:11}},grid:{color:'#f0f0ea'}},y:{title:{display:true,text:'var. real %',font:{size:11}},ticks:{callback:v=>v+'%'},grid:{color:'#f0f0ea'}}}}});
+  const conAjuste=[...all].filter(r=>r.real<0).sort((a,b)=>a.real-b.real).slice(0,15);
+  const pctLic=conAjuste.map(r=>{const t=Math.abs(r.real)||1;return +Math.min(100,(Math.abs(Math.min(0,r.lic))/t)*100).toFixed(1);});
   if(_cLicuacionPct)_cLicuacionPct.destroy();
-  _cLicuacionPct=new Chart(document.getElementById('cLicuacionPct'),{type:'bar',data:{labels:conAjuste.map(r=>r.jur.slice(0,30)),datasets:[{label:'licuación %',data:pctLic,backgroundColor:'rgba(180,83,9,0.6)',borderWidth:1},{label:'recorte %',data:pctLic.map(v=>+(100-v).toFixed(1)),backgroundColor:'rgba(185,28,28,0.85)',borderWidth:1}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}}},scales:{x:{stacked:true,max:100,ticks:{callback:v=>v+'%',font:{size:11}}},y:{stacked:true,ticks:{font:{size:10}},grid:{display:false}}}}});
-  document.getElementById('tbl-licuacion').innerHTML=[...rows].sort((a,b)=>a.real-b.real).map(r=>{
-    const tipo=r.nom<-5?{txt:'recorte duro',cls:'pill-red'}:r.real<-10?{txt:'licuado',cls:'pill-red'}:r.real<0?{txt:'leve caída',cls:'',style:'background:#fff3e0;color:#7a4500;'}:{txt:'incremento',cls:'pill-green'};
-    return '<div class="tr" style="grid-template-columns:2fr 80px 80px 90px 90px 80px;"><span><div class="prog-name">'+r.jur+'</div><div class="prog-jur">'+r.n+' programas</div></span><span class="nr '+(r.nom<0?'red':'green')+'">'+fmtP(r.nom)+'</span><span class="nr '+(r.real<0?'red':'green')+'" style="font-weight:600;">'+fmtP(r.real)+'</span><span class="nr amber">'+r.lic.toFixed(1)+'%</span><span class="nr red">'+(r.recorte<0?r.recorte.toFixed(1)+'%':'—')+'</span><span><span class="pill '+tipo.cls+'"'+(tipo.style?' style="'+tipo.style+'"':'')+'>'+tipo.txt+'</span></span></div>';
+  _cLicuacionPct=new Chart(document.getElementById('cLicuacionPct'),{type:'bar',data:{labels:conAjuste.map(r=>r.jur.slice(0,30)),datasets:[{label:'licuación %',data:pctLic,backgroundColor:'rgba(180,83,9,0.6)',borderWidth:1},{label:'recorte nominal %',data:pctLic.map(v=>+(100-v).toFixed(1)),backgroundColor:'rgba(185,28,28,0.85)',borderWidth:1}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}}},scales:{x:{stacked:true,max:100,ticks:{callback:v=>v+'%',font:{size:11}}},y:{stacked:true,ticks:{font:{size:10}},grid:{display:false}}}}});
+  document.getElementById('tbl-licuacion').innerHTML=all.map(r=>{
+    const tipo=r.nom<-5?{txt:'recorte en pesos',cls:'pill-red'}:r.real<-10?{txt:'licuado',cls:'pill-red'}:r.real<0?{txt:'leve caída',cls:'',style:'background:#fff3e0;color:#7a4500;'}:{txt:'incremento real',cls:'pill-green'};
+    return '<div class="tr" style="grid-template-columns:2fr 80px 80px 90px 90px 80px;"><span><div class="prog-name">'+r.jur+'</div></span><span class="nr '+(r.nom<0?'red':'green')+'">'+fmtP(r.nom)+'</span><span class="nr '+(r.real<0?'red':'green')+'" style="font-weight:600;">'+fmtP(r.real)+'</span><span class="nr amber">'+r.lic.toFixed(1)+'</span><span class="nr red">'+(r.recorte<0?r.recorte.toFixed(1):'—')+'</span><span><span class="pill '+tipo.cls+'"'+(tipo.style?' style="'+tipo.style+'"':'')+'>'+tipo.txt+'</span></span></div>';
   }).join('');
 }
 
@@ -861,11 +871,11 @@ async function loadSocial(){
     const r=await fetch('/api/social/kpis');if(!r.ok)throw new Error('HTTP '+r.status);
     const data=await r.json();socialLoaded=true;
     dot.style.background='#27ae60';
-    txt.textContent='Datos actualizados al '+(data.ultima_actualizacion?new Date(data.ultima_actualizacion).toLocaleDateString('es-AR'):'—');
+    txt.textContent='Gasto por sector, crédito vigente · deflactor ×'+Number(data.ipc_acumulado||0).toFixed(2)+(data.deflactor&&data.deflactor.ultimo_mes_ipc?' (IPC hasta '+data.deflactor.ultimo_mes_ipc+')':'');
     grid.innerHTML=(data.kpis||[]).map(k=>{
       const varAbs=k.var_absoluta>=0?'+'+k.var_absoluta.toLocaleString('es-AR'):k.var_absoluta.toLocaleString('es-AR');
       const varPct=k.var_pct>=0?'+'+k.var_pct.toFixed(1)+'%':k.var_pct.toFixed(1)+'%';
-      return '<div class="social-card"><div class="social-card-header"><div class="social-card-title">'+k.titulo+'</div><div class="social-badge">↑ sube</div></div><div class="social-main-value">'+(k.tasa_actual!=null?k.tasa_actual.toFixed(1):k.valor_actual||0)+'</div><div class="social-main-sub">'+k.subtitulo+'</div><div class="social-compare"><div class="social-compare-box"><div class="social-compare-label">Base dic-2023</div><div class="social-compare-val">'+(k.valor_base||0).toLocaleString('es-AR')+'</div></div><div class="social-compare-box"><div class="social-compare-label">Último dato</div><div class="social-compare-val red">'+(k.valor_actual||0).toLocaleString('es-AR')+'</div></div></div><div class="social-var"><span class="social-var-abs">'+varAbs+'</span> <span class="social-var-pct">('+varPct+')</span></div><div class="social-alertas">'+( k.alertas||[]).map(a=>'<div class="social-alerta">⚠ '+a+'</div>').join('')+'</div><div class="social-fuente">'+(k.fuente||'')+'</div></div>';
+      return '<div class="social-card"><div class="social-card-header"><div class="social-card-title">'+k.titulo+'</div><div class="social-badge">'+(k.tasa_actual!=null&&k.tasa_actual<0?'↓ cae en términos reales':'↑ sube en términos reales')+'</div></div><div class="social-main-value">'+(k.tasa_actual!=null?(k.tasa_actual>0?'+':'')+k.tasa_actual.toFixed(1)+'%':'—')+'</div><div class="social-main-sub">variación real 2026 vs 2023 · '+k.subtitulo+'</div><div class="social-compare"><div class="social-compare-box"><div class="social-compare-label">Vigente 2023 ($ mil M)</div><div class="social-compare-val">'+(k.valor_base||0).toLocaleString('es-AR')+'</div></div><div class="social-compare-box"><div class="social-compare-label">Vigente 2026 ($ mil M)</div><div class="social-compare-val red">'+(k.valor_actual||0).toLocaleString('es-AR')+'</div></div></div><div class="social-var"><span class="social-var-abs">'+varAbs+'</span> <span class="social-var-pct">('+varPct+')</span></div><div class="social-alertas">'+( k.alertas||[]).map(a=>'<div class="social-alerta">ℹ '+a+'</div>').join('')+'</div><div class="social-fuente">'+(k.fuente||'')+'</div></div>';
     }).join('');
   }catch(e){dot.style.background='#e74c3c';txt.textContent='Error: '+e.message;grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">No se pudo conectar con /api/social/kpis<br><small>'+e.message+'</small></div>';}
   loadIndicadoresSociales();
@@ -879,22 +889,27 @@ async function loadIndicadoresSociales(){
   try{
     const r=await fetch('/api/social/indicadores-sociales');if(!r.ok)throw new Error('HTTP '+r.status);
     const data=await r.json();indicSocialLoaded=true;
+    const pend=(data.datos_nuevos_pendientes||[]).length;
+    if(pend){const n=document.querySelector('.indic-nota');if(n)n.insertAdjacentHTML('afterend','<div class="indic-nota" style="background:#fff8e1">Hay '+pend+' publicación(es) oficial(es) nueva(s) pendiente(s) de cargar.</div>');}
     grid.innerHTML=(data.indicadores||[]).map(k=>{
       const tendUp=k.tendencia==='sube';
-      const badge=tendUp?'<div class="indic-badge-sube">↑ sube</div>':'<div class="indic-badge-baja">↓ baja</div>';
+      const badge=k.tendencia==='estable'?'<div class="indic-badge-baja" style="background:#eee;color:#555">= estable</div>':(tendUp?'<div class="indic-badge-sube">↑ sube</div>':'<div class="indic-badge-baja">↓ baja</div>');
+      const fmtV=v=>Number(v).toLocaleString('es-AR');
+      const serie=(k.serie||[]).length?'<div style="font-size:11px;color:#666;margin:6px 0">'+k.serie.map(p=>p[0]+': <strong>'+fmtV(p[1])+'</strong>').join(' · ')+'</div>':'';
       const varAbs=(k.var_absoluta>=0?'+':'')+k.var_absoluta.toLocaleString('es-AR');
       const varPct=(k.var_pct>=0?'+':'')+k.var_pct.toFixed(1)+'%';
       const colorBorder=tendUp?'#c0392b':'#27ae60';
       return '<div class="indic-card" style="border-top-color:'+colorBorder+'"><div class="indic-card-header"><div class="indic-card-title">'+k.icon+' '+k.titulo+'</div>'+badge+'</div>'
-        +'<div class="indic-main-value" style="color:'+colorBorder+'">'+k.valor_actual+'</div>'
+        +'<div class="indic-main-value" style="color:'+colorBorder+'">'+fmtV(k.valor_actual)+'</div>'
         +'<div class="indic-main-sub">'+k.unidad+' · '+k.subtitulo+'</div>'
         +'<div class="indic-compare">'
-          +'<div class="indic-compare-box"><div class="indic-compare-label">Base '+k.anio_base+'</div><div class="indic-compare-val">'+k.valor_base+'</div></div>'
-          +'<div class="indic-compare-box"><div class="indic-compare-label">Último ('+k.anio_actual+')</div><div class="indic-compare-val red">'+k.valor_actual+'</div></div>'
+          +'<div class="indic-compare-box"><div class="indic-compare-label">Base '+k.anio_base+'</div><div class="indic-compare-val">'+fmtV(k.valor_base)+'</div></div>'
+          +'<div class="indic-compare-box"><div class="indic-compare-label">Último ('+k.anio_actual+')</div><div class="indic-compare-val red">'+fmtV(k.valor_actual)+'</div></div>'
         +'</div>'
         +'<div class="indic-var"><span class="indic-var-abs">'+varAbs+'</span> <span class="indic-var-pct">('+varPct+')</span></div>'
-        +'<div class="indic-alertas">'+(k.alertas||[]).map(a=>'<div class="indic-alerta">⚠ '+a+'</div>').join('')+'</div>'
-        +'<div class="indic-fuente">'+(k.fuente||'')+'</div>'
+        +serie
+        +'<div class="indic-alertas">'+(k.notas||k.alertas||[]).map(a=>'<div class="indic-alerta">ℹ '+a+'</div>').join('')+'</div>'
+        +'<div class="indic-fuente">'+(k.url_fuente?'<a href="'+k.url_fuente+'" target="_blank" rel="noopener">'+(k.fuente||'fuente')+'</a>':(k.fuente||''))+'</div>'
       +'</div>';
     }).join('');
   }catch(e){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#aaa;">No se pudo cargar indicadores sociales<br><small>'+e.message+'</small></div>';}

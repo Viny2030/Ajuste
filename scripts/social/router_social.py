@@ -54,19 +54,8 @@ SECTORES_SOCIAL = {
         "fuente":    "Presupuesto Abierto · Ministerio de Infraestructura",
         "alertas":   ["Reorganización ministerial 2024: jur 64/57/65 → jur 50", "Recorte histórico en inversión pública"],
     },
-    "empleo_publico": {
-        "titulo":    "Empleo Público (estimado por masa salarial)",
-        "subtitulo": "Inciso 1 Personal como proxy de dotación 2023 → 2026",
-        "icon":      "🏛️",
-        "color":     "#7d6608",
-        "jur_2023":  None,  # todas: la lista fija no coincidía entre 2023 y 2026
-        "prg_2023":  None,
-        "inciso":    "1",
-        "jur_2026":  None,
-        "prg_2026":  None,
-        "fuente":    "Presupuesto Abierto · Inciso 1 Personal (proxy dotación)",
-        "alertas":   ["Dato estimado: masa salarial no refleja cantidad exacta de agentes", "Reducción real implica ajuste salarial y/o bajas de personal"],
-    },
+    # "empleo_publico" se quitó: era exactamente el mismo cálculo que "sueldos"
+    # (inciso 1) presentado como un indicador distinto.
     "salud": {
         "titulo":    "Ministerio de Salud",
         "subtitulo": "Presupuesto total Salud 2023 → 2026",
@@ -195,144 +184,38 @@ async def social_kpi_sector(sector: str, db: Session = Depends(get_db_dependency
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# INDICADORES SOCIALES ESTÁTICOS (mortalidad infantil, suicidios, etc.)
-# Fuentes: INDEC, Ministerio de Salud, SISA, OPS/OMS, UNICEF Argentina
+# INDICADORES DE RESULTADO SOCIAL — datos verificados
 # ──────────────────────────────────────────────────────────────────────────────
-INDICADORES_SOCIALES = [
-    {
-        "id":         "mortalidad_infantil",
-        "titulo":     "Mortalidad Infantil",
-        "subtitulo":  "Tasa por 1.000 nacidos vivos — Argentina",
-        "icon":       "👶",
-        "valor_base": 8.7,
-        "anio_base":  2022,
-        "valor_actual": 9.3,
-        "anio_actual": 2024,
-        "unidad":     "‰ nacidos vivos",
-        "tendencia":  "sube",
-        "var_absoluta": 0.6,
-        "var_pct":    6.9,
-        "alertas": [
-            "Aumento por recorte en programas materno-infantiles",
-            "Provincias del Norte: tasa supera 12‰",
-            "Fuente: DEIS - Ministerio de Salud (2024)"
-        ],
-        "fuente": "DEIS · Ministerio de Salud · Estadísticas Vitales 2024",
-        "color":  "#7b1515",
-    },
-    {
-        "id":         "mortalidad_neonatal",
-        "titulo":     "Mortalidad Neonatal",
-        "subtitulo":  "Fallecidos < 28 días por 1.000 nacidos vivos",
-        "icon":       "🏥",
-        "valor_base": 5.3,
-        "anio_base":  2022,
-        "valor_actual": 5.7,
-        "anio_actual": 2024,
-        "unidad":     "‰ nacidos vivos",
-        "tendencia":  "sube",
-        "var_absoluta": 0.4,
-        "var_pct":    7.5,
-        "alertas": [
-            "Concentra ~60% de la mortalidad infantil total",
-            "Asociada a falta de insumos hospitalarios",
-            "Fuente: DEIS - Ministerio de Salud (2024)"
-        ],
-        "fuente": "DEIS · Ministerio de Salud · Estadísticas Vitales 2024",
-        "color":  "#922b21",
-    },
-    {
-        "id":         "desnutricion_infantil",
-        "titulo":     "Desnutrición Infantil",
-        "subtitulo":  "Bajo peso al nacer (< 2.500 g) — % nacimientos",
-        "icon":       "🍼",
-        "valor_base": 7.1,
-        "anio_base":  2022,
-        "valor_actual": 7.8,
-        "anio_actual": 2024,
-        "unidad":     "% nacidos vivos",
-        "tendencia":  "sube",
-        "var_absoluta": 0.7,
-        "var_pct":    9.9,
-        "alertas": [
-            "Recorte del 68% en programas de alimentación escolar (SAE)",
-            "PAMI redujo cobertura nutricional para adultos mayores",
-            "Fuente: UNICEF Argentina / INDEC EPH 2024"
-        ],
-        "fuente": "UNICEF Argentina · INDEC EPH 2024",
-        "color":  "#a04000",
-    },
-    {
-        "id":         "suicidios",
-        "titulo":     "Tasa de Suicidios",
-        "subtitulo":  "Muertes por suicidio por 100.000 habitantes",
-        "icon":       "🧠",
-        "valor_base": 8.1,
-        "anio_base":  2022,
-        "valor_actual": 9.2,
-        "anio_actual": 2024,
-        "unidad":     "c/100.000 hab.",
-        "tendencia":  "sube",
-        "var_absoluta": 1.1,
-        "var_pct":    13.6,
-        "alertas": [
-            "Aumento sostenido en jóvenes de 15-24 años",
-            "Recorte en salud mental: cierre de centros de atención primaria",
-            "Fuente: DEIS / Ministerio de Salud - Estadísticas Vitales"
-        ],
-        "fuente": "DEIS · Ministerio de Salud · OPS Argentina",
-        "color":  "#4a235a",
-    },
-    {
-        "id":         "pobreza_indigencia",
-        "titulo":     "Indigencia",
-        "subtitulo":  "Hogares bajo la línea de indigencia — % población",
-        "icon":       "📉",
-        "valor_base": 6.2,
-        "anio_base":  "2do sem 2023",
-        "valor_actual": 8.5,
-        "anio_actual": "1er sem 2024",
-        "unidad":     "% población",
-        "tendencia":  "sube",
-        "var_absoluta": 2.3,
-        "var_pct":    37.1,
-        "alertas": [
-            "Pico histórico en 2024: 11,2% (2do trimestre)",
-            "Recorte en AUH, Potenciar Trabajo y transferencias sociales",
-            "Fuente: INDEC EPH 2024"
-        ],
-        "fuente": "INDEC · Encuesta Permanente de Hogares 2024",
-        "color":  "#7d6608",
-    },
-    {
-        "id":         "abandono_escolar",
-        "titulo":     "Abandono Escolar",
-        "subtitulo":  "Tasa de abandono nivel secundario — % matrícula",
-        "icon":       "📚",
-        "valor_base": 8.4,
-        "anio_base":  2022,
-        "valor_actual": 10.1,
-        "anio_actual": 2024,
-        "unidad":     "% matrícula",
-        "tendencia":  "sube",
-        "var_absoluta": 1.7,
-        "var_pct":    20.2,
-        "alertas": [
-            "Recorte del 30% en presupuesto educativo real",
-            "Cierre de comedores escolares en provincias",
-            "Fuente: DINIECE - Ministerio de Educación"
-        ],
-        "fuente": "DINIECE · Ministerio de Educación 2024",
-        "color":  "#1a5276",
-    },
-]
+# Antes había una lista escrita acá con cifras que no coincidían con las
+# fuentes (p. ej. mortalidad infantil 8,7 → 9,3 cuando DEIS informa 8,0 → 8,5;
+# indigencia 6,2 % → 8,5 % cuando INDEC informa 11,9 % → 18,1 % → 6,9 %),
+# indicadores sin fuente verificable (bajo peso al nacer, abandono escolar) y
+# atribuciones causales sin evidencia. Ahora se lee un archivo único,
+# data/processed/social/indicadores_verificados.json, que se actualiza a mano.
+# El scraper (indicadores_sociales.json) sólo se usa para avisar si DEIS/SNIC
+# publicaron datos nuevos.
+import json
+from pathlib import Path
+
+_DIR_SOCIAL = Path(__file__).resolve().parents[2] / "data" / "processed" / "social"
+
+
+def _leer_json(nombre: str) -> dict:
+    try:
+        return json.loads((_DIR_SOCIAL / nombre).read_text(encoding="utf-8"))
+    except Exception:
+        return {}
 
 
 @router.get("/indicadores-sociales")
 async def indicadores_sociales():
-    """Indicadores de impacto social real (mortalidad, suicidios, desnutrición, etc.)"""
+    """Indicadores de resultado social con fuente oficial verificada."""
+    verif = _leer_json("indicadores_verificados.json")
+    scraper = _leer_json("indicadores_sociales.json").get("_meta", {})
     return {
         "generado_en":   datetime.utcnow().isoformat(),
-        "nota":          "Datos de fuentes públicas oficiales. Ver alertas por fuente específica.",
-        "indicadores":   INDICADORES_SOCIALES,
+        "verificado":    verif.get("_meta", {}).get("verificado"),
+        "nota":          verif.get("_meta", {}).get("criterio", ""),
+        "datos_nuevos_pendientes": scraper.get("alertas_nuevos_datos", []),
+        "indicadores":   verif.get("indicadores", []),
     }

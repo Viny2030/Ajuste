@@ -1,0 +1,142 @@
+{
+  "_meta": {
+    "descripcion": "Indicadores de resultado social VERIFICADOS contra la fuente oficial. Se actualizan a mano: scripts/social/scraper_social.py sólo avisa cuando DEIS o SNIC publican datos nuevos.",
+    "verificado": "2026-10-10",
+    "criterio": "Se muestran sólo indicadores con fuente oficial verificable. Variación entre el último dato anterior al cambio de gestión y el último dato disponible; no implica relación causal con el presupuesto."
+  },
+  "indicadores": [
+    {
+      "id": "mortalidad_infantil",
+      "icon": "👶",
+      "titulo": "Mortalidad infantil",
+      "subtitulo": "Muertes de menores de 1 año",
+      "unidad": "‰ nacidos vivos",
+      "valor_base": 8.0,
+      "anio_base": "2023",
+      "valor_actual": 8.5,
+      "anio_actual": "2024",
+      "notas": [
+        "Las muertes bajaron (3.689 → 3.513) porque cayeron los nacimientos (460.902 → 413.135); la tasa subió.",
+        "Primera suba de la tasa en más de 20 años."
+      ],
+      "fuente": "DEIS · Ministerio de Salud · Estadísticas Vitales 2024",
+      "url_fuente": "https://www.argentina.gob.ar/salud/deis/publicaciones",
+      "var_absoluta": 0.5,
+      "var_pct": 6.2,
+      "tendencia": "sube"
+    },
+    {
+      "id": "mortalidad_neonatal",
+      "icon": "🏥",
+      "titulo": "Mortalidad neonatal",
+      "subtitulo": "Muertes de menores de 28 días",
+      "unidad": "‰ nacidos vivos",
+      "valor_base": 5.5,
+      "anio_base": "2023",
+      "valor_actual": 6.0,
+      "anio_actual": "2024",
+      "notas": [
+        "Componente neonatal de la mortalidad infantil."
+      ],
+      "fuente": "DEIS · Ministerio de Salud · Estadísticas Vitales 2024",
+      "url_fuente": "https://www.argentina.gob.ar/salud/deis/publicaciones",
+      "var_absoluta": 0.5,
+      "var_pct": 9.1,
+      "tendencia": "sube"
+    },
+    {
+      "id": "pobreza",
+      "icon": "📉",
+      "titulo": "Pobreza",
+      "subtitulo": "Personas bajo la línea de pobreza (31 aglomerados)",
+      "unidad": "% personas",
+      "valor_base": 41.7,
+      "anio_base": "2.º sem 2023",
+      "valor_actual": 31.6,
+      "anio_actual": "1.º sem 2025",
+      "serie": [
+        [
+          "2.º sem 2023",
+          41.7
+        ],
+        [
+          "1.º sem 2024",
+          52.9
+        ],
+        [
+          "2.º sem 2024",
+          38.1
+        ],
+        [
+          "1.º sem 2025",
+          31.6
+        ]
+      ],
+      "notas": [
+        "Pico de 52,9 % en el 1.º semestre de 2024."
+      ],
+      "fuente": "INDEC · Encuesta Permanente de Hogares",
+      "url_fuente": "https://www.indec.gob.ar/indec/web/Nivel4-Tema-4-46-152",
+      "var_absoluta": -10.1,
+      "var_pct": -24.2,
+      "tendencia": "baja"
+    },
+    {
+      "id": "indigencia",
+      "icon": "🍽️",
+      "titulo": "Indigencia",
+      "subtitulo": "Personas bajo la línea de indigencia (31 aglomerados)",
+      "unidad": "% personas",
+      "valor_base": 11.9,
+      "anio_base": "2.º sem 2023",
+      "valor_actual": 6.9,
+      "anio_actual": "1.º sem 2025",
+      "serie": [
+        [
+          "2.º sem 2023",
+          11.9
+        ],
+        [
+          "1.º sem 2024",
+          18.1
+        ],
+        [
+          "2.º sem 2024",
+          8.2
+        ],
+        [
+          "1.º sem 2025",
+          6.9
+        ]
+      ],
+      "notas": [
+        "Pico de 18,1 % en el 1.º semestre de 2024."
+      ],
+      "fuente": "INDEC · Encuesta Permanente de Hogares",
+      "url_fuente": "https://www.indec.gob.ar/indec/web/Nivel4-Tema-4-46-152",
+      "var_absoluta": -5.0,
+      "var_pct": -42.0,
+      "tendencia": "baja"
+    },
+    {
+      "id": "suicidios",
+      "icon": "🧠",
+      "titulo": "Suicidios",
+      "subtitulo": "Muertes por suicidio registradas",
+      "unidad": "casos",
+      "valor_base": 4205,
+      "anio_base": "2023",
+      "valor_actual": 4249,
+      "anio_actual": "2024",
+      "notas": [
+        "Tasa cercana a 9 por 100.000 habitantes en ambos años.",
+        "Dato preliminar 2025 informado en prensa: 5.209 casos (a confirmar con el informe oficial)."
+      ],
+      "fuente": "SNIC · Ministerio de Seguridad",
+      "url_fuente": "https://www.argentina.gob.ar/seguridad/estadisticascriminales/datos",
+      "var_absoluta": 44,
+      "var_pct": 1.0,
+      "tendencia": "sube"
+    }
+  ]
+}
