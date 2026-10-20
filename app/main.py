@@ -152,6 +152,9 @@ SECTORES: Dict[str, dict] = {
 # (10,53) e IPC_POR_ANIO_FALLBACK: ya no los usaba nadie y sus valores eran viejos.
 TC_USD_FALLBACK = 1523.35
 
+# Ranking: caída nominal a partir de la cual se marca "revisar_reclasificacion".
+UMBRAL_RECLASIFICACION_PCT = -90.0
+
 
 # ── HELPERS ───────────────────────────────────────────────────────────────────
 
@@ -337,12 +340,18 @@ def ranking_ajuste(
             # Con tilde: es lo que compara la página (antes "REDUCCION" hacía que
             # el filtro "solo reducciones" no devolviera nada)
             "estado_ajuste":         "REDUCCIÓN" if var_real < 0 else "INCREMENTO",
+            # Una caída nominal de más del 90 % suele ser un programa/inciso
+            # cerrado o trasladado a otro código, no un recorte de ese tamaño.
+            # Se marca para revisar; no se excluye (a veces sí es un recorte).
+            "revisar_reclasificacion": var_nom < UMBRAL_RECLASIFICACION_PCT,
         })
 
     return {
         "advertencia": (
             "Cruce por programa_id+inciso_id. "
-            "Usar /api/v1/analisis/sector para sectores correctos."
+            "Usar /api/v1/analisis/sector para sectores correctos. "
+            f"revisar_reclasificacion=true: caída nominal mayor a {-UMBRAL_RECLASIFICACION_PCT:.0f} %, "
+            "puede ser eliminación real o traslado del gasto a otro programa o inciso."
         ),
         "ipc_factor": round(ipc_factor, 4),
         "deflactor":  deflactor.metadata(anio_base, anio_comp),
