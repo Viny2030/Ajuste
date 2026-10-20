@@ -1,0 +1,78 @@
+# .github/workflows/verificar_cifras.yml
+# Auditoría diaria de las cifras publicadas (ver scripts/verificar_cifras.py).
+# Corre después de "Daily Budget Monitor" (11:00 UTC). Si algún control falla,
+# abre un issue (o comenta en el que ya esté abierto) y el job queda en rojo.
+
+name: Verificar cifras publicadas
+
+on:
+  schedule:
+    - cron: "30 13 * * *"   # 10:30 ART
+  workflow_dispatch:
+
+concurrency:
+  group: commits-data
+  cancel-in-progress: false
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    env:
+      AJUSTE_API_URL: ${{ vars.AJUSTE_API_URL || 'https://ajuste.ecosistematransparencia.com.ar' }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verificar
+        id: verificar
+        continue-on-error: true
+        run: python scripts/verificar_cifras.py --reporte reporte.md
+
+      - name: Resumen del job
+        if: always()
+        run: cat reporte.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Abrir o actualizar issue si hubo fallas
+        if: steps.verificar.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITULO="Verificación de cifras: hay controles en FALLA"
+          NUM=$(gh issue list --state open --search "in:title \"$TITULO\"" --json number --jq '.[0].number')
+          if [ -n "$NUM" ]; then
+            gh issue comment "$NUM" --body-file reporte.md
+          else
+            gh issue create --title "$TITULO" --body-file reporte.md
+          fi
+
+      - name: Guardar última verificación sana
+        if: steps.verificar.outcome == 'success'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/verificacion/ultima_verificacion.json
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "chore: verificación de cifras $(date +'%Y-%m-%d')"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            sleep 10
+          done
+          echo "::warning::No se pudo pushear la verificación"
+
+      - name: Marcar el job en rojo si hubo fallas
+        if: steps.verificar.outcome == 'failure'
+        run: exit 1

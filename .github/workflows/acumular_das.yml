@@ -1,0 +1,53 @@
+# .github/workflows/acumular_das.yml
+# Después de cada "Daily BORA Discovery", suma lo encontrado a
+# data/das_acumulado.json sin borrar nunca nada (ver .github/scripts/acumular_das.py).
+
+name: Acumular DAs descubiertas
+
+on:
+  workflow_run:
+    workflows: ["Daily BORA Discovery"]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: commits-data
+  cancel-in-progress: false
+
+jobs:
+  acumular:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo (main actualizado)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Acumular
+        run: python .github/scripts/acumular_das.py
+
+      - name: Commit si hay cambios
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/das_acumulado.json
+          if git diff --staged --quiet; then
+            echo "Sin normas nuevas para acumular."
+            exit 0
+          fi
+          git commit -m "chore: acumulado de DAs $(date +'%Y-%m-%d')"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            sleep 10
+          done
+          echo "::error::No se pudo pushear data/das_acumulado.json"
+          exit 1
