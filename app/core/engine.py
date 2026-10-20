@@ -180,12 +180,12 @@ def cargar_macro_indices() -> dict:
             "va a quedar desactualizado con el tiempo. Revisar por qué fallaron las "
             "fuentes en vez de confiar en este número por mucho tiempo."
         )
-        # Factor acumulado ene-2023 → may-2026, calculado con la inflación
-        # mensual oficial del BCRA v4.0 (id_variable=27) el 2026-07-02.
-        # Recalcular si esta rama llega a usarse: no hardcodear un valor nuevo
-        # sin volver a consultar la fuente real primero.
+        # Factor acumulado ene-2023 → sep-2026, calculado con la inflación
+        # mensual oficial del BCRA v4.0 (id_variable=27) el 2026-10-20
+        # (antes 9,6368, a may-2026). Recalcular si esta rama llega a usarse:
+        # no hardcodear un valor nuevo sin volver a consultar la fuente real.
         df_ipc_m = pd.DataFrame(columns=["fecha", "ipc_nivel", "ipc_acum_vs_ene23", "var_mensual_pct"])
-        factor_actual = 9.6368  # 863.68% acumulado ene-2023 → may-2026 (BCRA v4.0, id 27)
+        factor_actual = 10.3903  # 939.03% acumulado ene-2023 → sep-2026 (BCRA v4.0, id 27)
 
     # ── USD ──────────────────────────────────────
     df_usd_raw = _fetch_usd()

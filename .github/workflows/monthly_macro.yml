@@ -8,6 +8,8 @@ on:
 jobs:
   update_macro:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write      # explícito: no depender del permiso por defecto del repo
 
     steps:
       - name: Checkout repo

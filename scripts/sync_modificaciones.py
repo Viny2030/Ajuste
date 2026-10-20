@@ -2,8 +2,8 @@
 """
 Estrategia:
 - Base: credito_original_2023 en pesos nominales (seed_2023 ya multiplicó ×1_000_000)
-- Vigente: credito_vigente del año más reciente (2026 > 2025 > 2024), en miles de pesos
-  → se normaliza ×1_000 antes de comparar contra la base 2023
+- Vigente: credito_vigente del año más reciente (2026 > 2025 > 2024), en la unidad
+  que declara la columna "unidad" del CSV (millones_ars) → se pasa a pesos
 - ModificacionPresupuestaria guarda la diferencia NETA en pesos nominales
 
 Ejecución:
@@ -85,24 +85,41 @@ def _descargar_df(anio: int) -> pd.DataFrame | None:
             df = df[df[col].astype(str).str.strip() == str(anio)]
             break
 
+    # Los CSV de crédito anual traen la columna "unidad" (hoy "millones_ars"
+    # en todas las filas). Antes se suponía MILES y se multiplicaba ×1_000:
+    # todo quedaba 1000 veces abajo (2026 daba $0,15 billones en vez de $152).
+    escala = _escala(df)
     for col in ("monto_original", "monto_vigente"):
         if col in df.columns:
             df[col] = (
                 df[col].astype(str)
                 .str.replace(",", ".", regex=False)   # coma decimal → punto
-                .str.replace(r"[^\d\.]", "", regex=True)
+                .str.replace(r"[^\d\.\-]", "", regex=True)
                 .pipe(pd.to_numeric, errors="coerce")
                 .fillna(0.0)
-                # CSVs vienen en MILES de pesos → multiplicar ×1_000 para pesos nominales
-                .mul(1_000)
+                .mul(escala)
                 .round(0)
             )
     return df
 
 
+_ESCALAS = {"millones_ars": 1_000_000, "miles_ars": 1_000, "ars": 1, "pesos": 1}
+
+
+def _escala(df: pd.DataFrame) -> int:
+    """Multiplicador a pesos según la columna "unidad" (default: millones)."""
+    if "unidad" not in df.columns:
+        print("   ⚠️  El CSV no trae columna 'unidad': se asume millones de pesos")
+        return 1_000_000
+    unidades = set(df["unidad"].dropna().astype(str).str.strip().str.lower())
+    if len(unidades) != 1 or next(iter(unidades)) not in _ESCALAS:
+        raise ValueError(f"Unidad de montos inesperada en el CSV: {sorted(unidades)}")
+    return _ESCALAS[unidades.pop()]
+
+
 def calcular_y_cargar_modificaciones():
     """
-    1. Descarga vigente 2024, 2025 y 2026 (en miles de pesos → normaliza ×1_000)
+    1. Descarga vigente 2024, 2025 y 2026 (en millones de pesos → normaliza a pesos)
     2. Para cada partida toma el vigente más reciente (2026 > 2025 > 2024)
     3. Diferencia = vigente_reciente_pesos - monto_vigente_2023_pesos
     4. El ZIP de 2026 se regenera diariamente → cada run refleja ejecución actualizada
@@ -184,7 +201,7 @@ def calcular_y_cargar_modificaciones():
         jur_id, prog_id, inciso_id, ff_id = key
 
         vigente_2023     = base_map.get(key, 0.0)
-        vigente_reciente = v["vigente"]   # ya en pesos nominales (×1_000 aplicado)
+        vigente_reciente = v["vigente"]   # ya en pesos nominales (ver _escala)
 
         diferencia = vigente_reciente - vigente_2023
 

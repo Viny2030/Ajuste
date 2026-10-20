@@ -55,7 +55,11 @@ def acumular(nuevas: list[dict], acumulado: list[dict], hoy: str) -> tuple[list[
             por_id[nid] = {**n, "primera_vez_visto": hoy}
             agregadas += 1
 
-    ausentes = sum(1 for nid in por_id if nid not in vistas_hoy)
+    # Sólo cuenta como "ausente" lo que cae dentro de la ventana revisada hoy:
+    # lo anterior a la ventana móvil de 30 días es esperable que no aparezca.
+    desde = min((str(n.get("fecha_boletin", "")) for n in nuevas if n.get("fecha_boletin")), default=None)
+    ausentes = sum(1 for nid, n in por_id.items()
+                   if nid not in vistas_hoy and desde and str(n.get("fecha_boletin", "")) >= desde)
     ordenado = sorted(por_id.values(), key=lambda x: (str(x.get("fecha_boletin", "")), x["norma_id"]))
     return ordenado, agregadas, ausentes
 
