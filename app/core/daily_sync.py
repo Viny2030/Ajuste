@@ -190,9 +190,13 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
     downloaded = await _descargar_pdf(norma_data, pdf_path)
 
     if not downloaded:
-        norma_obj.tipo_da = TIPO_DA_NORMATIVA
-        print(f"  ⚠️  Sin PDF para {norma_id} — marcada como NORMATIVA (no se reintentará)")
-        db.commit()
+        # No poder bajar el PDF suele ser transitorio (BORA/Infoleg caídos o
+        # lentos). Antes la norma quedaba marcada NORMATIVA y no se reintentaba
+        # nunca: ahora no se guarda, así la próxima corrida la vuelve a intentar.
+        # (Una tabla vacía, más abajo, sí es definitiva: el PDF existe y no
+        # trae partidas.)
+        db.rollback()
+        print(f"  ⚠️  Sin PDF para {norma_id} — se reintentará en la próxima corrida")
         return 0
 
     # Extraer tabla de partidas
@@ -260,6 +264,16 @@ async def _procesar_norma(norma_data: dict, db: Session) -> int:
 
 # ── Re-linkeo de modificaciones existentes ───────────────────────────────────
 
+def _anio(fecha) -> Optional[int]:
+    """Año de una fecha que puede venir como datetime/date (Postgres) o str (SQLite)."""
+    if fecha is None:
+        return None
+    if hasattr(fecha, "year"):
+        return fecha.year
+    s = str(fecha)[:4]
+    return int(s) if s.isdigit() else None
+
+
 def re_linkear_partidas(db: Session) -> None:
     """
     Recorre todas las modificaciones existentes y actualiza partida_id
@@ -272,10 +286,11 @@ def re_linkear_partidas(db: Session) -> None:
 
     print("\n🔧 Re-linkeando partida_id en modificaciones existentes...")
 
+    # El año se saca en Python: STRFTIME sólo existe en SQLite y en la
+    # Postgres de producción esta consulta fallaba.
     mods = db.execute(text("""
         SELECT m.id, m.norma_id, m.jurisdiccion_id, m.programa_id,
-               m.partida_id,
-               CAST(STRFTIME('%Y', m.fecha_boletin) AS INTEGER) AS ejercicio_da
+               m.partida_id, m.fecha_boletin
         FROM modificaciones m
         WHERE m.jurisdiccion_id IS NOT NULL
           AND m.programa_id IS NOT NULL
@@ -289,7 +304,7 @@ def re_linkear_partidas(db: Session) -> None:
         jur_id      = row[2]
         programa_id = row[3]
         partida_id_actual = row[4]
-        ejercicio_da = row[5] or datetime.now().year
+        ejercicio_da = _anio(row[5]) or datetime.now().year
 
         nuevo_partida_id = _buscar_partida(db, jur_id, programa_id, ejercicio_da)
 
