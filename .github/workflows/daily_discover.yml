@@ -28,10 +28,15 @@ jobs:
       - name: Install dependencies
         run: pip install httpx
 
+      # Sin DESDE el script revisa los últimos 30 días. Antes DESDE estaba fijo
+      # en 14/04/2026 y la ventana crecía todos los días; lo ya descubierto no
+      # se pierde porque "Acumular DAs descubiertas" lo guarda en
+      # data/das_acumulado.json, que también sirve /api/v1/normativa/.
+      # Para revisar un período puntual: correrlo a mano con DESDE seteado.
       - name: Run BORA discovery
         run: python .github/scripts/discover_bora.py
         env:
-          DESDE: "14/04/2026"
+          DESDE: ${{ vars.BORA_DESDE || '' }}
 
       - name: Commit results
         run: |
