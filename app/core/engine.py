@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 BCRA_V4_BASE = "https://api.bcra.gob.ar/estadisticas/v4.0/monetarias"
 ID_USD_MAYORISTA = 5
 ID_INFLACION_MENSUAL = 27
+BCRA_V4_LIMIT = 3000  # tope que acepta la API ("El límite no puede superar los 3000 registros.")
 
 # ─────────────────────────────────────────────────
 #  FUENTES DE DATOS MACRO
@@ -52,16 +53,30 @@ def _fetch_bcra_v4(id_variable: int, desde: str = "2023-01-01") -> list[dict]:
     Consulta una serie de la API oficial BCRA v4.0. Devuelve lista de
     {"fecha": "YYYY-MM-DD", "valor": float} ordenada ascendente, o [] si falla.
     No requiere autenticación (API pública).
+
+    La API devuelve como máximo `limit` registros (1000 por defecto, 3000 como
+    tope) empezando por el MÁS NUEVO: sin paginar, una serie diaria larga
+    pierde en silencio sus primeros meses (el TC desde 2023 llegaba a 921
+    registros en oct-2026). Por eso se pagina con offset hasta cubrir "count".
     """
     hoy = date.today().isoformat()
-    url = f"{BCRA_V4_BASE}/{id_variable}?desde={desde}&hasta={hoy}"
-    data = _get(url, headers={"Accept": "application/json"}, verify=True)
-    if not data or not isinstance(data, dict):
-        return []
-    resultados = data.get("results", [])
-    if not resultados:
-        return []
-    detalle = resultados[0].get("detalle", [])
+    detalle: list[dict] = []
+    offset = 0
+    while True:
+        url = (f"{BCRA_V4_BASE}/{id_variable}?desde={desde}&hasta={hoy}"
+               f"&limit={BCRA_V4_LIMIT}&offset={offset}")
+        data = _get(url, headers={"Accept": "application/json"}, verify=True)
+        if not data or not isinstance(data, dict):
+            # Si falla una página intermedia, una serie parcial (sólo los datos
+            # más nuevos) es peor que ninguna: se devuelve [] y entra el respaldo.
+            return []
+        resultados = data.get("results", [])
+        pagina = resultados[0].get("detalle", []) if resultados else []
+        detalle.extend(pagina)
+        total = (data.get("metadata", {}).get("resultset", {}) or {}).get("count", 0)
+        offset += len(pagina)
+        if not pagina or offset >= total:
+            break
     return sorted(detalle, key=lambda r: r["fecha"])
 
 

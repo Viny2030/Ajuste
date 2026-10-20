@@ -655,16 +655,26 @@ async def _fetch_bcra_v4_async(client: httpx.AsyncClient, id_variable: int, desd
     Nota (2026-07): v3.0 y v2.0 fueron deprecadas por el BCRA (410 Gone).
     v4.0 además anida la respuesta distinto: los datos están en
     results[0]["detalle"], no directamente en "results" como antes.
+    Pagina con offset: la API corta en `limit` registros empezando por el más
+    nuevo (ver app/core/engine.py::_fetch_bcra_v4).
     """
+    from app.core.engine import BCRA_V4_LIMIT
     try:
-        r = await client.get(f"{BCRA_V4_BASE}/{id_variable}", params={"desde": desde})
-        if r.status_code != 200:
-            return []
-        data = r.json()
-        resultados = data.get("results", [])
-        if not resultados:
-            return []
-        detalle = resultados[0].get("detalle", [])
+        detalle: list[dict] = []
+        offset = 0
+        while True:
+            r = await client.get(f"{BCRA_V4_BASE}/{id_variable}",
+                                 params={"desde": desde, "limit": BCRA_V4_LIMIT, "offset": offset})
+            if r.status_code != 200:
+                return []
+            data = r.json()
+            resultados = data.get("results", [])
+            pagina = resultados[0].get("detalle", []) if resultados else []
+            detalle.extend(pagina)
+            total = (data.get("metadata", {}).get("resultset", {}) or {}).get("count", 0)
+            offset += len(pagina)
+            if not pagina or offset >= total:
+                break
         return sorted(detalle, key=lambda x: x["fecha"])
     except Exception:
         return []
