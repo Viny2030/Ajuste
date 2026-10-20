@@ -3,7 +3,10 @@ scripts/seed_macro_indices.py
 ─────────────────────────────
 Pobla macro_indices con:
   - IPC mensual (variación %) desde argentinadatos.com
-  - TC oficial diario (venta) desde argentinadatos.com
+  - TC oficial diario (venta, minorista BNA) desde argentinadatos.com
+  - TC mayorista de referencia (id 5) desde la API BCRA v4.0 — la misma serie
+    que usa app/core/deflactor.py como fuente principal; es la que el
+    deflactor toma del CSV cuando el BCRA no responde.
 
 Usa la misma conexión que la app (app/database/session.py): si la variable
 de entorno DATABASE_URL está definida (como en Railway) escribe directo en
@@ -39,6 +42,7 @@ from app.database.models import Base, MacroIndice
 SEEDS_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "seeds")
 CSV_PATH = os.path.join(SEEDS_DIR, "macro_indices.csv")
 FUENTE = "argentinadatos.com"
+FUENTE_BCRA = "BCRA v4.0"
 
 
 def fetch(url: str):
@@ -52,40 +56,59 @@ def _parse_fecha(s: str) -> datetime:
     return datetime.strptime(s, "%Y-%m-%d")
 
 
-def seed():
+def _descargar_argentinadatos() -> list[tuple[str, str, float]]:
+    ipc = fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion")
+    tc = fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares/oficial")
+    filas = [(r["fecha"], "IPC_variacion_mensual", r["valor"]) for r in ipc if r["fecha"] >= "2022-01-01"]
+    filas += [(r["fecha"], "TC_oficial_venta", r["venta"]) for r in tc if r["fecha"] >= "2022-01-01"]
+    if not any(f[1] == "IPC_variacion_mensual" for f in filas) or not any(f[1] == "TC_oficial_venta" for f in filas):
+        raise ValueError("argentinadatos devolvió series vacías")
+    return filas
+
+
+def _descargar_bcra() -> list[tuple[str, str, float]]:
+    """TC mayorista (id 5) de la API BCRA v4.0: la MISMA serie que usa la app
+    como fuente principal. Así el respaldo (CSV) reproduce exactamente las
+    cifras publicadas. No se usa el mayorista de argentinadatos: entre
+    dic-2023 y ene-2024 trae valores atrasados (368 vs 642 del BCRA)."""
+    from app.core.engine import _fetch_bcra_v4
+    tc = _fetch_bcra_v4(5, desde="2022-01-01")
+    if not tc:
+        raise ValueError("BCRA v4.0 no devolvió la serie id 5")
+    return [(r["fecha"][:10], "TC_mayorista_bcra", r["valor"]) for r in tc]
+
+
+def seed() -> int:
     print(f"Conectando a: {DATABASE_URL[:45]}...")
     Base.metadata.create_all(bind=engine)  # asegura que la tabla exista
 
+    # Primero se descarga TODO y recién después se toca la base. Antes se
+    # borraba y confirmaba el borrado antes de descargar: si la API fallaba,
+    # la tabla quedaba vacía. Ahora cada fuente se reemplaza en su propia
+    # transacción y sólo si su descarga salió bien; si una falla se conservan
+    # sus datos anteriores y el script termina con error (el workflow no
+    # commitea un CSV incompleto).
+    fallas = []
+    descargas = {}
+    for fuente, funcion in ((FUENTE, _descargar_argentinadatos), (FUENTE_BCRA, _descargar_bcra)):
+        print(f"Descargando {fuente}...")
+        try:
+            descargas[fuente] = funcion()
+            print(f"  ✅ {len(descargas[fuente])} registros")
+        except Exception as e:
+            fallas.append(fuente)
+            print(f"  ❌ {fuente}: {e} — se conservan los datos anteriores")
+
     db = SessionLocal()
     try:
-        # Limpiar registros anteriores de esta fuente
-        borrados = db.query(MacroIndice).filter(MacroIndice.fuente == FUENTE).delete()
-        db.commit()
-        print(f"  🗑️  {borrados} registros anteriores de '{FUENTE}' eliminados")
-
-        # ── IPC mensual ──────────────────────────────────────────────────
-        print("Descargando IPC...")
-        ipc = fetch("https://api.argentinadatos.com/v1/finanzas/indices/inflacion")
-        ipc_rows = [
-            MacroIndice(fecha=_parse_fecha(row["fecha"]), indicador="IPC_variacion_mensual",
-                        valor=row["valor"], fuente=FUENTE)
-            for row in ipc if row["fecha"] >= "2022-01-01"
-        ]
-        db.bulk_save_objects(ipc_rows)
-        db.commit()
-        print(f"  ✅ {len(ipc_rows)} registros IPC insertados")
-
-        # ── TC oficial (venta diaria) ────────────────────────────────────
-        print("Descargando TC oficial...")
-        tc = fetch("https://api.argentinadatos.com/v1/cotizaciones/dolares/oficial")
-        tc_rows = [
-            MacroIndice(fecha=_parse_fecha(row["fecha"]), indicador="TC_oficial_venta",
-                        valor=row["venta"], fuente=FUENTE)
-            for row in tc if row["fecha"] >= "2022-01-01"
-        ]
-        db.bulk_save_objects(tc_rows)
-        db.commit()
-        print(f"  ✅ {len(tc_rows)} registros TC insertados")
+        for fuente, filas in descargas.items():
+            borrados = db.query(MacroIndice).filter(MacroIndice.fuente == fuente).delete()
+            db.bulk_save_objects([
+                MacroIndice(fecha=_parse_fecha(f), indicador=ind, valor=v, fuente=fuente)
+                for f, ind, v in filas
+            ])
+            db.commit()
+            print(f"  🔁 {fuente}: {borrados} registros reemplazados por {len(filas)}")
 
         # ── Resumen ───────────────────────────────────────────────────────
         from sqlalchemy import func
@@ -117,6 +140,11 @@ def seed():
     finally:
         db.close()
 
+    if fallas:
+        print(f"\n❌ Fallaron: {', '.join(fallas)}")
+        return 1
+    return 0
+
 
 if __name__ == "__main__":
-    seed()
+    sys.exit(seed())

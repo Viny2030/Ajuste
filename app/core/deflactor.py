@@ -37,9 +37,12 @@ _CSV = os.path.join(os.path.dirname(__file__), "..", "..", "data", "seeds", "mac
 _TTL = 6 * 3600
 _cache: dict = {"t": 0.0, "datos": None}
 
-# Respaldo (calculado el 2026-10-10 con BCRA v4.0, meses ene-2023..ago-2026)
-_RESPALDO_FACTOR = {2023: 1.0, 2024: 3.20, 2025: 4.54, 2026: 5.78}
-_RESPALDO_TC = {2023: 309.9, 2024: 915.0, 2025: 1180.0, 2026: 1469.3}
+# Respaldo, sólo si fallan el BCRA y el CSV. Recalculado el 2026-10-20 con
+# BCRA v4.0: IPC ene-2023..sep-2026 (id 27) y TC mayorista (id 5) promedio de
+# días hábiles; 2026 = promedio a la fecha. Antes el TC 2025 decía 1180 (real
+# 1244,26) y el 2023 309,9 (minorista; el mayorista da 295,21).
+_RESPALDO_FACTOR = {2023: 1.0, 2024: 3.20, 2025: 4.54, 2026: 5.84}
+_RESPALDO_TC = {2023: 295.21, 2024: 916.25, 2025: 1244.26, 2026: 1449.09}
 
 
 def _desde_bcra():
@@ -55,7 +58,10 @@ def _desde_bcra():
 
 
 def _desde_csv():
-    ipc_m, tc_d = {}, []
+    """IPC y TC del CSV de respaldo. Para el TC se prefiere el mayorista del
+    BCRA (misma serie que la fuente principal); el oficial minorista de
+    argentinadatos (≈5 % más alto) queda sólo si el CSV todavía no lo trae."""
+    ipc_m, tc_por_ind = {}, {"TC_mayorista_bcra": [], "TC_oficial_venta": []}
     try:
         with open(_CSV, encoding="utf-8") as f:
             for row in csv.DictReader(f):
@@ -63,10 +69,13 @@ def _desde_csv():
                     continue
                 if row["indicador"] == "IPC_variacion_mensual":
                     ipc_m[row["fecha"][:7]] = float(row["valor"])
-                elif row["indicador"] == "TC_oficial_venta":
-                    tc_d.append((row["fecha"][:10], float(row["valor"])))
+                elif row["indicador"] in tc_por_ind:
+                    tc_por_ind[row["indicador"]].append((row["fecha"][:10], float(row["valor"])))
     except Exception as e:
         logger.warning(f"No se pudo leer {_CSV}: {e}")
+    tc_d = tc_por_ind["TC_mayorista_bcra"] or tc_por_ind["TC_oficial_venta"]
+    if tc_d and not tc_por_ind["TC_mayorista_bcra"]:
+        logger.warning("CSV sin TC_mayorista_bcra: se usa el oficial minorista (no comparable 1:1)")
     return (ipc_m or None), (sorted(tc_d) or None)
 
 
