@@ -33,3 +33,7 @@ de análisis **local**: el sitio no publica montos extraídos de PDF sin validar
 Auditoría de cifras y mecanismos: [`docs/AUDITORIA_2026-10.md`](docs/AUDITORIA_2026-10.md).
 
 Tests: `python -m pytest tests`
+
+Si después de un `pull` faltan `debug_scripts_2026/`, `.idea/` o los CSV grandes de
+`data/presupuesto_base/` (dejaron de versionarse en 2026-10 y git los borra al actualizar):
+`powershell -ExecutionPolicy Bypass -File scriptsestaurar_no_versionados.ps1`

@@ -2,8 +2,8 @@
 """
 Estrategia:
 - Base: credito_original_2023 en pesos nominales (seed_2023 ya multiplicó ×1_000_000)
-- Vigente: credito_vigente del año más reciente (2026 > 2025 > 2024), en la unidad
-  que declara la columna "unidad" del CSV (millones_ars) → se pasa a pesos
+- Vigente: credito_vigente del año más reciente (2026 > 2025 > 2024); MECON lo
+  publica en millones de pesos → se pasa a pesos
 - ModificacionPresupuestaria guarda la diferencia NETA en pesos nominales
 
 Ejecución:
@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.database.session import SessionLocal, engine
 from app.database import models
+from scripts.actualizar_presupuesto import control_magnitud
 
 URLS = {
     2024: "https://dgsiaf-repo.mecon.gob.ar/repository/pa/datasets/2024/credito-anual-2024.zip",
@@ -85,9 +86,10 @@ def _descargar_df(anio: int) -> pd.DataFrame | None:
             df = df[df[col].astype(str).str.strip() == str(anio)]
             break
 
-    # Los CSV de crédito anual traen la columna "unidad" (hoy "millones_ars"
-    # en todas las filas). Antes se suponía MILES y se multiplicaba ×1_000:
-    # todo quedaba 1000 veces abajo (2026 daba $0,15 billones en vez de $152).
+    # MECON publica en millones de pesos. Antes se suponía MILES y se
+    # multiplicaba ×1_000: todo quedaba 1000 veces abajo (2026 daba $0,15
+    # billones en vez de $152). Los ZIP de MECON no traen columna "unidad"
+    # (sí los CSV que genera ingest_presupuesto_2026.py): si viene, manda.
     escala = _escala(df)
     for col in ("monto_original", "monto_vigente"):
         if col in df.columns:
@@ -100,6 +102,10 @@ def _descargar_df(anio: int) -> pd.DataFrame | None:
                 .mul(escala)
                 .round(0)
             )
+    if "monto_vigente" in df.columns:
+        error = control_magnitud(float(df["monto_vigente"].sum()))
+        if error:
+            raise ValueError(f"crédito {anio}: {error}")
     return df
 
 
@@ -109,8 +115,7 @@ _ESCALAS = {"millones_ars": 1_000_000, "miles_ars": 1_000, "ars": 1, "pesos": 1}
 def _escala(df: pd.DataFrame) -> int:
     """Multiplicador a pesos según la columna "unidad" (default: millones)."""
     if "unidad" not in df.columns:
-        print("   ⚠️  El CSV no trae columna 'unidad': se asume millones de pesos")
-        return 1_000_000
+        return 1_000_000   # caso normal: los ZIP de MECON no la traen
     unidades = set(df["unidad"].dropna().astype(str).str.strip().str.lower())
     if len(unidades) != 1 or next(iter(unidades)) not in _ESCALAS:
         raise ValueError(f"Unidad de montos inesperada en el CSV: {sorted(unidades)}")

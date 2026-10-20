@@ -107,3 +107,12 @@ def test_acumular_ignora_ausentes_fuera_de_ventana():
     hoy = [{"norma_id": "DA-30-2026", "fecha_boletin": "2026-10-01"}]
     res, agregadas, ausentes = acu.acumular(hoy, previo, "2026-10-20")
     assert len(res) == 2 and agregadas == 1 and ausentes == 0
+
+
+def test_control_magnitud_detecta_cambio_de_unidad():
+    # Los ZIP de MECON no traen columna "unidad": el control real es el orden
+    # de magnitud del total (2023 = $40 billones, 2026 = $152 billones).
+    from scripts.actualizar_presupuesto import control_magnitud
+    assert control_magnitud(40.41e12) is None and control_magnitud(152.47e12) is None
+    assert "unidad" in control_magnitud(152.47e9)     # publicado en miles → 1000 veces abajo
+    assert "unidad" in control_magnitud(152.47e15)    # 1000 veces arriba

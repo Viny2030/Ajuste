@@ -57,8 +57,10 @@ def leer_csv(anio, zip_local=None):
         with zf.open(nombre) as f:
             filas = list(csv.DictReader(io.TextIOWrapper(f, encoding="utf-8-sig")))
     corte = filas[0].get("ultima_actualizacion_fecha", "") if filas else ""
-    # _monto() multiplica ×1_000_000: sólo es correcto si el dataset sigue en
-    # millones. Si MECON cambia la unidad, mejor cortar que cargar mal.
+    # _monto() multiplica ×1_000_000 porque MECON publica en millones de pesos.
+    # Los ZIP de MECON no traen columna "unidad" (la agrega
+    # scripts/ingest_presupuesto_2026.py en sus CSV); si viene, se verifica.
+    # El control que sí cubre a MECON es control_magnitud(), en main().
     unidades = {(r.get("unidad") or "").strip().lower() for r in filas} - {""}
     if unidades and unidades != {"millones_ars"}:
         raise ValueError(f"Unidad inesperada en el dataset: {sorted(unidades)} (se esperaba millones_ars)")
@@ -110,6 +112,23 @@ def insertar(conn, cols, filas):
         conn.execute(ins, filas[i:i + 5000])
 
 
+# Orden de magnitud razonable del crédito vigente total de un ejercicio, en
+# pesos: 2023 = $40 billones, 2026 = $152 billones. Si MECON pasara a publicar
+# en miles, el total daría ~$0,15 billones y la carga se corta. No se puede
+# saltear con --forzar: es un error de unidades, no un cambio real.
+MAGNITUD_MIN = 1e13   # $10 billones
+MAGNITUD_MAX = 1e16   # $10.000 billones
+
+
+def control_magnitud(vig_total: float) -> str | None:
+    """Devuelve el motivo para abortar si el total no tiene el orden esperado."""
+    if not (MAGNITUD_MIN <= vig_total <= MAGNITUD_MAX):
+        return (f"vigente total ${vig_total / 1e12:,.2f} billones, fuera del rango esperado "
+                f"(${MAGNITUD_MIN / 1e12:,.0f}–${MAGNITUD_MAX / 1e12:,.0f} billones): "
+                f"¿cambió la unidad del dataset?")
+    return None
+
+
 # Una caída grande de un día para el otro no es un recorte: es un ZIP de MECON
 # incompleto o un cambio de formato. Se aborta antes del DELETE.
 MAX_CAIDA_VIGENTE = 0.10   # 10 % del crédito vigente total
@@ -142,6 +161,10 @@ def main():
     print(f"{args.anio}: {len(filas):,} filas · vigente ${vig/1e12:,.2f} billones · {corte}")
     if not filas:
         print("Sin filas: no se toca la base.")
+        return 1
+    error_unidad = control_magnitud(vig)
+    if error_unidad:
+        print(f"::error::Carga abortada, no se tocó la base: {error_unidad}")
         return 1
     if args.dry_run:
         return 0
