@@ -42,6 +42,8 @@ from typing import Optional
 
 import httpx
 
+from app.scrapers.pdf_check import es_pdf, pdf_valido
+
 logger = logging.getLogger(__name__)
 
 BORA_BASE    = "https://www.boletinoficial.gob.ar"
@@ -587,7 +589,7 @@ async def descargar_pdf_bora(
     Descarga el PDF del Anexo de una DA desde el BORA.
     """
     destino_path = Path(destino)
-    if destino_path.exists() and destino_path.stat().st_size > 500:
+    if pdf_valido(destino_path):
         return destino
 
     id_aviso  = norma_data.get("id_aviso_bora", "")
@@ -603,7 +605,7 @@ async def descargar_pdf_bora(
         if resultado.startswith("base64:"):
             import base64
             pdf_bytes = base64.b64decode(resultado[7:])
-            if len(pdf_bytes) > 1000:
+            if len(pdf_bytes) > 1000 and es_pdf(pdf_bytes):
                 destino_path.parent.mkdir(parents=True, exist_ok=True)
                 destino_path.write_bytes(pdf_bytes)
                 logger.info("PDF BORA (base64) OK: %s", destino)
@@ -612,7 +614,7 @@ async def descargar_pdf_bora(
         try:
             r = await client.get(resultado, headers=HEADERS_HTML, timeout=60)
             ct = r.headers.get("content-type", "")
-            if r.status_code == 200 and ("pdf" in ct or len(r.content) > 1000):
+            if r.status_code == 200 and len(r.content) > 1000 and es_pdf(r.content):
                 destino_path.parent.mkdir(parents=True, exist_ok=True)
                 destino_path.write_bytes(r.content)
                 logger.info("PDF BORA OK: %s → %s", resultado, destino)

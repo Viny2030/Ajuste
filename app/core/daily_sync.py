@@ -32,6 +32,7 @@ from app.database.models import TIPO_DA_GASTO, TIPO_DA_NORMATIVA, TIPO_DA_DESCON
 from app.scrapers.bora_discovery import buscar_normas, descargar_pdf_norma
 from app.scrapers.bora_scraper import buscar_normas_bora, descargar_pdf_bora
 from app.core.pdf_processor import extraer_tabla_presupuesto
+from app.scrapers.pdf_check import pdf_valido
 from app.core.engine import cargar_macro_indices
 
 logger = logging.getLogger(__name__)
@@ -110,7 +111,7 @@ async def _descargar_pdf(norma_data: dict, pdf_path: Path) -> Optional[str]:
     Intenta descargar el PDF de la DA probando múltiples fuentes.
     Orden: Infoleg → BORA API → url_bora directo.
     """
-    if pdf_path.exists() and pdf_path.stat().st_size > 500:
+    if pdf_valido(pdf_path):
         return str(pdf_path)
 
     fecha_fmt = norma_data.get("fecha_boletin", "").replace("-", "")
