@@ -200,7 +200,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
   <div>
     <div style="display:flex;align-items:center;gap:10px;">
       <h1>Monitor de Ajuste Presupuestario</h1>
-      <span class="badge-version">MAP v2.1</span>
+      <span class="badge-version" id="app-version">MAP</span>
     </div>
     <span style="font-size:12px;opacity:0.6;">Presupuesto 2023 → 2026 · ① Nominal · ② Real (IPC) · ③ USD constantes</span>
   </div>
@@ -929,6 +929,7 @@ async function init(){
     document.getElementById('kpi-ipc').textContent=(root.factor_ipc_acumulado||0).toFixed(2)+'×';
     if(root.deflactor&&root.deflactor.ultimo_mes_ipc)document.getElementById('kpi-ipc-sub').textContent='precios promedio · IPC hasta '+root.deflactor.ultimo_mes_ipc;
     document.getElementById('last-update').textContent=new Date(root.servidor_tiempo).toLocaleString('es-AR');
+    if(root.version)document.getElementById('app-version').textContent='MAP v'+root.version;
     // Variación real del gasto TOTAL (ponderada por monto), no el promedio simple
     // de los programas que bajaron (que exageraba el ajuste).
     const totBase=(I||[]).reduce((s,d)=>s+(d.total_base_2023||0),0);

@@ -1,6 +1,6 @@
 # app/main.py
 """
-FastAPI - Monitor de Ajuste Presupuestario (MAP) v2.3.1
+FastAPI - Monitor de Ajuste Presupuestario (MAP) v2.4.0
 Fixes v2.3.0:
   - por-inciso: HAVING corregido para Postgres (no acepta alias del SELECT)
   - /api/v1/analisis/inciso: nuevo endpoint alias de por-inciso
@@ -19,7 +19,14 @@ Fixes v2.3.1:
   - base-monetaria (que sí necesita seguir siendo async por httpx.AsyncClient)
     ahora corre su unica consulta sincrona (_get_tc_usd) via run_in_threadpool
     en lugar de bloquear el loop directamente.
+v2.4.0 (auditoría 2026-10, ver docs/AUDITORIA_2026-10.md):
+  - API BCRA v4.0 paginada (antes se perdían en silencio los datos más viejos
+    al pasar los 1000 registros).
+  - /normativa/ sirve también data/das_acumulado.json (nada se pierde).
+  - /macro/series usa el TC mayorista (id 5), igual que el resto de la app.
+  - Versión única en APP_VERSION; el dashboard la toma de /api/v1/status.
 """
+APP_VERSION = "2.4.0"
 import uvicorn
 import httpx
 import logging
@@ -46,7 +53,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="Monitor de Ajuste Presupuestario (MAP)",
     description="Analisis del ajuste presupuestario 2023-2026.",
-    version="2.3.1",
+    version=APP_VERSION,
 )
 
 # Archivos estaticos
@@ -140,15 +147,10 @@ SECTORES: Dict[str, dict] = {
 }
 
 # CONSTANTES MACRO
-IPC_FACTOR_ACUMULADO_FALLBACK = 10.53
-TC_USD_FALLBACK               = 1395
-
-IPC_POR_ANIO_FALLBACK = {
-    2023: 1.0,
-    2024: 3.2,
-    2025: 4.21,
-    2026: 4.21
-}
+# Sólo se usa si fallan el BCRA y el CSV de respaldo (ver app/core/deflactor.py).
+# TC mayorista BCRA (id 5) al 2026-10-19. Se quitaron IPC_FACTOR_ACUMULADO_FALLBACK
+# (10,53) e IPC_POR_ANIO_FALLBACK: ya no los usaba nadie y sus valores eran viejos.
+TC_USD_FALLBACK = 1523.35
 
 
 # ── HELPERS ───────────────────────────────────────────────────────────────────
@@ -229,7 +231,7 @@ def status(db: Session = Depends(get_db)):
     ipc = _get_ipc_factor(db)
     return {
         "app": "Monitor de Ajuste Presupuestario",
-        "version": "2.3.1",
+        "version": APP_VERSION,
         "factor_ipc_acumulado": round(ipc, 4),
         "deflactor": deflactor.metadata(),
         "servidor_tiempo": datetime.utcnow().isoformat(),
@@ -684,7 +686,7 @@ async def _fetch_bcra_v4_async(client: httpx.AsyncClient, id_variable: int, desd
 async def macro_series():
     async with httpx.AsyncClient(timeout=15) as client:
         ipc_data = await _fetch_bcra_v4_async(client, 27)   # Inflación mensual (%)
-        tc_data = await _fetch_bcra_v4_async(client, 4)     # TC minorista (promedio vendedor)
+        tc_data = await _fetch_bcra_v4_async(client, 5)     # TC mayorista (id 5), el mismo que usa el deflactor
     return {"ipc": ipc_data, "tipo_cambio": tc_data}
 
 
@@ -768,11 +770,24 @@ def _leer_lista(ruta: _Path) -> list:
 
 @app.get("/api/v1/normativa/", tags=["Normativa"])
 def listar_normativa(skip: int = 0, limit: int = Query(50, le=500)):
+    # nuevas_das.json sólo cubre la ventana móvil del descubrimiento diario;
+    # das_acumulado.json guarda todo lo descubierto (nunca se borra). Se
+    # deduplica por norma_id: lo más reciente pisa al histórico.
     recientes = _leer_lista(_DATA / "nuevas_das.json")
+    acumulado = _leer_lista(_DATA / "das_acumulado.json")
     historico = _leer_lista(_DATA / "processed" / "das_presupuesto_2023_2026.json")
-    items = sorted(recientes + historico,
+    por_id: dict = {}
+    sin_id: list = []
+    for n in historico + acumulado + recientes:
+        nid = n.get("norma_id")
+        if nid:
+            por_id[nid] = {**por_id.get(nid, {}), **n}
+        else:
+            sin_id.append(n)
+    items = sorted(list(por_id.values()) + sin_id,
                    key=lambda x: str(x.get("fecha_boletin", "")), reverse=True)
-    return {"total": len(items), "recientes_desde_bora": len(recientes),
+    desde_bora = {n.get("norma_id") for n in acumulado + recientes}
+    return {"total": len(items), "recientes_desde_bora": len(desde_bora),
             "items": items[skip: skip + limit]}
 
 
@@ -785,7 +800,7 @@ def listar_normativa(skip: int = 0, limit: int = Query(50, le=500)):
 
 @app.get("/health", tags=["Health"])
 async def health():
-    return {"status": "ok", "version": "2.3.1", "timestamp": datetime.utcnow().isoformat()}
+    return {"status": "ok", "version": APP_VERSION, "timestamp": datetime.utcnow().isoformat()}
 
 
 if __name__ == "__main__":
