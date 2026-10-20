@@ -23,7 +23,7 @@ Desde ahora esto lo repite todos los días `scripts/verificar_cifras.py`
 |---|---|---|---|
 | 1 | 🔴 | La API BCRA v4.0 devuelve como máximo `limit` registros (1000 por defecto, tope 3000) empezando por el más nuevo. La serie diaria del TC desde 2023 tenía 921: hacia feb-2027 se perdían en silencio los primeros meses de 2023 y todas las variaciones en USD quedaban mal. | **Corregido** (paginación con offset en `engine._fetch_bcra_v4` y `main._fetch_bcra_v4_async`) |
 | 2 | 🔴 | `discover_bora.py` reescribe `data/nuevas_das.json` completo: si el BORA responde a medias, las normas ya encontradas desaparecen. `DESDE` está fijo en 14/04/2026, así que el período a revisar crece todos los días. | **Corregido**: `/api/v1/normativa/` sirve también `das_acumulado.json` (deduplicado por `norma_id`); el descubrimiento usa ventana móvil de 30 días (`DESDE` opcional vía la variable de repo `BORA_DESDE`). |
-| 3 | 🟠 | Unidades contradictorias: `actualizar_presupuesto.py` multiplica ×1.000.000 (correcto: da los $152 billones publicados), `sync_modificaciones.py` multiplica ×1.000 → queda 1000 veces abajo. No está en el circuito de producción. | **Corregido**: la escala sale de la columna `unidad` del CSV (`millones_ars` en las 72.859 filas de 2026); si cambia, el script corta. También dejaba positivos los montos negativos (el regex borraba el signo). |
+| 3 | 🟠 | Unidades contradictorias: `actualizar_presupuesto.py` multiplica ×1.000.000 (correcto: da los $152 billones publicados), `sync_modificaciones.py` multiplica ×1.000 → queda 1000 veces abajo. No está en el circuito de producción. | **Corregido**: MECON publica en millones de pesos (sus totales ×1.000.000 coinciden con lo publicado: $40,41 billones en 2023, $152,47 en 2026). Sus ZIP no traen columna `unidad` (la agrega `ingest_presupuesto_2026.py` en sus CSV; si viene, se respeta). El control que cubre a MECON es `control_magnitud()`: si el total de un ejercicio sale fuera de $10–$10.000 billones (por ejemplo, si pasaran a publicar en miles), la carga se corta en `actualizar_presupuesto.py` y en `sync_modificaciones.py`, sin opción de forzarla. También dejaba positivos los montos negativos (el regex borraba el signo). |
 | 4 | 🟠 | `daily_sync.py` sólo corre en la tarea programada de Windows y escribe en `normas_jgm`/`modificaciones`, que el sitio no lee. Un fallo transitorio al bajar un PDF marca la norma como NORMATIVA para siempre. `--re-linkear` usa `STRFTIME` (sólo SQLite). | **Corregido**: sin PDF la norma no se guarda y se reintenta; `--re-linkear` probado en Postgres. Sigue sin estar en el circuito del sitio (decisión de producto). Las normas que ya quedaron NORMATIVA por esa causa no se pueden distinguir de las legítimas. |
 | 5 | 🟠 | `seed_macro_indices.py` borra y confirma antes de descargar: si argentinadatos falla, la tabla queda vacía. El respaldo CSV usa el dólar **minorista** BNA y la fuente principal el **mayorista** BCRA (id 5). | **Corregido**: descarga todo primero y reemplaza cada fuente en su propia transacción; si una falla conserva sus datos y sale con error. El CSV ahora trae `TC_mayorista_bcra` (misma serie que la fuente principal) y el deflactor lo prefiere: con sólo el CSV da 5,8385 / 295,21 / 1449,09, idéntico a lo publicado. (No se usó el mayorista de argentinadatos: en dic-2023/ene-2024 trae 368 en vez de 642.) |
 | 6 | 🟡 | `daily_budget.yml`: `git push \|\| true` esconde fallas; la carga de 2026 no se aborta ante un ZIP incompleto. `monthly_macro.yml` y `scraper_social.yml` no declaran `permissions: contents: write`. | **Corregido**: push con reintentos y en rojo si falla; `actualizar_presupuesto.py` aborta antes del DELETE si el vigente cae >10 % o las filas >20 % (`--forzar` para cargar igual) y verifica la unidad; permisos explícitos en `monthly_macro` y `scraper_social`. |
@@ -110,14 +110,32 @@ crédito vigente de MECON que ya se publica incluye el efecto de todas las DA. S
 adelante se quieren mostrar, el camino es publicar sólo las normas que pasen un control
 (p. ej. reducción = ampliación en las reasignaciones) y marcar el resto "a revisar".
 
-### Base local (`sql_app.db`) — no afecta al sitio
-* 2023 está cargado dos veces (259.763 filas contra 131.709 en producción): en local el
-  total 2023 da $80,8 billones y la variación real −69 %, en vez de −35,4 %.
-* Las modificaciones sintéticas `CREDITO-VIGENTE-*` se calcularon con el error de
-  unidades del punto 3 (aumentos por $0,11 billones contra reducciones por $49,9).
-* Para rehacerla: recargar 2023 con `python -m scripts.seed_2023` sobre una base limpia y
-  correr `python -m scripts.sync_modificaciones` (ya corregido). Backup previo al reintento de normas:
-  `sql_app.backup-2026-10-20.db` (local, ignorado por git).
+### Base local (`sql_app.db`) — reconstruida
+Tenía 2023 cargado dos veces (259.763 filas contra 131.709 en producción: el total 2023 daba
+$80,8 billones y la variación real −69 % en vez de −35,4 %), 2026 desactualizado y las
+modificaciones sintéticas `CREDITO-VIGENTE-*` calculadas con el error de unidades del punto 3.
+Se rehízo así:
+
+1. `python -m scripts.actualizar_presupuesto --anio 2023 --forzar` (el control de cordura la
+   frenó primero, con razón: el total caía exactamente 50 %, la firma del duplicado) y
+   `--anio 2026`. Las cuatro bases anuales quedan iguales a producción.
+2. `python -m app.core.daily_sync --re-linkear`: 1.697 modificaciones re-apuntadas a las
+   filas nuevas (6 sin equivalente).
+3. `python -m scripts.sync_modificaciones` con las unidades corregidas.
+
+Verificado: `evolucion-real`, `licuacion`, `por-inciso` y `sector` dan **idéntico** en local y
+en producción. Backups (ignorados por git): `sql_app.backup-2026-10-20.db` (antes del
+reintento de normas) y `sql_app.backup-antes-rebuild-2026-10-20.db` (antes de la reconstrucción).
+
+### Archivos que dejaron de versionarse y otras PC
+Git borra de cada copia local, al hacer `pull`, los archivos que un commit deja de versionar
+(`.idea/`, `debug_scripts_2026/` y los dos CSV regenerables). En otra PC se recuperan, sin
+volver a versionarlos, con:
+
+    powershell -ExecutionPolicy Bypass -File scriptsestaurar_no_versionados.ps1
+
+Probado simulando otra PC: restaura los 73 archivos y no deja cambios en git; si se corre de
+nuevo no hace nada. Railway y GitHub Actions no usan esos archivos.
 
 ### GitHub Actions
 `actions/checkout` y `actions/setup-python` pasan de v4/v5 (Node 20, deprecado) a v7
