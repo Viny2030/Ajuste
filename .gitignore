@@ -24,3 +24,16 @@ data/presupuesto_base/credito_mensual_2026.csv
 credito2026.zip
 *.zip
 !archive/**/*.zip
+# Configuración local del IDE
+.idea/
+
+# Scripts exploratorios de 2026 (siguen en disco y en el historial de git;
+# no los usa app/ ni ningún workflow — ver su README)
+debug_scripts_2026/
+
+# Salidas regenerables de scripts/ingest_presupuesto_2026.py (--completo).
+# credito_anual_2026_jgm.csv era idéntico a presupuesto_2026_jgm_completo.csv.
+# La app no las lee: el presupuesto de producción lo carga
+# scripts/actualizar_presupuesto.py directo desde MECON.
+data/presupuesto_base/credito_anual_2026_completo.csv
+data/presupuesto_base/credito_anual_2026_jgm.csv
