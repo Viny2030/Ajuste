@@ -355,8 +355,8 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
     <div class="sector-header"><div class="sector-icon">🏥</div><div><div class="sector-title">Ministerio de Salud</div><div class="sector-subtitle">jur 80 · Deflactado por IPC · Endpoint /api/v1/analisis/sector</div></div></div>
     <div class="sector-kpi-row" id="salud-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
-      <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="salud-chart-wrap"><canvas id="cSalud"></canvas></div></div>
-      <div class="card"><div class="card-title">nominal vs real</div><div style="position:relative;height:260px;"><canvas id="cSaludScatter"></canvas></div></div>
+      <div class="card"><div class="card-title">variación 2023 → 2026 a la fecha</div><div style="position:relative;min-height:260px;" id="salud-chart-wrap"><canvas id="cSalud"></canvas></div></div>
+      <div class="card"><div class="card-title">crédito vigente: nominal vs a precios de 2023</div><div style="position:relative;height:260px;"><canvas id="cSaludScatter"></canvas></div></div>
     </div>
     <div class="sector-table-wrap"><div class="card-title">detalle</div><div class="th" style="grid-template-columns:2fr 90px 90px 100px 90px;"><span>programa</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div><div id="tbl-salud"></div></div>
   </div>
@@ -366,8 +366,8 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
     <div class="sector-header"><div class="sector-icon">👴</div><div><div class="sector-title">Jubilaciones y Previsión Social</div><div class="sector-subtitle">jur 75 Trabajo (2023) → jur 88 Capital Humano (2026) · programas previsionales 16, 17, 21, 30 y 31</div></div></div>
     <div class="sector-kpi-row" id="jubilaciones-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
-      <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="jubilaciones-chart-wrap"><canvas id="cJubilaciones"></canvas></div></div>
-      <div class="card"><div class="card-title">nominal vs real</div><div style="position:relative;height:260px;"><canvas id="cJubilacionesScatter"></canvas></div></div>
+      <div class="card"><div class="card-title">variación 2023 → 2026 a la fecha</div><div style="position:relative;min-height:260px;" id="jubilaciones-chart-wrap"><canvas id="cJubilaciones"></canvas></div></div>
+      <div class="card"><div class="card-title">crédito vigente: nominal vs a precios de 2023</div><div style="position:relative;height:260px;"><canvas id="cJubilacionesScatter"></canvas></div></div>
     </div>
     <div class="sector-table-wrap"><div class="card-title">detalle</div><div class="th" style="grid-template-columns:2fr 1fr 90px 90px 100px 90px;"><span>programa</span><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div><div id="tbl-jubilaciones"></div></div>
   </div>
@@ -377,8 +377,8 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
     <div class="sector-header"><div class="sector-icon">👶</div><div><div class="sector-title">Capital Humano (educación, niñez y empleo)</div><div class="sector-subtitle">jur 70 Educación + 75 Trabajo + 85 Desarrollo Social (2023) → jur 88 Capital Humano (2026), sin jubilaciones · No se puede separar niñez de educación: en 2026 están en la misma jurisdicción</div></div></div>
     <div class="sector-kpi-row" id="ninez-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
-      <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="ninez-chart-wrap"><canvas id="cNinez"></canvas></div></div>
-      <div class="card"><div class="card-title">nominal vs real</div><div style="position:relative;height:260px;"><canvas id="cNinezScatter"></canvas></div></div>
+      <div class="card"><div class="card-title">variación 2023 → 2026 a la fecha</div><div style="position:relative;min-height:260px;" id="ninez-chart-wrap"><canvas id="cNinez"></canvas></div></div>
+      <div class="card"><div class="card-title">crédito vigente: nominal vs a precios de 2023</div><div style="position:relative;height:260px;"><canvas id="cNinezScatter"></canvas></div></div>
     </div>
     <div class="sector-table-wrap"><div class="card-title">detalle</div><div class="th" style="grid-template-columns:2fr 1fr 90px 90px 100px 90px;"><span>programa</span><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div><div id="tbl-ninez"></div></div>
   </div>
@@ -388,8 +388,8 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
     <div class="sector-header"><div class="sector-icon">🏗️</div><div><div class="sector-title">Obra Pública e Infraestructura</div><div class="sector-subtitle">jur 64 Obras Públicas + 57 Transporte + 65 Desarrollo Territorial (2023) → jur 50 Economía, programas de infraestructura (2026)</div></div></div>
     <div class="sector-kpi-row" id="obra-publica-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
-      <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="obra-publica-chart-wrap"><canvas id="cObraPublica"></canvas></div></div>
-      <div class="card"><div class="card-title">nominal vs real</div><div style="position:relative;height:260px;"><canvas id="cObraPublicaScatter"></canvas></div></div>
+      <div class="card"><div class="card-title">variación 2023 → 2026 a la fecha</div><div style="position:relative;min-height:260px;" id="obra-publica-chart-wrap"><canvas id="cObraPublica"></canvas></div></div>
+      <div class="card"><div class="card-title">crédito vigente: nominal vs a precios de 2023</div><div style="position:relative;height:260px;"><canvas id="cObraPublicaScatter"></canvas></div></div>
     </div>
     <div class="sector-table-wrap"><div class="card-title">detalle</div><div class="th" style="grid-template-columns:2fr 1fr 90px 90px 100px 90px;"><span>programa</span><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div><div id="tbl-obra-publica"></div></div>
   </div>
@@ -428,8 +428,8 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
     <div class="sector-header"><div class="sector-icon">📚</div><div><div class="sector-title">Educación</div><div class="sector-subtitle">Ver pestaña "capital humano"</div></div></div>
     <div class="sector-kpi-row" id="educacion-kpis"><div class="sector-loading">⏳ Cargando…</div></div>
     <div class="sector-grid">
-      <div class="card"><div class="card-title">variación real</div><div style="position:relative;min-height:260px;" id="educacion-chart-wrap"><canvas id="cEducacion"></canvas></div></div>
-      <div class="card"><div class="card-title">nominal vs real</div><div style="position:relative;height:260px;"><canvas id="cEducacionScatter"></canvas></div></div>
+      <div class="card"><div class="card-title">variación 2023 → 2026 a la fecha</div><div style="position:relative;min-height:260px;" id="educacion-chart-wrap"><canvas id="cEducacion"></canvas></div></div>
+      <div class="card"><div class="card-title">crédito vigente: nominal vs a precios de 2023</div><div style="position:relative;height:260px;"><canvas id="cEducacionScatter"></canvas></div></div>
     </div>
     <div class="sector-table-wrap"><div class="card-title">detalle</div><div class="th" style="grid-template-columns:2fr 1fr 90px 90px 100px 90px;"><span>programa</span><span>jurisdicción</span><span class="nr">nominal %</span><span class="nr">real %</span><span class="nr">licuación %</span><span class="nr">estado</span></div><div id="tbl-educacion"></div></div>
   </div>
@@ -607,7 +607,45 @@ function renderSectorAPIKpis(tabName, s) {
         '<span style="color:#aaa">Fuente: Presupuesto Abierto · Mapeo por jurisdicción · IPC ×' + s.ipc_factor + '</span>' +
       '</div>' +
       '<div class="sector-empty" style="margin-top:16px;">Detalle por programa: endpoint <code>/api/v1/partidas/?jurisdiccion_id=' + (s.jur_2026||[]).join(',') + '</code></div>';
+  }  renderSectorAPICharts(tabName, s);
+}
+
+// ══ Gráficos de las pestañas sectoriales (salud, jubilaciones, capital humano, obra pública)
+// Se dibujan con el agregado del sector que devuelve /api/v1/analisis/sector. En mayo 2026
+// (e80c7ec) se quitaron los gráficos por programa y los canvas quedaron vacíos; no se
+// restauran así porque en jubilaciones, capital humano y obra pública los programas
+// cambiaron de jurisdicción entre 2023 y 2026 y no hay cruce programa a programa.
+const SECTOR_CANVAS = {'salud':'Salud','jubilaciones':'Jubilaciones','ninez':'Ninez','obra-publica':'ObraPublica'};
+function renderSectorAPICharts(tabName, s) {
+  const pref = SECTOR_CANVAS[tabName];
+  if (!pref || typeof Chart === 'undefined') return;
+  const idVar = 'c' + pref, idCred = 'c' + pref + 'Scatter';
+  [idVar, idCred].forEach(id => { if (_sectCharts[id]) { _sectCharts[id].destroy(); delete _sectCharts[id]; } });
+  const cVar = document.getElementById(idVar), cCred = document.getElementById(idCred);
+  if (!cVar || !cCred) return;
+  cVar.parentElement.style.height = '260px';
+  if (s.credito_vigente_2026_mm == null || s.var_nominal_pct == null) {
+    cVar.parentElement.innerHTML = '<div class="sector-empty">Sin datos 2026 para graficar.</div>';
+    return;
   }
+  const color = v => v < 0 ? 'rgba(185,28,28,0.85)' : 'rgba(21,128,61,0.85)';
+  const vals = [s.var_nominal_pct, s.var_real_ipc_pct, s.var_real_usd_pct];
+  _sectCharts[idVar] = new Chart(cVar, {type:'bar',
+    data:{labels:['nominal (pesos corrientes)','real (deflactado IPC)','real (en USD)'],
+          datasets:[{data:vals, backgroundColor:['rgba(37,99,235,0.7)', color(vals[1]), color(vals[2] ?? 0)], borderWidth:1}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtP(c.raw)},
+               afterBody:()=>['2026 a la fecha: el crédito puede cambiar hasta el cierre']}},
+      scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
+  // millones → billones
+  const b23 = s.credito_vigente_2023_mm / 1e6, b26 = s.credito_vigente_2026_mm / 1e6, b26r = b26 / s.ipc_factor;
+  _sectCharts[idCred] = new Chart(cCred, {type:'bar',
+    data:{labels:['2023','2026 nominal','2026 a precios de 2023'],
+          datasets:[{data:[b23, b26, b26r].map(v => +v.toFixed(2)),
+                     backgroundColor:['rgba(91,45,142,0.55)','rgba(37,99,235,0.7)', color(b26r - b23)], borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.raw.toLocaleString('es-AR')+' billones'}}},
+      scales:{x:{ticks:{font:{size:11}}},y:{ticks:{callback:v=>'$'+v+' bill.',font:{size:11}},grid:{color:'#f0f0ea'}}}}});
 }
 
 // ══ TAREA 3: Resumen con tabla de 5 KPIs desde /api/v1/analisis/sector ═══════
