@@ -3,8 +3,13 @@
 # Uso: powershell -ExecutionPolicy Bypass -File setup_scheduler.ps1
 
 $TaskName    = "MAP_DailySync"
-$PythonExe   = "C:\Users\ASUS\PycharmProjects\Ajuste\.venv\Scripts\python.exe"
-$ProjectDir  = "C:\Users\ASUS\PycharmProjects\Ajuste"
+# Rutas relativas a este script (antes estaban fijas a C:\Users\ASUS\...)
+$ProjectDir  = $PSScriptRoot
+$PythonExe   = Join-Path $ProjectDir ".venv\Scripts\python.exe"
+if (-not (Test-Path $PythonExe)) {
+    Write-Error "No se encontró $PythonExe. Creá el entorno con: python -m venv .venv"
+    exit 1
+}
 $LogDir      = "$ProjectDir\logs"
 $LogFile     = "$LogDir\daily_sync.log"
 
@@ -14,12 +19,14 @@ if (-not (Test-Path $LogDir)) {
     Write-Host "Carpeta de logs creada: $LogDir"
 }
 
-# Comando a ejecutar
-$Arguments = "-m app.core.daily_sync --solo-recientes >> `"$LogFile`" 2>&1"
+# Comando a ejecutar. La redirección (>> log 2>&1) la tiene que interpretar
+# una shell: antes se le pasaba a python.exe como argumentos y argparse
+# fallaba con "unrecognized arguments", así que la tarea nunca corría.
+$Arguments = "/c `"`"$PythonExe`" -m app.core.daily_sync --solo-recientes >> `"$LogFile`" 2>&1`""
 
 # Acción de la tarea
 $Action = New-ScheduledTaskAction `
-    -Execute $PythonExe `
+    -Execute "cmd.exe" `
     -Argument $Arguments `
     -WorkingDirectory $ProjectDir
 

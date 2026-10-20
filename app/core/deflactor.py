@@ -160,4 +160,11 @@ def metadata(anio_base: int = 2023, anio_comp: int = 2026) -> dict:
         "tc_promedio_comp": round(tc_promedio(anio_comp), 2),
         "fuente_ipc": d["fuente_ipc"],
         "fuente_tc": d["fuente_tc"],
+        "anio_comp_en_curso": anio_comp >= date.today().year,
+        "nota_anio_en_curso": (
+            f"{anio_comp} a la fecha: el crédito vigente todavía puede cambiar hasta el cierre "
+            f"(suelen sumarse DA y DNU en el último trimestre, lo que achica el recorte) y los "
+            f"precios promedio usan {n} meses publicados (con el año completo el recorte "
+            f"crece). Los dos efectos van en sentidos opuestos."
+        ) if anio_comp >= date.today().year else None,
     }

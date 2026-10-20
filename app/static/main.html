@@ -35,6 +35,7 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
 .prog-jur { font-size: 11px; color: #aaa; }
 .pill { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; }
 .pill-red { background: #fdecea; color: #7b1515; }
+.pill-rev { background: #fff4e0; color: #8a4b00; font-size: 10px; padding: 1px 6px; border-radius: 8px; margin-left: 6px; cursor: help; white-space: nowrap; }
 .pill-green { background: #eaf7ee; color: #145a22; }
 .nr { text-align: right; }
 .panel { display: none; }
@@ -213,9 +214,9 @@ select, input[type=text] { padding: 5px 10px; border: 1px solid #e0e0da; border-
 <div class="main">
   <div class="kpi-grid">
     <div class="kpi"><div class="kpi-label">programas en el ranking</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub" id="kpi-total-sub">base 2023</div></div>
-    <div class="kpi"><div class="kpi-label">variación real del gasto total</div><div class="kpi-value red" id="kpi-avg">—</div><div class="kpi-sub">vigente 2026 vs vigente 2023, a precios de 2023</div></div>
+    <div class="kpi"><div class="kpi-label">variación real del gasto total</div><div class="kpi-value red" id="kpi-avg">—</div><div class="kpi-sub" id="kpi-avg-sub">vigente 2026 a la fecha vs vigente 2023, a precios de 2023</div></div>
     <div class="kpi"><div class="kpi-label">deflactor 2026 / 2023</div><div class="kpi-value" id="kpi-ipc">—</div><div class="kpi-sub" id="kpi-ipc-sub">precios promedio de cada año</div></div>
-    <div class="kpi"><div class="kpi-label">programas con ajuste &gt;50%</div><div class="kpi-value red" id="kpi-cut50">—</div><div class="kpi-sub">pérdida real de más de la mitad</div></div>
+    <div class="kpi"><div class="kpi-label">programas con ajuste &gt;50%</div><div class="kpi-value red" id="kpi-cut50">—</div><div class="kpi-sub" id="kpi-cut50-sub">pérdida real de más de la mitad</div></div>
   </div>
 
   <div id="tt" style="display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;font-size:12px;padding:8px 12px;border-radius:6px;max-width:280px;line-height:1.5;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.3);"></div>
@@ -790,9 +791,9 @@ function renderRanking(){
   const n=parseInt(document.getElementById('rn').value);
   let d=D.filter(x=>!jur||x.jurisdiccion===jur).sort((a,b)=>a.variacion_real_pct-b.variacion_real_pct).slice(0,n);
   document.getElementById('rwrap').style.height=(d.length*38+80)+'px';
-  const labs=d.map(x=>{const s=x.programa_desc||x.programa_id;return s.length>55?s.slice(0,55)+'…':s;});
+  const labs=d.map(x=>{const s=(x.revisar_reclasificacion?'⚠ ':'')+(x.programa_desc||x.programa_id);return s.length>55?s.slice(0,55)+'…':s;});
   if(cRI)cRI.destroy();
-  cRI=new Chart(document.getElementById('cR'),{type:'bar',data:{labels:labs,datasets:[{label:'nominal %',data:d.map(x=>+x.variacion_nominal_pct.toFixed(1)),backgroundColor:'rgba(37,99,235,0.85)',borderWidth:1},{label:'real %',data:d.map(x=>+x.variacion_real_pct.toFixed(1)),backgroundColor:d.map(x=>x.variacion_real_pct<0?'rgba(185,28,28,0.90)':'rgba(21,128,61,0.90)'),borderWidth:1}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{afterBody:items=>{const x=d[items[0].dataIndex];return['nominal: '+fmtP(x.variacion_nominal_pct),'real: '+fmtP(x.variacion_real_pct),'licuación: '+x.licuacion_pct.toFixed(1)+'%'];}}}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
+  cRI=new Chart(document.getElementById('cR'),{type:'bar',data:{labels:labs,datasets:[{label:'nominal %',data:d.map(x=>+x.variacion_nominal_pct.toFixed(1)),backgroundColor:'rgba(37,99,235,0.85)',borderWidth:1},{label:'real %',data:d.map(x=>+x.variacion_real_pct.toFixed(1)),backgroundColor:d.map(x=>x.variacion_real_pct<0?'rgba(185,28,28,0.90)':'rgba(21,128,61,0.90)'),borderWidth:1}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{afterBody:items=>{const x=d[items[0].dataIndex];return['nominal: '+fmtP(x.variacion_nominal_pct),'real: '+fmtP(x.variacion_real_pct),'licuación: '+x.licuacion_pct.toFixed(1)+'%'].concat(x.revisar_reclasificacion?['⚠ caída nominal de más del 90 %: puede ser eliminación real o traslado del gasto a otro programa o inciso']:[]);}}}},scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0ea'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
 }
 
 function renderInciso(){
@@ -821,7 +822,7 @@ function renderDetalle(){
   const data=D.filter(d=>(!jur||d.jurisdiccion===jur)&&(!est||d.estado_ajuste===est)&&(!q||(d.programa_desc||'').toLowerCase().includes(q)||(d.jurisdiccion||'').toLowerCase().includes(q))).sort((a,b)=>a.variacion_real_pct-b.variacion_real_pct);
   document.getElementById('tbl-detalle').innerHTML=data.map(d=>{
     const nom=d.variacion_nominal_pct||0,real=d.variacion_real_pct||0,usd=d.ajuste_usd_pct,lic=d.licuacion_pct||0;
-    return '<div class="tr" style="grid-template-columns:2fr 90px 90px 90px 90px 80px;"><span><div class="prog-name">'+(d.programa_desc||d.programa_id)+'</div><div class="prog-jur">'+(d.jurisdiccion||'')+'</div></span><span class="nr '+(nom<0?'red':'green')+'">'+fmtP(nom)+'<br><small style="color:#aaa;font-size:10px;">'+fmtAbs(d.ajuste_nominal_abs)+'</small></span><span class="nr '+(real<0?'red':'green')+'">'+fmtP(real)+'<br><small style="color:#aaa;font-size:10px;">'+fmtAbs(d.ajuste_real_abs)+'</small></span><span class="nr '+(usd!=null&&usd<0?'red':usd!=null?'green':'')+'">'+( usd!=null?fmtP(usd):'—')+'<br><small style="color:#aaa;font-size:10px;">'+fmtUSD(d.ajuste_usd_abs)+'</small></span><span class="nr amber">'+lic.toFixed(1)+'%</span><span><span class="pill '+(d.estado_ajuste==='REDUCCIÓN'?'pill-red':'pill-green')+'">'+(d.estado_ajuste)+'</span></span></div>';
+    return '<div class="tr" style="grid-template-columns:2fr 90px 90px 90px 90px 80px;"><span><div class="prog-name">'+(d.programa_desc||d.programa_id)+(d.revisar_reclasificacion?'<span class="pill-rev" title="caída nominal de más del 90 %: puede ser eliminación real o traslado del gasto a otro programa o inciso">⚠ revisar</span>':'')+'</div><div class="prog-jur">'+(d.jurisdiccion||'')+'</div></span><span class="nr '+(nom<0?'red':'green')+'">'+fmtP(nom)+'<br><small style="color:#aaa;font-size:10px;">'+fmtAbs(d.ajuste_nominal_abs)+'</small></span><span class="nr '+(real<0?'red':'green')+'">'+fmtP(real)+'<br><small style="color:#aaa;font-size:10px;">'+fmtAbs(d.ajuste_real_abs)+'</small></span><span class="nr '+(usd!=null&&usd<0?'red':usd!=null?'green':'')+'">'+( usd!=null?fmtP(usd):'—')+'<br><small style="color:#aaa;font-size:10px;">'+fmtUSD(d.ajuste_usd_abs)+'</small></span><span class="nr amber">'+lic.toFixed(1)+'%</span><span><span class="pill '+(d.estado_ajuste==='REDUCCIÓN'?'pill-red':'pill-green')+'">'+(d.estado_ajuste)+'</span></span></div>';
   }).join('');
 }
 
@@ -936,6 +937,10 @@ async function init(){
     const totReal=(I||[]).reduce((s,d)=>s+(d.total_real_moneda_2023||0),0);
     document.getElementById('kpi-avg').textContent=totBase?((totReal/totBase-1)*100).toFixed(1)+'%':'—';
     document.getElementById('kpi-cut50').textContent=D.filter(d=>d.variacion_real_pct<-50).length;
+    const nRev=D.filter(d=>d.variacion_real_pct<-50&&d.revisar_reclasificacion).length;
+    if(nRev){const el=document.getElementById('kpi-cut50-sub');el.textContent='pérdida real de más de la mitad · '+nRev+' a revisar ⚠';el.title='caída nominal de más del 90 %: puede ser eliminación real o traslado del gasto a otro programa o inciso';el.style.cursor='help';}
+    // Año en curso: el crédito y los precios todavía no cerraron (ver /api/v1/status → deflactor.nota_anio_en_curso)
+    if(root.deflactor&&root.deflactor.nota_anio_en_curso){const el=document.getElementById('kpi-avg-sub');el.textContent=el.textContent+' ⓘ';el.title=root.deflactor.nota_anio_en_curso;el.style.cursor='help';}
     const jurs=[...new Set(D.map(d=>d.jurisdiccion))].sort();
     ['rjur','djur'].forEach(id=>{const s=document.getElementById(id);jurs.forEach(j=>{const o=document.createElement('option');o.value=j;o.textContent=j.length>45?j.slice(0,45)+'…':j;s.appendChild(o);});});
     renderRanking();renderInciso();renderScatter();renderDetalle();

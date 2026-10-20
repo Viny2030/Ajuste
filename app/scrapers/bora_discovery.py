@@ -25,6 +25,8 @@ from pathlib import Path
 
 import httpx
 
+from app.scrapers.pdf_check import es_pdf, pdf_valido
+
 logger = logging.getLogger(__name__)
 
 URL_INFOLEG_ZIP = (
@@ -213,9 +215,12 @@ def buscar_normas(
                 "texto_resumido": row.get("texto_resumido", "")[:1000],
                 "tipo_accion":    _detectar_tipo_accion(texto_full),
                 "url_infoleg":    url_infoleg,
+                # Infoleg no trae el id del aviso del BORA: se enlaza la
+                # edición de ese día (antes se armaba /detalleAviso/primera/0/
+                # {numero_boletin}/{fecha}, un link que no existe). La descarga
+                # del PDF no usa este link: busca el aviso por fecha.
                 "url_bora":       (
-                    f"https://www.boletinoficial.gob.ar/detalleAviso/primera/0"
-                    f"/{row.get('numero_boletin', '')}"
+                    f"https://www.boletinoficial.gob.ar/seccion/primera"
                     f"/{fecha_str.replace('-', '')}"
                 ),
                 "pdf_hash":       _sha256(norma_id),
@@ -236,7 +241,7 @@ async def descargar_pdf_norma(
 ) -> str | None:
     """Descarga el PDF del anexo desde Infoleg. Retorna path local o None."""
     destino_path = Path(destino)
-    if destino_path.exists() and destino_path.stat().st_size > 500:
+    if pdf_valido(destino_path):
         return destino
 
     headers = {
@@ -272,7 +277,7 @@ async def descargar_pdf_norma(
                 ct = resp.headers.get("content-type", "")
                 if resp.status_code == 200 and (
                     "pdf" in ct or pdf_url.endswith(".pdf")
-                ) and len(resp.content) > 1000:
+                ) and len(resp.content) > 1000 and es_pdf(resp.content):
                     destino_path.parent.mkdir(parents=True, exist_ok=True)
                     destino_path.write_bytes(resp.content)
                     logger.info("PDF OK: %s → %s", pdf_url, destino)
@@ -294,7 +299,7 @@ async def descargar_pdf_norma(
                         pdf_url = base_url + match
                     try:
                         r2 = await client.get(pdf_url, timeout=20)
-                        if r2.status_code == 200 and len(r2.content) > 1000:
+                        if r2.status_code == 200 and len(r2.content) > 1000 and es_pdf(r2.content):
                             destino_path.parent.mkdir(parents=True, exist_ok=True)
                             destino_path.write_bytes(r2.content)
                             logger.info("PDF OK (HTML fallback): %s", pdf_url)
@@ -443,8 +448,8 @@ async def descargar_pdf_norma(
             pdf_data  = resp_pdf.json()
             pdf_bytes = base64.b64decode(pdf_data["pdfBase64"])
 
-            if len(pdf_bytes) < 1000:
-                raise ValueError("PDF descargado demasiado pequeño")
+            if len(pdf_bytes) < 1000 or not es_pdf(pdf_bytes):
+                raise ValueError("El anexo descargado no es un PDF válido")
 
             destino_path.parent.mkdir(parents=True, exist_ok=True)
             destino_path.write_bytes(pdf_bytes)

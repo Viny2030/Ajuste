@@ -30,17 +30,20 @@ Desde ahora esto lo repite todos los días `scripts/verificar_cifras.py`
 | 7 | ⚪ | `actualizar_presupuesto.py` (commit 494f205) usa `COPY ... FORMAT text` con `csv.writer`: si una descripción trajera tabulador, comillas o barra invertida, el formato text no entiende las comillas del CSV y la fila se guardaría alterada o el COPY fallaría (con rollback, sin pérdida). **Hoy no pasa**: ninguna de las 72.859 filas de 2026 tiene esos caracteres. Riesgo latente; conviene `FORMAT csv`. | **Corregido**: `COPY ... FORMAT csv`. Probado en Postgres 16: la versión anterior alteraba comillas y barras y fallaba con tabuladores; la nueva los guarda idénticos. Se agregó INSERT por lotes para SQLite (local). |
 | 8 | 🟡 | `/api/v1/macro/series` usa TC minorista (id 4); todo lo demás usa mayorista (id 5). | **Corregido**: id 5. |
 | 9 | 🟡 | Respaldos viejos: `_RESPALDO_TC[2025] = 1180` (real 1244,26); constantes muertas en `main.py` (10,53, `IPC_POR_ANIO_FALLBACK`) y `engine.py` (9,6368). El encabezado dice "MAP v2.1" y la API 2.3.1. | **Corregido**: respaldos recalculados el 2026-10-20; constantes muertas quitadas; versión única `APP_VERSION = 2.4.0` y el dashboard la lee de `/api/v1/status`. |
-| 10 | ⚪ | En el repo: `debug_scripts_2026/`, `.idea/`, CSV de 38 MB; `setup_scheduler.ps1` con rutas fijas. | Pendiente |
+| 10 | ⚪ | En el repo: `debug_scripts_2026/`, `.idea/`, CSV de 38 MB; `setup_scheduler.ps1` con rutas fijas. | **Corregido**: `.idea/`, `debug_scripts_2026/` y los dos CSV regenerables dejan de versionarse (siguen en disco y en el historial; achicar el repo requeriría reescribir el historial, no se hizo). `setup_scheduler.ps1` usa rutas relativas y además tenía un error: la redirección `>> log` se le pasaba a python.exe como argumento, así que la tarea nunca habría corrido; ahora pasa por `cmd.exe`. |
 
-### Advertencias de método (no son errores)
+### Advertencias de método (no son errores) — resueltas en el dashboard
 
 * **Vigente 2026 no es final.** En el último trimestre suelen salir DA y DNU que lo
   amplían; hoy el recorte real aparece más grande de lo que va a terminar siendo.
 * **Precios 2026 con 9 meses.** El promedio de precios del año en curso usa los meses
   publicados; el crédito se gasta en todo el año, así que el recorte aparece algo más chico.
-  Los dos sesgos van en sentidos opuestos: conviene rotular "2026 a la fecha".
+  Los dos sesgos van en sentidos opuestos. **Hecho:** el KPI dice "vigente 2026 a la fecha"
+  con la explicación al pasar el mouse, y la API la expone en `deflactor.nota_anio_en_curso`.
 * **Ranking.** Los primeros puestos (−99,7 %) son en su mayoría programas reorganizados,
-  no recortes. Conviene un umbral mínimo o una marca de "posible reclasificación".
+  no recortes. **Hecho:** `/analisis/ranking` marca `revisar_reclasificacion` cuando la caída
+  nominal supera el 90 % (20 de los 500 en producción) y el dashboard muestra "⚠ revisar".
+  No se excluyen: algunos son recortes reales (p. ej. Asistencia Financiera a Provincias).
 
 ## 3. Despliegues
 
@@ -79,3 +82,44 @@ repositorio (Settings → Variables → Actions) y, si no está, usa el dominio 
 | `data/verificacion/ultima_verificacion.json` | Última verificación sana; el control de caída del total compara contra esto. |
 | `tests/test_auditoria.py` | 7 tests sin red de los dos scripts. |
 | `tests/test_motores.py` | 7 tests sin red de los arreglos de los puntos 2 a 9. |
+
+## 5. Cierre (2026-10-20)
+
+### Normas marcadas NORMATIVA por una descarga fallida
+Se pueden distinguir: si en `data/raw_pdfs/` hay un PDF válido, la tabla vino vacía
+(NORMATIVA legítima); si no, fue una descarga fallida. En la base local eran 2:
+**DA-24-2025** y **DA-39-2025**. `scripts/reintentar_normativas.py` las reprocesó y quedaron
+como GASTO (2 y 1 partidas). Se verificó que cada una era la única DA presupuestaria con
+anexo publicada en el BORA ese día, así que el PDF corresponde a esa norma. Base local:
+16 GASTO y 15 NORMATIVA (todas con PDF real).
+
+Al reintentarlas apareció la causa de fondo: los descargadores aceptaban cualquier
+respuesta de más de 1000 bytes, y Infoleg/BORA devolvían una página HTML con status 200
+que se guardaba como `.pdf`. Ahora `app/scrapers/pdf_check.py` exige la cabecera `%PDF`
+en los 5 lugares donde se guarda un PDF y en los 3 donde se reutiliza uno ya bajado.
+
+También: el link al BORA de las normas que vienen de Infoleg se armaba como
+`/detalleAviso/primera/0/{numero_boletin}/{fecha}`, que no existe; ahora enlaza la
+edición del día (`/seccion/primera/{fecha}`).
+
+### daily_sync y el sitio — decisión
+`daily_sync` (montos por DA extraídos de los anexos en PDF) queda como **herramienta de
+análisis local**. El sitio no publica montos extraídos de PDF sin validación: un error
+de lectura atribuido a una norma concreta es caro en un sitio de transparencia, y el
+crédito vigente de MECON que ya se publica incluye el efecto de todas las DA. Si más
+adelante se quieren mostrar, el camino es publicar sólo las normas que pasen un control
+(p. ej. reducción = ampliación en las reasignaciones) y marcar el resto "a revisar".
+
+### Base local (`sql_app.db`) — no afecta al sitio
+* 2023 está cargado dos veces (259.763 filas contra 131.709 en producción): en local el
+  total 2023 da $80,8 billones y la variación real −69 %, en vez de −35,4 %.
+* Las modificaciones sintéticas `CREDITO-VIGENTE-*` se calcularon con el error de
+  unidades del punto 3 (aumentos por $0,11 billones contra reducciones por $49,9).
+* Para rehacerla: recargar 2023 con `python -m scripts.seed_2023` sobre una base limpia y
+  correr `python -m scripts.sync_modificaciones` (ya corregido). Backup previo al reintento de normas:
+  `sql_app.backup-2026-10-20.db` (local, ignorado por git).
+
+### GitHub Actions
+`actions/checkout` y `actions/setup-python` pasan de v4/v5 (Node 20, deprecado) a v7
+(Node 24). Las notas de v7 sólo quitan el input `pip-install` y versiones de Python sin
+soporte; ninguno se usa acá.

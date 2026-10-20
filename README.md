@@ -16,3 +16,20 @@ Este sistema analiza el ajuste del gasto público argentino cruzando los decreto
 - **Scraping del BORA:** `httpx` contra los endpoints AJAX internos del sitio (`/seccion/actualizar/primera`), sin necesidad de un navegador — ver `app/scrapers/bora_scraper.py` para el detalle de la estrategia.
 - **Parseo de PDFs (Anexos de las DAs):** `pdfplumber` como estrategia principal, con fallback a extracción por regex — ver `app/core/pdf_processor.py`.
 - **Datos macro:** API oficial del BCRA v4.0 (`api.bcra.gob.ar/estadisticas/v4.0/monetarias`), pública y sin autenticación — ver `app/core/engine.py`.
+
+## 🔄 Motores de actualización (GitHub Actions)
+
+| Workflow | Cuándo | Qué hace |
+|---|---|---|
+| Daily BORA Discovery | 03:00 ART | Busca DA/DNU presupuestarias de los últimos 30 días → `data/nuevas_das.json` |
+| Acumular DAs descubiertas | tras el anterior | Suma lo descubierto a `data/das_acumulado.json` (nunca borra) |
+| Daily Budget Monitor | 08:00 ART | Recarga el crédito 2026 desde MECON en la Postgres (aborta si el total cae >10 %) |
+| Verificar cifras publicadas | 10:30 ART | Recalcula deflactor y TC contra el BCRA y controla la API; si algo falla abre un issue |
+| monthly_macro | día 16 | IPC y TC → `data/seeds/macro_indices.csv` (respaldo si el BCRA no responde) |
+| Social Scraper | días 1 y 15 | Indicadores sanitarios |
+
+`app/core/daily_sync.py` (montos por DA leídos de los anexos en PDF) es una herramienta
+de análisis **local**: el sitio no publica montos extraídos de PDF sin validar.
+Auditoría de cifras y mecanismos: [`docs/AUDITORIA_2026-10.md`](docs/AUDITORIA_2026-10.md).
+
+Tests: `python -m pytest tests`
