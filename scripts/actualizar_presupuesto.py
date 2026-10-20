@@ -57,6 +57,11 @@ def leer_csv(anio, zip_local=None):
         with zf.open(nombre) as f:
             filas = list(csv.DictReader(io.TextIOWrapper(f, encoding="utf-8-sig")))
     corte = filas[0].get("ultima_actualizacion_fecha", "") if filas else ""
+    # _monto() multiplica ×1_000_000: sólo es correcto si el dataset sigue en
+    # millones. Si MECON cambia la unidad, mejor cortar que cargar mal.
+    unidades = {(r.get("unidad") or "").strip().lower() for r in filas} - {""}
+    if unidades and unidades != {"millones_ars"}:
+        raise ValueError(f"Unidad inesperada en el dataset: {sorted(unidades)} (se esperaba millones_ars)")
     out = []
     for r in filas:
         if str(r.get("ejercicio_presupuestario", anio)).strip() != str(anio):
@@ -73,23 +78,54 @@ def bulk_copy_postgres(conn, cols, filas):
     """
     Transfiere en masa vía stream de texto en memoria directo a Postgres.
     Tarda ~2 a 4 segundos para 85.000 filas.
+
+    Usa COPY en FORMAT csv, que entiende las comillas que escribe csv.writer.
+    (Con FORMAT text, una descripción con comillas, tabulador o barra
+    invertida se guardaba alterada o rompía el COPY.) En formato csv un campo
+    vacío sin comillas es NULL: csv.writer escribe None como vacío sin comillas.
     """
     buffer = io.StringIO()
-    writer = csv.writer(buffer, delimiter="\t", lineterminator="\n")
-
+    writer = csv.writer(buffer, lineterminator="\n")
     for f in filas:
-        # Formateo compatible con COPY en formato text: NULL se representa como \N
-        writer.writerow([r"\N" if f[c] is None else f[c] for c in cols])
-
+        writer.writerow([f[c] for c in cols])
     buffer.seek(0)
 
     # Obtenemos el cursor crudo del driver psycopg2 subyacente
     raw_cursor = conn.connection.cursor()
     cols_joined = ", ".join(cols)
-    sql = f"COPY presupuesto_base ({cols_joined}) FROM STDIN WITH (FORMAT text, NULL '\\N')"
-    
+    sql = f"COPY presupuesto_base ({cols_joined}) FROM STDIN WITH (FORMAT csv)"
     raw_cursor.copy_expert(sql, buffer)
     raw_cursor.close()
+
+
+def insertar(conn, cols, filas):
+    """COPY en Postgres; INSERT por lotes en cualquier otra base (p. ej. el
+    SQLite local, donde COPY no existe)."""
+    if conn.dialect.name == "postgresql":
+        bulk_copy_postgres(conn, cols, filas)
+        return
+    ins = text(f"INSERT INTO presupuesto_base ({', '.join(cols)}) "
+               f"VALUES ({', '.join(':' + c for c in cols)})")
+    for i in range(0, len(filas), 5000):
+        conn.execute(ins, filas[i:i + 5000])
+
+
+# Una caída grande de un día para el otro no es un recorte: es un ZIP de MECON
+# incompleto o un cambio de formato. Se aborta antes del DELETE.
+MAX_CAIDA_VIGENTE = 0.10   # 10 % del crédito vigente total
+MAX_CAIDA_FILAS = 0.20     # 20 % de las filas
+
+
+def control_cordura(filas_antes: int, vig_antes: float, filas_nuevas: int, vig_nuevo: float) -> str | None:
+    """Devuelve el motivo para abortar, o None si la carga es razonable."""
+    if filas_antes <= 0:
+        return None
+    if vig_antes > 0 and vig_nuevo < vig_antes * (1 - MAX_CAIDA_VIGENTE):
+        return (f"el vigente cae {100 * (1 - vig_nuevo / vig_antes):.1f} % "
+                f"(${vig_antes / 1e12:,.2f} → ${vig_nuevo / 1e12:,.2f} billones)")
+    if filas_nuevas < filas_antes * (1 - MAX_CAIDA_FILAS):
+        return f"las filas caen de {filas_antes:,} a {filas_nuevas:,}"
+    return None
 
 
 def main():
@@ -97,6 +133,8 @@ def main():
     ap.add_argument("--anio", type=int, required=True)
     ap.add_argument("--zip-local", default=None)
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--forzar", action="store_true",
+                    help="Cargar aunque el control de cordura detecte una caída grande")
     args = ap.parse_args()
 
     filas, corte = leer_csv(args.anio, args.zip_local)
@@ -120,11 +158,19 @@ def main():
             {"a": args.anio}
         ).fetchone()
 
+        motivo = control_cordura(int(antes[0]), float(antes[1]), len(filas), vig)
+        if motivo and not args.forzar:
+            print(f"::error::Carga abortada, no se tocó la base: {motivo}. "
+                  f"Si el cambio es real, correr con --forzar.")
+            return 1
+        if motivo:
+            print(f"⚠️  {motivo} — se carga igual (--forzar)")
+
         print(f"Borrando registros previos de {args.anio}...")
         conn.execute(text("DELETE FROM presupuesto_base WHERE ejercicio = :a"), {"a": args.anio})
 
-        print(f"Cargando {len(filas):,} registros vía Postgres COPY...")
-        bulk_copy_postgres(conn, cols, filas)
+        print(f"Cargando {len(filas):,} registros ({conn.dialect.name})...")
+        insertar(conn, cols, filas)
 
     print(f"Antes: {antes[0]:,} filas · ${float(antes[1])/1e12:,.2f} billones → "
           f"ahora: {len(filas):,} filas · ${vig/1e12:,.2f} billones")

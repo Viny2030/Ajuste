@@ -14,6 +14,8 @@ on:
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write      # explícito: no depender del permiso por defecto del repo
     steps:
       - name: Checkout
         uses: actions/checkout@v4

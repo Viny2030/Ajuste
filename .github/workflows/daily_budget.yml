@@ -77,6 +77,16 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add sql_app.db data/ || true
-          git diff --staged --quiet || git commit -m "chore: sync presupuesto $(date +'%Y-%m-%d')"
-          git push || true
+          git add sql_app.db data/ || true   # sql_app.db no existe si se usa la Postgres
+          if git diff --staged --quiet; then
+            echo "Sin cambios para commitear."
+            exit 0
+          fi
+          git commit -m "chore: sync presupuesto $(date +'%Y-%m-%d')"
+          # Antes "git push || true": si el push fallaba el job quedaba en verde.
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            sleep 10
+          done
+          echo "::error::No se pudo pushear el commit de datos"
+          exit 1
