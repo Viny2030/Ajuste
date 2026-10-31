@@ -2,7 +2,7 @@
   "deflactor": {
     "factor": 5.838493,
     "tc_promedio_base": 295.212324,
-    "tc_promedio_comp": 1452.419885,
+    "tc_promedio_comp": 1452.838254,
     "ultimo_mes_ipc": "2026-09"
   },
   "total_nominal": {
@@ -10,5 +10,5 @@
     "valor": 152474968840416.0
   },
   "normativa_total": 112,
-  "fecha": "2026-10-30"
+  "fecha": "2026-10-31"
 }
