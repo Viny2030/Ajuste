@@ -207,7 +207,7 @@ def main():
         db.close()
 
     print("\n🎉 Seed 2026 completo. Probá:")
-    print("   curl https://ajuste-production.up.railway.app/api/v1/analisis/sector?sector=salud")
+    print("   curl https://ajuste.ecosistematransparencia.com.ar/api/v1/analisis/sector?sector=salud")
 
 
 if __name__ == "__main__":
