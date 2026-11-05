@@ -252,6 +252,9 @@ async def dashboard():
 
 @app.get("/manual", tags=["Home"], include_in_schema=False)
 async def manual():
+    path = os.path.join(static_dir, "manual.html")
+    if os.path.exists(path):
+        return FileResponse(path)
     from fastapi.responses import RedirectResponse
     return RedirectResponse(url="https://github.com/Viny2030/Ajuste#readme")
 
