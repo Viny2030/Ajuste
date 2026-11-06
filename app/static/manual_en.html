@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual — Budget Adjustment Monitor (MAP)</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple: #5b2d8e;
+  --purple-light: #f7f3fd;
+  --purple-mid: #c8b8e8;
+  --red: #c0392b;
+  --green: #145a2a;
+  --amber: #b46414;
+  --blue: #1a3a6e;
+  --dark: #1a1a2e;
+  --gray: #f5f5f0;
+  --border: #e8e8e4;
+  --text: #1a1a1a;
+  --muted: #888;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--gray); color: var(--text); font-size: 15px; line-height: 1.7; }
+
+/* ── HEADER ── */
+.header {
+  background: var(--dark);
+  color: white;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+}
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.header-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: white;
+  text-decoration: none;
+}
+.header-badge {
+  background: var(--purple);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+.header-nav {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+.header-nav a {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.header-nav a:hover { background: rgba(255,255,255,0.1); color: white; }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, var(--dark) 0%, #2d1a4e 60%, var(--purple) 100%);
+  color: white;
+  padding: 80px 32px 60px;
+  text-align: center;
+}
+.hero h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 48px;
+  line-height: 1.15;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.hero h1 span { color: var(--purple-mid); }
+.hero p {
+  font-size: 18px;
+  color: rgba(255,255,255,0.75);
+  max-width: 640px;
+  margin: 0 auto 32px;
+  font-weight: 300;
+}
+.hero-pills {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hero-pill {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.85);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+/* ── LAYOUT ── */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+.content { display: grid; grid-template-columns: 240px 1fr; gap: 40px; padding: 48px 0 80px; }
+
+/* ── SIDEBAR ── */
+.sidebar { position: sticky; top: 80px; height: fit-content; }
+.sidebar-nav { background: white; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+.sidebar-section { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.sidebar-section:last-child { border-bottom: none; }
+.sidebar-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 8px 16px 4px;
+}
+.sidebar-nav a {
+  display: block;
+  padding: 7px 16px;
+  font-size: 13px;
+  color: #555;
+  text-decoration: none;
+  transition: all 0.12s;
+  border-left: 3px solid transparent;
+}
+.sidebar-nav a:hover { background: var(--purple-light); color: var(--purple); border-left-color: var(--purple-mid); }
+.sidebar-nav a.active { background: var(--purple-light); color: var(--purple); border-left-color: var(--purple); font-weight: 500; }
+
+/* ── MAIN CONTENT ── */
+.section {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 36px 40px;
+  margin-bottom: 24px;
+  scroll-margin-top: 90px;
+}
+.section-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--purple);
+  background: var(--purple-light);
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+.section h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px;
+  color: var(--dark);
+  margin-bottom: 16px;
+  line-height: 1.25;
+}
+.section h3 {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--dark);
+  margin: 28px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section h3::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: var(--purple);
+  border-radius: 2px;
+}
+.section p { color: #444; margin-bottom: 14px; }
+.section p:last-child { margin-bottom: 0; }
+
+/* ── FORMULA BOX ── */
+.formula {
+  background: var(--dark);
+  color: #e2d9f3;
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  padding: 20px 24px;
+  border-radius: 8px;
+  margin: 16px 0;
+  line-height: 1.8;
+  border-left: 4px solid var(--purple);
+}
+.formula .comment { color: #6b5a8e; }
+.formula .highlight { color: #c8b8e8; font-weight: 600; }
+
+/* ── CALLOUT ── */
+.callout {
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.callout-info { background: #f0f4fb; border-left: 4px solid var(--blue); color: var(--blue); }
+.callout-warning { background: #fff8e1; border-left: 4px solid #f59e0b; color: #7a4500; }
+.callout-red { background: #fef2f2; border-left: 4px solid var(--red); color: #7b1515; }
+.callout-green { background: #f0fdf4; border-left: 4px solid var(--green); color: var(--green); }
+.callout strong { font-weight: 700; }
+
+/* ── METRIC CARDS ── */
+.metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+.metric-card {
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+.metric-card-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 32px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.metric-card-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.metric-card-desc { font-size: 12px; color: #666; margin-top: 6px; }
+.metric-red { background: #fef2f2; border-color: #fca5a5; }
+.metric-red .metric-card-num { color: var(--red); }
+.metric-amber { background: #fffbeb; border-color: #fcd34d; }
+.metric-amber .metric-card-num { color: var(--amber); }
+.metric-blue { background: #eff6ff; border-color: #93c5fd; }
+.metric-blue .metric-card-num { color: var(--blue); }
+
+/* ── TAB CARDS ── */
+.tab-list { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+.tab-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.tab-card-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+.tab-card-name { font-weight: 600; color: var(--dark); font-size: 15px; margin-bottom: 4px; }
+.tab-card-desc { font-size: 13px; color: #555; line-height: 1.5; }
+.tab-card-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.badge-sector { background: var(--purple-light); color: var(--purple); }
+.badge-new { background: #f0fdf4; color: var(--green); }
+
+/* ── SOURCE TABLE ── */
+.source-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+.source-table th { background: var(--gray); font-weight: 600; padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border); color: #333; }
+.source-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: #444; vertical-align: top; }
+.source-table tr:last-child td { border-bottom: none; }
+.source-table tr:hover td { background: var(--gray); }
+
+/* ── DEFINITION LIST ── */
+.def-list { display: flex; flex-direction: column; gap: 14px; margin: 16px 0; }
+.def-item { display: grid; grid-template-columns: 160px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.def-item:last-child { border-bottom: none; }
+.def-term { font-weight: 600; color: var(--purple); font-size: 14px; }
+.def-desc { font-size: 14px; color: #444; line-height: 1.6; }
+
+/* ── STEP LIST ── */
+.step-list { counter-reset: steps; display: flex; flex-direction: column; gap: 16px; margin: 16px 0; }
+.step { display: flex; gap: 16px; align-items: flex-start; }
+.step-num {
+  counter-increment: steps;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--purple);
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.step-content { font-size: 14px; color: #444; line-height: 1.6; padding-top: 5px; }
+.step-content strong { color: var(--dark); }
+
+/* ── FOOTER ── */
+.footer {
+  background: var(--dark);
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  padding: 32px;
+  font-size: 13px;
+}
+.footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
+.footer strong { color: white; }
+
+@media (max-width: 768px) {
+  .content { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .hero h1 { font-size: 32px; }
+  .metric-grid { grid-template-columns: 1fr; }
+  .def-item { grid-template-columns: 1fr; gap: 4px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <a href="/dashboard" class="header-logo">MAP</a>
+    <span class="header-badge">Technical manual</span>
+    <nav class="header-nav">
+      <a href="/manual">🌐 Español</a>
+      <a href="/dashboard">← Back to dashboard</a>
+    </nav>
+  </div>
+</div>
+
+<div class="hero">
+  <h1>Budget Adjustment<br><span>Monitor</span></h1>
+  <p>Full technical documentation — methodology, data sources, how to read the indicators and how to use the dashboard.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">📊 Budget 2023→2026</span>
+    <span class="hero-pill">📈 Deflated by CPI</span>
+    <span class="hero-pill">💵 Official BNA exchange rate</span>
+    <span class="hero-pill">🔄 Live BCRA data</span>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Introduction</div>
+          <a href="#objetivo">Project goal</a>
+          <a href="#alcance">Scope and limitations</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Methodology</div>
+          <a href="#conceptos">Key concepts</a>
+          <a href="#calculo">Formulas</a>
+          <a href="#escalas">Scales and normalization</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Dashboard</div>
+          <a href="#tabs-principales">Main tabs</a>
+          <a href="#tabs-sectoriales">Sector tabs</a>
+          <a href="#kpis">Header KPIs</a>
+          <a href="#impacto-social">Social impact</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Data</div>
+          <a href="#fuentes">Official sources</a>
+          <a href="#actualizacion">Updates</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">Reference</div>
+          <a href="#glosario">Glossary</a>
+          <a href="#nota-legal">Legal notice</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main>
+
+      <!-- GOAL -->
+      <div class="section" id="objetivo">
+        <div class="section-tag">Introduction</div>
+        <h2>Project goal</h2>
+        <p>The <strong>Budget Adjustment Monitor (MAP, from its Spanish name)</strong> is a fiscal transparency and analysis tool that quantifies the real impact of the budget adjustment carried out in Argentina since December 2023.</p>
+        <p>The project was born from the need to measure public spending not only in nominal pesos — which hide the effect of inflation — but in real terms (constant purchasing power) and in US dollars at the historical official exchange rate.</p>
+
+        <div class="metric-grid">
+          <div class="metric-card metric-red">
+            <div class="metric-card-num">3</div>
+            <div class="metric-card-label">adjustment dimensions</div>
+            <div class="metric-card-desc">Nominal · Real (CPI) · Constant USD</div>
+          </div>
+          <div class="metric-card metric-amber">
+            <div class="metric-card-num">342</div>
+            <div class="metric-card-label">programs analyzed</div>
+            <div class="metric-card-desc">Budget base 2023→2026</div>
+          </div>
+          <div class="metric-card metric-blue">
+            <div class="metric-card-num">24</div>
+            <div class="metric-card-label">jurisdictions</div>
+            <div class="metric-card-desc">The whole National Executive Branch</div>
+          </div>
+        </div>
+
+        <p>The MAP answers concrete questions: how much purchasing power did the health budget lose? Did pension spending grow or fall in real terms? Which part of the adjustment was a nominal cut and which part was inflationary erosion (<em>licuación</em>)?</p>
+      </div>
+
+      <!-- SCOPE -->
+      <div class="section" id="alcance">
+        <div class="section-tag">Introduction</div>
+        <h2>Scope and limitations</h2>
+
+        <h3>What it covers</h3>
+        <p>The MAP analyzes Argentina's <strong>National Budget of the National Executive Branch (PEN)</strong>, comparing the original 2023 allocation against the current appropriations (<em>crédito vigente</em>) of 2024, 2025 and 2026.</p>
+
+        <div class="callout callout-info">
+          <strong>Cut-off point:</strong> The baseline is the budget approved for fiscal year 2023 (before the LLA administration took office in December of that year). Changes are measured from that point to the latest available current appropriation.
+        </div>
+
+        <h3>Important limitations</h3>
+        <div class="callout callout-warning">
+          <strong>Experimental tool:</strong> The results are algorithmic indicators based on official public data. They imply no value judgment, accusation or finding of responsibility about any jurisdiction, agency or person.
+        </div>
+
+        <p>The main technical limitations are:</p>
+        <ul style="padding-left:20px;color:#444;font-size:14px;line-height:2;">
+          <li>The CPI factor is computed with INDEC data and may use a fallback if the BCRA API is unavailable.</li>
+          <li>The official USD exchange rate may show "N/D" (not available) if the BCRA API is down — in that case an approximate reference value is used.</li>
+          <li>Programs with an original 2023 budget below $100M are excluded from the analysis to avoid statistical distortions.</li>
+          <li>Programs with a real change above +500% or below -99.5% are filtered out as data outliers.</li>
+          <li>Sectors (Health, Pensions, etc.) are defined by jurisdiction name and may overlap when one jurisdiction covers several areas.</li>
+        </ul>
+      </div>
+
+      <!-- CONCEPTS -->
+      <div class="section" id="conceptos">
+        <div class="section-tag">Methodology</div>
+        <h2>Key concepts</h2>
+
+        <div class="def-list">
+          <div class="def-item">
+            <div class="def-term">① Nominal adjustment</div>
+            <div class="def-desc">Change in the budget appropriation in current pesos. It compares the current amount with the original 2023 amount without correcting for inflation. A positive nominal adjustment does not mean greater purchasing power.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">② Real adjustment</div>
+            <div class="def-desc">Change deflated by the CPI accumulated since January 2023. It measures the change in the real purchasing power of public spending. A negative real adjustment means the State can buy fewer goods and services with that budget.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">③ USD adjustment</div>
+            <div class="def-desc">Change in the budget measured in dollars at the official BNA exchange rate. It compares the USD value of the original budget (at the January 2023 rate) with the current value (at the current rate).</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Erosion (<em>licuación</em>)</div>
+            <div class="def-desc">Difference between the nominal and the real adjustment. It is the part of the adjustment caused by inflationary erosion — spending grew nominally but inflation reduced it in real terms. Erosion = Nominal adjustment − Real adjustment.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Cut (<em>recorte</em>)</div>
+            <div class="def-desc">When the nominal adjustment is negative — the State spent fewer nominal pesos than in 2023. It is the portion of the adjustment caused by an explicit decision to reduce spending in absolute terms.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">CPI factor</div>
+            <div class="def-desc">Ratio of accumulated inflation from January 2023 to the current period. A factor of 10.53 means prices multiplied 10.53 times. It is used to deflate current amounts to constant 2023 pesos.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Current appropriation (<em>crédito vigente</em>)</div>
+            <div class="def-desc">The approved budget as modified by every Administrative Decision of the Chief of Cabinet (JGM) that increased or reduced it during the fiscal year. It is the budget actually available at a given moment.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORMULAS -->
+      <div class="section" id="calculo">
+        <div class="section-tag">Methodology</div>
+        <h2>Formulas</h2>
+
+        <h3>Nominal adjustment</h3>
+        <div class="formula">
+<span class="comment"># Change in current pesos</span>
+<span class="highlight">ajuste_nominal_pct</span> = (vigente / original - 1) × 100
+
+<span class="comment"># Where:</span>
+vigente  = latest current appropriation (2026 > 2025 > 2024) in millions of pesos
+original = 2023 allocated budget in millions of pesos
+        </div>
+
+        <h3>Real adjustment (deflated by CPI)</h3>
+        <div class="formula">
+<span class="comment"># Change in constant January 2023 pesos</span>
+real_pesos = vigente / factor_ipc
+
+<span class="highlight">ajuste_real_pct</span> = (real_pesos / original - 1) × 100
+
+<span class="comment"># CPI factor = CPI accumulated from Jan-2023 to today</span>
+<span class="comment"># Example: if prices tripled, factor_ipc = 3.0</span>
+<span class="comment"># Currently: factor_ipc ≈ 10.53 (inflation ×10.53 since Jan-2023)</span>
+        </div>
+
+        <h3>Dollar adjustment</h3>
+        <div class="formula">
+<span class="comment"># Comparison at the official BNA exchange rate</span>
+original_usd = original / TC_ene2023    <span class="comment"># Jan-2023 rate = $187/USD</span>
+vigente_usd  = vigente  / TC_actual     <span class="comment"># current BNA rate</span>
+
+<span class="highlight">ajuste_usd_pct</span> = (vigente_usd / original_usd - 1) × 100
+        </div>
+
+        <h3>Erosion</h3>
+        <div class="formula">
+<span class="comment"># Portion of the adjustment absorbed by inflation</span>
+<span class="highlight">licuacion_pct</span> = ajuste_nominal_pct - ajuste_real_pct
+
+<span class="comment"># Interpretation:</span>
+<span class="comment"># If nominal = +500% and real = -60% → erosion = 560%</span>
+<span class="comment"># Spending rose nominally but inflation (×10.53)</span>
+<span class="comment"># reduced it in real terms.</span>
+        </div>
+
+        <h3>Weighted sector average</h3>
+        <div class="formula">
+<span class="comment"># Each sector's averages are weighted by original amount</span>
+<span class="comment"># so that small programs do not distort the result</span>
+
+total_orig = Σ(monto_original) over all programs in the sector
+
+<span class="highlight">avg_real_ponderado</span> = Σ(variacion_real_pct × monto_original) / total_orig
+        </div>
+
+        <div class="callout callout-info">
+          <strong>Why we weight by amount:</strong> A program with a $1M budget and a -99% real change should not weigh the same as one with $500,000M and -30%. The weighted average reflects the real economic impact of each program within the sector.
+        </div>
+      </div>
+
+      <!-- SCALES -->
+      <div class="section" id="escalas">
+        <div class="section-tag">Methodology</div>
+        <h2>Data scales and normalization</h2>
+
+        <p>Argentina's budget data comes from two sources with different scales, which the MAP normalizes automatically:</p>
+
+        <table class="source-table">
+          <thead>
+            <tr><th>Fiscal year</th><th>Scale in DB</th><th>Normalization applied</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>2023</strong> (base)</td><td>Full current pesos<br><small style="color:#888">E.g.: 15,613,301,756 = $15.6B</small></td><td>None — it is the comparison base</td></tr>
+            <tr><td><strong>2024</strong></td><td>Millions of pesos<br><small style="color:#888">E.g.: 117,376 = $117,376M</small></td><td>× 1,000,000 to compare with 2023</td></tr>
+            <tr><td><strong>2025</strong></td><td>Millions of pesos</td><td>× 1,000,000</td></tr>
+            <tr><td><strong>2026</strong></td><td>Millions of pesos</td><td>× 1,000,000</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-warning">
+          <strong>Quality filters:</strong> Programs with an original 2023 amount below $100M (token budgets) and programs with a real change outside the range [-99.5%, +500%] (outliers caused by inconsistencies in the source data) are excluded.
+        </div>
+      </div>
+
+      <!-- MAIN TABS -->
+      <div class="section" id="tabs-principales">
+        <div class="section-tag">Dashboard</div>
+        <h2>Main tabs</h2>
+
+        <div class="tab-list">
+          <div class="tab-card">
+            <div class="tab-card-icon">📊</div>
+            <div>
+              <div class="tab-card-name">Ranking</div>
+              <div class="tab-card-desc">Lists the programs with the largest loss of real purchasing power. It shows bars for the nominal adjustment (blue) vs the real adjustment (red/green). Hovering shows amounts in current pesos, USD at the rate of the moment, and the number of budget modifications.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">📂</div>
+            <div>
+              <div class="tab-card-name">By spending category (<em>inciso</em>)</div>
+              <div class="tab-card-desc">Aggregates the adjustment by type of spending: Inciso 1 (Personnel), Inciso 2 (Consumer goods), Inciso 3 (Non-personal services), Inciso 4 (Capital goods), Inciso 5 (Transfers), Inciso 7 (Debt service).</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">🔵</div>
+            <div>
+              <div class="tab-card-name">Nominal vs real</div>
+              <div class="tab-card-desc">Scatter plot where each point is a program. The X axis is the nominal adjustment and the Y axis the real adjustment. Points below the diagonal were eroded by inflation — they rose nominally but fell in real terms.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">📋</div>
+            <div>
+              <div class="tab-card-name">Line-item detail</div>
+              <div class="tab-card-desc">Full table with every program. Includes filters by jurisdiction and status. Columns: nominal %, real %, USD %, erosion %, with absolute amounts in current pesos and dollars at the rate of the moment.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">💵</div>
+            <div>
+              <div class="tab-card-name">Monetary base</div>
+              <div class="tab-card-desc">Live Monetary Base data from the BCRA public API. Shows its evolution since December 7, 2023 (inauguration day), the accumulated multiplier and the value in dollars at the official BNA rate.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">📊</div>
+            <div>
+              <div class="tab-card-name">Summary</div>
+              <div class="tab-card-desc">Consolidated view of every sector with averages weighted by amount. Includes a comparative sector ranking and a chart of the estimated evolution over time.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">⚖️</div>
+            <div>
+              <div class="tab-card-name">Erosion vs cut</div>
+              <div class="tab-card-desc">Splits each jurisdiction's adjustment into two components: the part absorbed by inflation (erosion) and the part that was an explicit nominal cut. It shows which ministries adjusted by lowering spending and which ones "let inflation do the adjusting".</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTOR TABS -->
+      <div class="section" id="tabs-sectoriales">
+        <div class="section-tag">Dashboard</div>
+        <h2>Sector tabs</h2>
+        <p>Each sector tab filters programs by jurisdiction and computes KPIs with a <strong>weighted average by original amount</strong>. The sectors and their source jurisdictions are:</p>
+
+        <div class="tab-list">
+          <div class="tab-card">
+            <div class="tab-card-icon">🏥</div>
+            <div>
+              <div class="tab-card-name">Health <span class="tab-card-badge badge-sector">sector</span></div>
+              <div class="tab-card-desc"><strong>Source:</strong> Ministry of Health. Includes public health, disease prevention, patient care and health regulation programs.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">👴</div>
+            <div>
+              <div class="tab-card-name">Pensions <span class="tab-card-badge badge-sector">sector</span></div>
+              <div class="tab-card-desc"><strong>Source:</strong> Ministry of Human Capital + Treasury Obligations. Covers ANSES (the social security administration) and pension transfers.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">👶</div>
+            <div>
+              <div class="tab-card-name">Children <span class="tab-card-badge badge-sector">sector</span></div>
+              <div class="tab-card-desc"><strong>Source:</strong> Ministry of Human Capital + Ministry of Social Development. Child protection, AUH (Universal Child Allowance) and family programs.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">🏗️</div>
+            <div>
+              <div class="tab-card-name">Public works <span class="tab-card-badge badge-sector">sector</span></div>
+              <div class="tab-card-desc"><strong>Source:</strong> Ministry of Public Works + Ministry of Infrastructure + Ministry of Transport.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">💼</div>
+            <div>
+              <div class="tab-card-name">Public wages <span class="tab-card-badge badge-sector">sector</span></div>
+              <div class="tab-card-desc"><strong>Source:</strong> All ministries, filtered by Inciso 1 (Personnel). Measures the real evolution of State payroll spending across every jurisdiction.</div>
+            </div>
+          </div>
+          <div class="tab-card">
+            <div class="tab-card-icon">📚</div>
+            <div>
+              <div class="tab-card-name">Education <span class="tab-card-badge badge-sector">sector</span></div>
+              <div class="tab-card-desc"><strong>Source:</strong> Ministry of Education + Ministry of Human Capital. Includes transfers to universities, scholarships and national education programs.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <strong>Sector overlap:</strong> The Ministry of Human Capital concentrates pensions, children and education. As a result some programs appear in more than one sector. This is a limitation of the current data model that will be refined.
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="section" id="kpis">
+        <div class="section-tag">Dashboard</div>
+        <h2>Header KPIs</h2>
+
+        <div class="def-list">
+          <div class="def-item">
+            <div class="def-term">Programs analyzed</div>
+            <div class="def-desc">Total budget programs with valid data in the 2023 base and a current appropriation available in at least one later fiscal year. Excludes token budgets and outliers.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Average real adjustment</div>
+            <div class="def-desc">Simple average of the real change of every program with a reduction. It indicates the average fall in budget purchasing power since January 2023.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Accumulated CPI factor</div>
+            <div class="def-desc">Inflation accumulated since January 2023 expressed as a multiplier. A factor of 10.53× means prices multiplied 10.53 times — that is, +953% accumulated inflation.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Programs with &gt;50% real reduction</div>
+            <div class="def-desc">Number of programs whose real budget fell more than 50% compared with 2023. It measures the depth of the adjustment — what share of the State lost more than half of its spending capacity.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOCIAL IMPACT -->
+      <div class="section" id="impacto-social">
+        <div class="section-tag">Dashboard</div>
+        <h2>Social impact <span class="tab-card-badge badge-new" style="font-size:12px;padding:3px 10px;">new</span></h2>
+
+        <p>The <strong>Social Impact</strong> tab monitors three health indicators that may correlate with the adjustment of public spending on health and social protection.</p>
+
+        <table class="source-table">
+          <thead>
+            <tr><th>Indicator</th><th>Source</th><th>Unit</th><th>Baseline</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Infant mortality</strong></td>
+              <td>DEIS – Vital Statistics Yearbook 2024</td>
+              <td>Rate per 1,000 live births</td>
+              <td>2023 (Dec)</td>
+            </tr>
+            <tr>
+              <td><strong>Deaths of adults aged 65+</strong></td>
+              <td>DEIS – Yearbook / ISALUD</td>
+              <td>Absolute annual cases</td>
+              <td>2023 (Dec)</td>
+            </tr>
+            <tr>
+              <td><strong>Completed suicides</strong></td>
+              <td>SNIC – Executive Report 2024, Ministry of Security</td>
+              <td>Cases and rate per 100k inhabitants</td>
+              <td>2023 (Dec)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-red">
+          <strong>Methodological note:</strong> These indicators do not establish direct causality with the budget adjustment. They are epidemiological surveillance data monitored in parallel as indicators of general social well-being. Interpreting them requires additional context.
+        </div>
+
+        <p>The data is updated automatically on the 1st and 15th of each month by a GitHub Action that detects changes in the official DEIS and SNIC pages.</p>
+      </div>
+
+      <!-- SOURCES -->
+      <div class="section" id="fuentes">
+        <div class="section-tag">Data</div>
+        <h2>Official data sources</h2>
+
+        <table class="source-table">
+          <thead>
+            <tr><th>Data</th><th>Source</th><th>Endpoint / URL</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>2023 budget</strong><br><small>Original appropriation by program</small></td>
+              <td>Ministry of Economy – Presupuesto Abierto (Open Budget)</td>
+              <td><code style="font-size:12px;">presupuestosabiertos.gob.ar</code></td>
+            </tr>
+            <tr>
+              <td><strong>Current appropriation 2024-2026</strong><br><small>Budget modifications</small></td>
+              <td>Presupuesto Abierto / JGM – BORA (Official Gazette)</td>
+              <td><code style="font-size:12px;">presupuestosabiertos.gob.ar</code></td>
+            </tr>
+            <tr>
+              <td><strong>Monthly CPI</strong><br><small>Consumer Price Index</small></td>
+              <td>INDEC / BCRA API v2.0</td>
+              <td><code style="font-size:12px;">api.bcra.gob.ar/estadisticas/v2.0</code></td>
+            </tr>
+            <tr>
+              <td><strong>Official USD exchange rate</strong><br><small>BNA selling rate</small></td>
+              <td>BCRA – Exchange Statistics API</td>
+              <td><code style="font-size:12px;">api.bcra.gob.ar/estadisticascambiarias</code></td>
+            </tr>
+            <tr>
+              <td><strong>Monetary Base</strong><br><small>Variable ID 15</small></td>
+              <td>BCRA – Monetary Variables API v4.0</td>
+              <td><code style="font-size:12px;">api.bcra.gob.ar/estadisticas/v4.0/monetarias</code></td>
+            </tr>
+            <tr>
+              <td><strong>Infant / older-adult mortality</strong></td>
+              <td>DEIS – Ministry of Health</td>
+              <td><code style="font-size:12px;">deis.msal.gov.ar</code></td>
+            </tr>
+            <tr>
+              <td><strong>Suicides</strong></td>
+              <td>SNIC – Ministry of Security</td>
+              <td><code style="font-size:12px;">argentina.gob.ar/seguridad/estadisticascriminales</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- UPDATES -->
+      <div class="section" id="actualizacion">
+        <div class="section-tag">Data</div>
+        <h2>Data updates</h2>
+
+        <div class="step-list">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content"><strong>Budget:</strong> The 2026 current appropriation is updated every day by the <em>Daily Budget Monitor</em> workflow, which downloads the Presupuesto Abierto dataset (Ministry of Economy). Real figures use an annual average price deflator (INDEC CPI via BCRA) and compare current appropriation against current appropriation.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content"><strong>CPI and exchange rate:</strong> They are queried in real time from the BCRA public API every time the dashboard loads. If the API is down, the system uses fallback values computed from INDEC data.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content"><strong>Monetary Base:</strong> Queried live from the BCRA when opening the "Monetary base" tab. The data is daily with a one-business-day lag.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content"><strong>Social indicators:</strong> Automatic GitHub Action on the 1st and 15th of each month at 06:00 AM Argentina time. It detects changes in the DEIS and SNIC pages and updates the data JSON.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GLOSSARY -->
+      <div class="section" id="glosario">
+        <div class="section-tag">Reference</div>
+        <h2>Glossary</h2>
+
+        <div class="def-list">
+          <div class="def-item">
+            <div class="def-term">ARS</div>
+            <div class="def-desc">Argentine peso. Currency in which the national budget is denominated.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">BCRA</div>
+            <div class="def-desc">Central Bank of the Argentine Republic. Source of CPI, exchange rate and Monetary Base data.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Original appropriation</div>
+            <div class="def-desc">Amount budgeted at the start of the fiscal year, before any modification.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Current appropriation</div>
+            <div class="def-desc">Amount budgeted after every modification during the fiscal year (JGM Administrative Decisions).</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">DA / JGM</div>
+            <div class="def-desc">Administrative Decision of the Chief of Cabinet of Ministers. Legal instrument that modifies the budget during the fiscal year.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">DEIS</div>
+            <div class="def-desc">Directorate of Health Statistics and Information. Ministry of Health agency that publishes the vital statistics yearbooks.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Deflate</div>
+            <div class="def-desc">Divide a nominal value by the price index to obtain its value in constant currency (real purchasing power).</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">CPI factor</div>
+            <div class="def-desc">Accumulated CPI expressed as a multiplier. Factor 10.53 = accumulated inflation of 953%.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Inciso</div>
+            <div class="def-desc">Classification of spending by object. Inciso 1=Personnel, 2=Consumer goods, 3=Non-personal services, 4=Capital goods, 5=Transfers, 7=Debt service.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">Erosion (<em>licuación</em>)</div>
+            <div class="def-desc">Loss of purchasing power due to inflation. Spending rises nominally but falls in real terms.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">MM / B</div>
+            <div class="def-desc">Abbreviations for millions (MM) and thousands of millions/billions (B) of pesos.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">PEN</div>
+            <div class="def-desc">National Executive Branch. The budget analyzed covers every PEN jurisdiction.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">SNIC</div>
+            <div class="def-desc">National Criminal Information System. Part of the Ministry of Security, it publishes crime and suicide statistics.</div>
+          </div>
+          <div class="def-item">
+            <div class="def-term">TC BNA</div>
+            <div class="def-desc">Official exchange rate of Banco de la Nación Argentina (selling). Used to convert budgets into dollars.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEGAL NOTICE -->
+      <div class="section" id="nota-legal">
+        <div class="section-tag">Reference</div>
+        <h2>Legal and academic notice</h2>
+
+        <div class="callout callout-warning">
+          <strong>Experimental and academic tool.</strong> The data comes from official public sources of the Argentine State. The results are algorithmic indicators and imply no value judgment, accusation or finding of responsibility about any jurisdiction, agency or person. The goal is to promote transparency and informed debate about public spending.
+        </div>
+
+        <p>Developed by <strong>Vicente Humberto Monteverde, Ph.D.</strong>, researcher in political economy and corruption phenomena. Doctor of Economic Sciences. Author of the theory of Regressive Income Transfer and developer of XAI algorithms applied to the analysis of Argentine public spending.</p>
+
+        <p>Publications in the <em>Journal of Financial Crime</em> (Emerald Publishing). Advisor on transparency and algorithmic auditing of public spending.</p>
+
+        <p style="margin-top:16px;">
+          Source code available at
+          <a href="https://github.com/Viny2030/Ajuste" target="_blank" style="color:var(--purple);font-weight:600;">github.com/Viny2030/Ajuste</a>
+        </p>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="footer">
+  <strong>Budget Adjustment Monitor — MAP v2.0</strong><br>
+  Vicente Humberto Monteverde, Ph.D. · <a href="mailto:vhmonte@retina.ar">vhmonte@retina.ar</a> ·
+  <a href="https://github.com/Viny2030/Ajuste" target="_blank">github.com/Viny2030/Ajuste</a>
+</div>
+
+<script>
+// Highlight active section in sidebar on scroll
+const sections = document.querySelectorAll('.section[id]');
+const navLinks  = document.querySelectorAll('.sidebar-nav a');
+const observer  = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.sidebar-nav a[href="#${e.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

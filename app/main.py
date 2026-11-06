@@ -259,6 +259,15 @@ async def manual():
     return RedirectResponse(url="https://github.com/Viny2030/Ajuste#readme")
 
 
+@app.get("/manual/en", tags=["Home"], include_in_schema=False)
+async def manual_en():
+    path = os.path.join(static_dir, "manual_en.html")
+    if os.path.exists(path):
+        return FileResponse(path)
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/manual")
+
+
 # ── RANKING ───────────────────────────────────────────────────────────────────
 
 @app.get("/api/v1/analisis/ranking", tags=["Analisis"])
