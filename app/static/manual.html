@@ -321,6 +321,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--gray); color: var(-
     <a href="/dashboard" class="header-logo">MAP</a>
     <span class="header-badge">Manual técnico</span>
     <nav class="header-nav">
+      <a href="/manual/en">🌐 English</a>
       <a href="/dashboard">← Volver al dashboard</a>
     </nav>
   </div>
@@ -368,6 +369,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--gray); color: var(-
         </div>
         <div class="sidebar-section">
           <div class="sidebar-section-label">Referencia</div>
+          <a href="#relaciones">Relación con otros sitios</a>
           <a href="#glosario">Glosario</a>
           <a href="#nota-legal">Nota legal</a>
         </div>
@@ -872,6 +874,19 @@ total_orig = Σ(monto_original) para todos los programas del sector
           </div>
         </div>
       </div>
+
+<div id="relaciones" class="section">
+  <h2>🕸️ Relación con los otros sitios del ecosistema</h2>
+  <p>Este sitio es parte del <strong>Ecosistema de Transparencia</strong>: once monitores que se consultan entre sí. Abajo, con qué sitios intercambia datos (<em>usa →</em> = toma datos de ese sitio; <em>← lo usa</em> = ese sitio toma datos de este) y de qué fuentes oficiales se alimenta. El grafo es interactivo: hacé clic en cualquier sitio para ver su ficha.</p>
+  <iframe src="https://mapa.ecosistematransparencia.com.ar/grafo?embed=1&amp;nodo=ajuste" title="Relación con los otros sitios del ecosistema" loading="lazy"
+          style="width:100%;height:560px;border:1px solid #cbd5e1;border-radius:10px;background:#fff"></iframe>
+  <p style="font-size:.85em"><a href="https://mapa.ecosistematransparencia.com.ar/grafo" target="_blank" rel="noopener">Abrir el grafo completo ↗</a></p>
+  <h3>Conexiones</h3>
+  <ul><li><strong>← lo usa Mapa</strong>: Enlace y estado en vivo. La validación cruzada diaria lee el resultado de la auditoría de cifras de Ajuste.</li></ul>
+  <h3>Fuentes oficiales</h3>
+  <ul><li>Presupuesto Abierto / MECON</li><li>Boletín Oficial (DA y DNU)</li><li>BCRA (IPC y tipo de cambio)</li></ul>
+  <p style="font-size:.85em">Detalle de todas las conexiones y de cómo se verifican las cifras entre sitios: <a href="https://mapa.ecosistematransparencia.com.ar/manual#conexiones" target="_blank" rel="noopener">mapa.ecosistematransparencia.com.ar/manual#conexiones</a></p>
+</div>
 
       <!-- NOTA LEGAL -->
       <div class="section" id="nota-legal">
