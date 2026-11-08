@@ -46,7 +46,7 @@ from app.database import models, schemas
 from app.database.session import SessionLocal, engine
 from app.core.engine import AnalizadorPresupuestario, cargar_macro_indices
 from app.core.viz import generar_grafico_ajuste
-from app.core import deflactor
+from app.core import deflactor, treemap
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -268,6 +268,11 @@ async def manual_en():
     return RedirectResponse(url="/manual")
 
 
+@app.get("/treemap", tags=["Home"], include_in_schema=False)
+async def pagina_treemap():
+    return FileResponse(os.path.join(static_dir, "treemap.html"))
+
+
 # ── RANKING ───────────────────────────────────────────────────────────────────
 
 @app.get("/api/v1/analisis/ranking", tags=["Analisis"])
@@ -437,6 +442,18 @@ def analisis_inciso(
             )
         return filtrado
     return todos
+
+
+@app.get("/api/v1/analisis/treemap", tags=["Analisis"])
+def analisis_treemap(
+    anio: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+):
+    """Presupuesto de un ejercicio: jurisdicción → programa → inciso."""
+    resultado = treemap.datos(db, anio)
+    if resultado is None:
+        raise HTTPException(status_code=404, detail="Ejercicio no cargado.")
+    return resultado
 
 
 # ── SECTOR ────────────────────────────────────────────────────────────────────
