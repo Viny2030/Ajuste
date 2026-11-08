@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa del presupuesto · MAP</title>
+<style>
+:root {
+  --purple: #5b2d8e;
+  --bg: #f5f5f0;
+  --card: #ffffff;
+  --border: #e0e0da;
+  --text: #1a1a1a;
+  --muted: #666660;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.45; }
+body.embed { background: var(--card); }
+header { background: var(--purple); color: #fff; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+header h1 { font-size: 18px; font-weight: 500; flex: 1 1 240px; }
+header a { color: #fff; font-size: 13px; }
+body.embed header { display: none; }
+main { max-width: 1200px; margin: 0 auto; padding: 16px 24px 32px; }
+body.embed main { padding: 8px; }
+.barra { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 10px; }
+.anios { display: flex; gap: 4px; }
+.anios button { font: inherit; padding: 4px 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); border-radius: 6px; cursor: pointer; }
+.anios button[aria-pressed="true"] { background: var(--purple); border-color: var(--purple); color: #fff; }
+.total { color: var(--muted); }
+.total strong { color: var(--text); font-weight: 600; }
+.migas { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; min-height: 24px; margin-bottom: 8px; }
+.migas button { font: inherit; color: var(--purple); background: none; border: 0; padding: 2px 0; cursor: pointer; text-decoration: underline; text-align: left; }
+.migas span[aria-current] { font-weight: 600; }
+#mapa { position: relative; width: 100%; height: 520px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.celda { position: absolute; display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; overflow: hidden; border: 1px solid #fff; padding: 5px 6px; font: inherit; font-size: 12px; line-height: 1.25; text-align: left; }
+.celda.chica { font-size: 10.5px; padding: 3px 4px; }
+button.celda { cursor: pointer; }
+button.celda:hover, button.celda:focus-visible { outline: 3px solid #d97706; outline-offset: -3px; z-index: 2; }
+.celda b { display: block; font-weight: 600; }
+.celda small { display: block; font-size: 11px; opacity: .9; }
+.chicos { font-size: 12.5px; margin-top: 8px; }
+.chicos button { font: inherit; color: var(--purple); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-align: left; }
+.estado { padding: 40px 16px; text-align: center; color: var(--muted); }
+.nota { color: var(--muted); font-size: 12.5px; margin: 10px 0 14px; max-width: 900px; }
+table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); font-size: 13px; }
+caption { text-align: left; font-weight: 600; padding: 0 0 6px; }
+th, td { padding: 5px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+th { font-weight: 600; font-size: 12px; color: var(--muted); }
+td.num, th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+td button { font: inherit; color: var(--purple); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-align: left; }
+@media (max-width: 640px) {
+  header, main { padding-left: 16px; padding-right: 16px; }
+  #mapa { height: 420px; }
+  th, td { padding: 5px 6px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="titulo"></h1>
+  <a id="enlace-idioma" href="#"></a>
+  <a id="enlace-tablero" href="/dashboard"></a>
+</header>
+<main>
+  <div class="barra">
+    <div class="anios" id="anios" role="group"></div>
+    <div class="total" id="total"></div>
+  </div>
+  <nav class="migas" id="migas"></nav>
+  <div id="mapa"></div>
+  <p class="chicos" id="chicos" hidden></p>
+  <p class="nota" id="nota"></p>
+  <table>
+    <caption id="titulo-tabla"></caption>
+    <thead><tr><th id="th-nombre"></th><th class="num" id="th-monto"></th><th class="num" id="th-parte"></th></tr></thead>
+    <tbody id="filas"></tbody>
+  </table>
+</main>
+<script>
+"use strict";
+var params = new URLSearchParams(location.search);
+var EN = params.get("lang") === "en";
+if (params.get("embed") === "1") document.body.classList.add("embed");
+document.documentElement.lang = EN ? "en" : "es";
+
+var T = EN ? {
+  doc: "Budget map · MAP",
+  titulo: "Budget map",
+  tablero: "Back to dashboard",
+  otroIdioma: "Español",
+  total: "Total",
+  todo: "All jurisdictions",
+  grupo: "Budget year",
+  cargando: "Loading the budget…",
+  error: "The budget could not be loaded. Try again in a few minutes.",
+  vacio: "There are no positive appropriations for this selection.",
+  nombre: "Name",
+  monto: "Appropriation",
+  parte: "Share",
+  tabla: ["Every jurisdiction", "Every program in this jurisdiction", "Every item in this program"],
+  abrir: "Open",
+  nota: "Tile area is proportional to current appropriations (crédito vigente), in current pesos of the selected year: not adjusted for inflation. Click a tile to go from jurisdiction to program and item. Names are the official Spanish ones. Years should not be compared by jurisdiction: ministries merge and change code, so the same spending can appear under a different name.",
+  enCurso: " The current year's appropriations can still change.",
+  chicos: "No room for the name on the tile:",
+  muchos: function (n) { return n + " tiles have no room for their name: every name is in the table below."; },
+  omitidas: function (n) { return " Left out: " + n + " entries with no positive appropriation."; }
+} : {
+  doc: "Mapa del presupuesto · MAP",
+  titulo: "Mapa del presupuesto",
+  tablero: "Volver al tablero",
+  otroIdioma: "English",
+  total: "Total",
+  todo: "Todas las jurisdicciones",
+  grupo: "Ejercicio",
+  cargando: "Cargando el presupuesto…",
+  error: "No se pudo cargar el presupuesto. Probá de nuevo en unos minutos.",
+  vacio: "No hay crédito positivo para esta selección.",
+  nombre: "Nombre",
+  monto: "Crédito vigente",
+  parte: "Parte",
+  tabla: ["Todas las jurisdicciones", "Todos los programas de la jurisdicción", "Todos los incisos del programa"],
+  abrir: "Abrir",
+  nota: "El área de cada recuadro es proporcional al crédito vigente, en pesos corrientes del año elegido: no está ajustado por inflación. Hacé clic en un recuadro para bajar de jurisdicción a programa y a inciso. No conviene comparar años por jurisdicción: los ministerios se fusionan y cambian de código, así que el mismo gasto puede aparecer con otro nombre.",
+  enCurso: " El crédito del año en curso todavía puede cambiar.",
+  chicos: "Sin lugar para el nombre en el recuadro:",
+  muchos: function (n) { return n + " recuadros no tienen lugar para el nombre: todos los nombres están en la tabla de abajo."; },
+  omitidas: function (n) { return " Quedan afuera " + n + " registros sin crédito positivo."; }
+};
+
+var el = function (id) { return document.getElementById(id); };
+document.title = T.doc;
+el("titulo").textContent = T.titulo;
+el("enlace-tablero").textContent = T.tablero;
+el("enlace-idioma").textContent = T.otroIdioma;
+el("th-nombre").textContent = T.nombre;
+el("th-monto").textContent = T.monto;
+el("th-parte").textContent = T.parte;
+el("anios").setAttribute("aria-label", T.grupo);
+
+var estado = { anio: parseInt(params.get("anio"), 10) || null, datos: null, jur: null, prog: null };
+
+(function () {
+  var otro = new URLSearchParams(location.search);
+  if (EN) otro.delete("lang"); else otro.set("lang", "en");
+  var q = otro.toString();
+  el("enlace-idioma").href = location.pathname + (q ? "?" + q : "");
+})();
+
+var locale = EN ? "en-US" : "es-AR";
+function numero(x) {
+  return x.toLocaleString(locale, { maximumFractionDigits: x >= 100 ? 0 : 1 });
+}
+function pesos(v) {
+  // En español un billón es 10^12; en inglés, un trillion.
+  if (EN) {
+    if (v >= 1e12) return "$" + numero(v / 1e12) + " trillion";
+    if (v >= 1e9) return "$" + numero(v / 1e9) + " billion";
+    if (v >= 1e6) return "$" + numero(v / 1e6) + " million";
+    return "$" + numero(v);
+  }
+  if (v >= 1e12) return "$ " + numero(v / 1e12) + " billones";
+  if (v >= 1e9) return "$ " + numero(v / 1e9) + " mil millones";
+  if (v >= 1e6) return "$ " + numero(v / 1e6) + " millones";
+  return "$ " + numero(v);
+}
+function parte(v, total) {
+  var p = total > 0 ? v / total * 100 : 0;
+  var d = p >= 10 ? 1 : p >= 0.1 ? 1 : 2;
+  return p.toLocaleString(locale, { minimumFractionDigits: d, maximumFractionDigits: d }) + " %";
+}
+
+// Treemap "squarified" (Bruls, Huizing y van Wijk): recuadros lo más cuadrados posible.
+function peorProporcion(fila, lado) {
+  var suma = 0, max = 0, min = Infinity;
+  fila.forEach(function (c) { suma += c.area; if (c.area > max) max = c.area; if (c.area < min) min = c.area; });
+  return Math.max(lado * lado * max / (suma * suma), suma * suma / (lado * lado * min));
+}
+function distribuir(items, ancho, alto) {
+  var total = items.reduce(function (s, x) { return s + x.monto; }, 0);
+  var celdas = [];
+  if (total <= 0) return celdas;
+  var escala = ancho * alto / total;
+  var cola = items.map(function (x) { return { item: x, area: x.monto * escala }; });
+  var x0 = 0, y0 = 0, w = ancho, h = alto;
+  while (cola.length) {
+    var lado = Math.min(w, h), fila = [cola[0]], i = 1;
+    while (i < cola.length) {
+      var prueba = fila.concat([cola[i]]);
+      if (peorProporcion(prueba, lado) > peorProporcion(fila, lado)) break;
+      fila = prueba;
+      i++;
+    }
+    var sumaFila = fila.reduce(function (s, c) { return s + c.area; }, 0);
+    if (w >= h) {
+      var anchoFila = sumaFila / h, y = y0;
+      fila.forEach(function (c) { var alt = c.area / anchoFila; celdas.push({ item: c.item, x: x0, y: y, w: anchoFila, h: alt }); y += alt; });
+      x0 += anchoFila; w -= anchoFila;
+    } else {
+      var altoFila = sumaFila / w, x = x0;
+      fila.forEach(function (c) { var anc = c.area / altoFila; celdas.push({ item: c.item, x: x, y: y0, w: anc, h: altoFila }); x += anc; });
+      y0 += altoFila; h -= altoFila;
+    }
+    cola = cola.slice(fila.length);
+  }
+  return celdas;
+}
+
+// El tono refuerza el tamaño: cuanto mayor la parte, más oscuro. Contraste AA en los cinco.
+var TONOS = [
+  { min: 0.25, bg: "#3f1d66", fg: "#ffffff" },
+  { min: 0.10, bg: "#5b2d8e", fg: "#ffffff" },
+  { min: 0.04, bg: "#7a4fae", fg: "#ffffff" },
+  { min: 0.01, bg: "#c9b6e4", fg: "#1a1a1a" },
+  { min: 0,    bg: "#e9e1f4", fg: "#1a1a1a" }
+];
+function tono(p) {
+  for (var i = 0; i < TONOS.length; i++) if (p >= TONOS[i].min) return TONOS[i];
+  return TONOS[TONOS.length - 1];
+}
+
+function nivelActual() {
+  if (estado.prog) return { items: estado.prog.incisos, nivel: 2 };
+  if (estado.jur) return { items: estado.jur.programas, nivel: 1 };
+  return { items: estado.datos.jurisdicciones, nivel: 0 };
+}
+function bajar(item, nivel) {
+  if (nivel === 0) { estado.jur = item; estado.prog = null; }
+  else if (nivel === 1) { estado.prog = item; }
+  dibujar();
+}
+
+function dibujarMigas() {
+  var cont = el("migas");
+  cont.textContent = "";
+  function boton(texto, fn) {
+    var b = document.createElement("button");
+    b.type = "button"; b.textContent = texto; b.addEventListener("click", fn);
+    cont.appendChild(b);
+  }
+  function actual(texto) {
+    var s = document.createElement("span");
+    s.setAttribute("aria-current", "page"); s.textContent = texto;
+    cont.appendChild(s);
+  }
+  function sep() { cont.appendChild(document.createTextNode(" › ")); }
+  if (!estado.jur) { actual(T.todo); return; }
+  boton(T.todo, function () { estado.jur = null; estado.prog = null; dibujar(); });
+  sep();
+  if (!estado.prog) { actual(estado.jur.nombre); return; }
+  boton(estado.jur.nombre, function () { estado.prog = null; dibujar(); });
+  sep();
+  actual(estado.prog.nombre);
+}
+
+function entra(nodo) {
+  return nodo.scrollHeight <= nodo.clientHeight && nodo.scrollWidth <= nodo.clientWidth;
+}
+function etiquetar(nodo, nombre, detalle) {
+  var b = document.createElement("b");
+  b.textContent = nombre;
+  nodo.appendChild(b);
+  if (!entra(nodo)) {
+    nodo.classList.add("chica");
+    if (!entra(nodo)) { nodo.removeChild(b); nodo.classList.remove("chica"); return false; }
+    return true;
+  }
+  var s = document.createElement("small");
+  s.textContent = detalle;
+  nodo.appendChild(s);
+  if (!entra(nodo)) nodo.removeChild(s);
+  return true;
+}
+function dibujarChicos(items, nivel) {
+  var cont = el("chicos");
+  cont.textContent = "";
+  cont.hidden = !items.length;
+  if (!items.length) return;
+  if (items.length > 8) { cont.textContent = T.muchos(items.length); return; }
+  cont.appendChild(document.createTextNode(T.chicos + " "));
+  items.forEach(function (it, i) {
+    if (i) cont.appendChild(document.createTextNode(" · "));
+    if (nivel < 2) {
+      var b = document.createElement("button");
+      b.type = "button"; b.textContent = it.nombre;
+      b.addEventListener("click", function () { bajar(it, nivel); });
+      cont.appendChild(b);
+    } else {
+      cont.appendChild(document.createTextNode(it.nombre));
+    }
+  });
+}
+
+function dibujarMapa(items, nivel, totalNivel) {
+  var mapa = el("mapa");
+  mapa.textContent = "";
+  if (!items.length) { mensaje(T.vacio); dibujarChicos([], nivel); return; }
+  var ancho = mapa.clientWidth, alto = mapa.clientHeight, sinLugar = [];
+  distribuir(items, ancho, alto).forEach(function (c) {
+    var p = c.item.monto / totalNivel, t = tono(p);
+    var nodo = document.createElement(nivel < 2 ? "button" : "div");
+    if (nivel < 2) { nodo.type = "button"; nodo.addEventListener("click", function () { bajar(c.item, nivel); }); }
+    nodo.className = "celda";
+    nodo.style.left = c.x + "px";
+    nodo.style.top = c.y + "px";
+    nodo.style.width = c.w + "px";
+    nodo.style.height = c.h + "px";
+    nodo.style.background = t.bg;
+    nodo.style.color = t.fg;
+    var detalle = pesos(c.item.monto) + " · " + parte(c.item.monto, totalNivel);
+    nodo.title = c.item.nombre + " — " + detalle;
+    nodo.setAttribute("aria-label", nodo.title);
+    mapa.appendChild(nodo);
+    if (!etiquetar(nodo, c.item.nombre, detalle)) sinLugar.push(c.item);
+  });
+  dibujarChicos(sinLugar, nivel);
+}
+
+function dibujarTabla(items, nivel, totalNivel) {
+  el("titulo-tabla").textContent = T.tabla[nivel];
+  var cuerpo = el("filas");
+  cuerpo.textContent = "";
+  items.forEach(function (it) {
+    var tr = document.createElement("tr"), a = document.createElement("td");
+    if (nivel < 2) {
+      var b = document.createElement("button");
+      b.type = "button"; b.textContent = it.nombre;
+      b.addEventListener("click", function () { bajar(it, nivel); window.scrollTo(0, 0); });
+      a.appendChild(b);
+    } else { a.textContent = it.nombre; }
+    var m = document.createElement("td"); m.className = "num"; m.textContent = pesos(it.monto);
+    var p = document.createElement("td"); p.className = "num"; p.textContent = parte(it.monto, totalNivel);
+    tr.appendChild(a); tr.appendChild(m); tr.appendChild(p);
+    cuerpo.appendChild(tr);
+  });
+}
+
+function dibujar() {
+  var n = nivelActual();
+  var totalNivel = n.items.reduce(function (s, x) { return s + x.monto; }, 0);
+  el("total").innerHTML = "";
+  el("total").appendChild(document.createTextNode(T.total + ": "));
+  var fuerte = document.createElement("strong");
+  fuerte.textContent = pesos(totalNivel);
+  el("total").appendChild(fuerte);
+  dibujarMigas();
+  dibujarMapa(n.items, n.nivel, totalNivel);
+  dibujarTabla(n.items, n.nivel, totalNivel);
+  var d = estado.datos;
+  var ultimo = d.disponibles[d.disponibles.length - 1];
+  el("nota").textContent = T.nota + (d.anio === ultimo ? T.enCurso : "") + (d.omitidas ? T.omitidas(d.omitidas) : "");
+}
+
+function dibujarAnios(disponibles) {
+  var cont = el("anios");
+  cont.textContent = "";
+  disponibles.forEach(function (a) {
+    var b = document.createElement("button");
+    b.type = "button"; b.textContent = a;
+    b.setAttribute("aria-pressed", a === estado.anio ? "true" : "false");
+    b.addEventListener("click", function () { cargar(a); });
+    cont.appendChild(b);
+  });
+}
+
+function mensaje(texto) {
+  var mapa = el("mapa");
+  mapa.textContent = "";
+  var d = document.createElement("div");
+  d.className = "estado"; d.textContent = texto;
+  mapa.appendChild(d);
+}
+
+function cargar(anio) {
+  estado.anio = anio; estado.jur = null; estado.prog = null;
+  mensaje(T.cargando);
+  fetch("/api/v1/analisis/treemap" + (anio ? "?anio=" + encodeURIComponent(anio) : ""))
+    .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(function (d) {
+      if (estado.anio !== anio) return;
+      estado.datos = d;
+      estado.anio = d.anio;
+      dibujarAnios(d.disponibles);
+      dibujar();
+    })
+    .catch(function () {
+      if (estado.anio !== anio) return;
+      el("filas").textContent = "";
+      el("chicos").hidden = true;
+      mensaje(T.error);
+    });
+}
+
+var espera = null;
+window.addEventListener("resize", function () {
+  clearTimeout(espera);
+  espera = setTimeout(function () { if (estado.datos) dibujar(); }, 150);
+});
+cargar(estado.anio);
+</script>
+</body>
+</html>

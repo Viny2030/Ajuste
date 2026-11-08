@@ -369,6 +369,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--gray); color: var(-
         </div>
         <div class="sidebar-section">
           <div class="sidebar-section-label">Reference</div>
+          <a href="#treemap">Budget map</a>
           <a href="#funcionamiento">How it works</a>
           <a href="#relaciones">Other sites</a>
           <a href="#glosario">Glossary</a>
@@ -875,6 +876,14 @@ total_orig = Σ(monto_original) over all programs in the sector
           </div>
         </div>
       </div>
+
+<div id="treemap" class="section">
+  <h2>🧱 Budget map</h2>
+  <p>The site&#39;s information graph. Each tile is a part of the budget, and its area is proportional to current appropriations (crédito vigente). Click to go from jurisdiction to program and item; the table below lists every name, including tiles too small to show one.</p>
+  <p>Amounts are in current pesos of the selected year, not adjusted for inflation. It shows one year at a time on purpose: ministries merge and change code (25 jurisdictions in 2023, 16 in 2026), so comparing them by name would mistake a transfer for a cut. To compare years, use the ranking, item and sector views.</p>
+  <iframe src="/treemap?embed=1&amp;lang=en" title="Budget map" loading="lazy" style="width:100%;height:760px;border:1px solid #cbd5e1;border-radius:10px;background:#fff"></iframe>
+  <p style="font-size:.85em"><a href="/treemap?lang=en" target="_blank" rel="noopener">Open full screen ↗</a></p>
+</div>
 
 <div id="funcionamiento" class="section">
   <h2>🧭 How this site works</h2>
