@@ -819,6 +819,61 @@ def listar_normativa(skip: int = 0, limit: int = Query(50, le=500)):
 # corre en el workflow "Daily BORA Discovery".
 
 
+@app.get("/api/frescura", tags=["Health"])
+def frescura():
+    """Ficha de frescura (formato común del ecosistema, ver frescura.py): de
+    dónde sale cada dato, qué período cubre, cuándo se cargó y si está atrasado."""
+    import calendar
+    import re
+    import json as _json
+    from frescura import evaluar
+
+    raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    def leer(*partes):
+        try:
+            with open(os.path.join(raiz, "data", *partes), encoding="utf-8") as f:
+                return _json.load(f)
+        except Exception:
+            return {}
+
+    verif = leer("verificacion", "ultima_verificacion.json")
+    mes_ipc = (verif.get("deflactor") or {}).get("ultimo_mes_ipc")
+    fin_ipc = None
+    if mes_ipc:
+        anio, mes = int(mes_ipc[:4]), int(mes_ipc[5:7])
+        fin_ipc = f"{mes_ipc}-{calendar.monthrange(anio, mes)[1]:02d}"
+    ultimo_macro = None
+    try:
+        with open(os.path.join(raiz, "data", "seeds", "macro_indices.csv"), encoding="utf-8") as f:
+            ultimo_macro = max((l.split(",", 1)[0] for l in f.readlines()[1:] if l[:2] == "20"), default=None)
+    except Exception:
+        pass
+    das = leer("das_acumulado.json")
+    ultima_da = max((d.get("fecha_boletin") or "" for d in das), default="") if isinstance(das, list) else ""
+    social = (leer("processed", "social", "indicadores_sociales.json").get("_meta")) or {}
+    anios_social = re.findall(r"20\d{2}", social.get("ultimo_dato_disponible") or "")
+    fin_social = f"{max(anios_social)}-12-31" if anios_social else None
+    return evaluar("ajuste", [
+        {"id": "presupuesto", "dato": "Presupuesto y cifras verificadas", "fuente": "Presupuesto Abierto (MECON)",
+         "periodo": f"ejercicio {(verif.get('total_nominal') or {}).get('ejercicio', 'sin dato')}",
+         "ultima_carga": verif.get("fecha"), "frecuencia": "diaria", "max_dias_carga": 3},
+        {"id": "ipc", "dato": "Inflación usada para deflactar", "fuente": "INDEC vía BCRA",
+         "periodo": f"hasta {mes_ipc}" if mes_ipc else "sin dato", "periodo_fin": fin_ipc,
+         "ultima_carga": verif.get("fecha"), "frecuencia": "mensual", "max_dias_carga": 3, "max_dias_periodo": 75},
+        {"id": "macro", "dato": "Índices macroeconómicos", "fuente": "BCRA · argentinadatos.com",
+         "periodo": f"hasta {ultimo_macro}" if ultimo_macro else "sin dato", "periodo_fin": ultimo_macro,
+         "ultima_carga": None, "frecuencia": "mensual", "max_dias_periodo": 45},
+        {"id": "das", "dato": "Decisiones Administrativas", "fuente": "Boletín Oficial",
+         "periodo": f"última publicada el {ultima_da}" if ultima_da else "sin dato", "ultima_carga": None,
+         "frecuencia": "diaria", "nota": "Solo se publican cuando hay una nueva: no tienen plazo."},
+        {"id": "social", "dato": "Indicadores sociales", "fuente": "DEIS (Salud) · SNIC (Seguridad)",
+         "periodo": social.get("ultimo_dato_disponible") or "sin dato", "periodo_fin": fin_social,
+         "ultima_carga": social.get("ultima_actualizacion"), "frecuencia": "quincenal",
+         "max_dias_carga": 20, "max_dias_periodo": 730},
+    ])
+
+
 @app.get("/health", tags=["Health"])
 async def health():
     return {"status": "ok", "version": APP_VERSION, "timestamp": datetime.utcnow().isoformat()}
