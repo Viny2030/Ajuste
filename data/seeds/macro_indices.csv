@@ -56,6 +56,7 @@ fecha,indicador,valor,fuente
 2026-07-31,IPC_variacion_mensual,2.1,argentinadatos.com
 2026-08-31,IPC_variacion_mensual,1.7,argentinadatos.com
 2026-09-30,IPC_variacion_mensual,1.9,argentinadatos.com
+2026-10-31,IPC_variacion_mensual,2.2,argentinadatos.com
 2022-01-03,TC_mayorista_bcra,103.04,BCRA v4.0
 2022-01-04,TC_mayorista_bcra,103.08,BCRA v4.0
 2022-01-05,TC_mayorista_bcra,103.15,BCRA v4.0
@@ -1221,6 +1222,22 @@ fecha,indicador,valor,fuente
 2026-10-15,TC_mayorista_bcra,1513.9308,BCRA v4.0
 2026-10-16,TC_mayorista_bcra,1514.5655,BCRA v4.0
 2026-10-19,TC_mayorista_bcra,1523.3466,BCRA v4.0
+2026-10-20,TC_mayorista_bcra,1524.8401,BCRA v4.0
+2026-10-21,TC_mayorista_bcra,1526.6664,BCRA v4.0
+2026-10-22,TC_mayorista_bcra,1527.8511,BCRA v4.0
+2026-10-23,TC_mayorista_bcra,1528.263,BCRA v4.0
+2026-10-26,TC_mayorista_bcra,1540.4751,BCRA v4.0
+2026-10-27,TC_mayorista_bcra,1538.741,BCRA v4.0
+2026-10-28,TC_mayorista_bcra,1538.4739,BCRA v4.0
+2026-10-29,TC_mayorista_bcra,1539.593,BCRA v4.0
+2026-10-30,TC_mayorista_bcra,1537.3487,BCRA v4.0
+2026-11-02,TC_mayorista_bcra,1544.6507,BCRA v4.0
+2026-11-03,TC_mayorista_bcra,1549.7194,BCRA v4.0
+2026-11-04,TC_mayorista_bcra,1548.4941,BCRA v4.0
+2026-11-05,TC_mayorista_bcra,1545.3974,BCRA v4.0
+2026-11-11,TC_mayorista_bcra,1547.9128,BCRA v4.0
+2026-11-12,TC_mayorista_bcra,1544.432,BCRA v4.0
+2026-11-13,TC_mayorista_bcra,1547.0336,BCRA v4.0
 2022-01-01,TC_oficial_venta,108.0,argentinadatos.com
 2022-01-02,TC_oficial_venta,108.0,argentinadatos.com
 2022-01-03,TC_oficial_venta,108.0,argentinadatos.com
@@ -2975,3 +2992,30 @@ fecha,indicador,valor,fuente
 2026-10-18,TC_oficial_venta,1535.0,argentinadatos.com
 2026-10-19,TC_oficial_venta,1535.0,argentinadatos.com
 2026-10-20,TC_oficial_venta,1540.0,argentinadatos.com
+2026-10-21,TC_oficial_venta,1545.0,argentinadatos.com
+2026-10-22,TC_oficial_venta,1545.0,argentinadatos.com
+2026-10-23,TC_oficial_venta,1550.0,argentinadatos.com
+2026-10-24,TC_oficial_venta,1550.0,argentinadatos.com
+2026-10-25,TC_oficial_venta,1550.0,argentinadatos.com
+2026-10-26,TC_oficial_venta,1550.0,argentinadatos.com
+2026-10-27,TC_oficial_venta,1560.0,argentinadatos.com
+2026-10-28,TC_oficial_venta,1560.0,argentinadatos.com
+2026-10-29,TC_oficial_venta,1560.0,argentinadatos.com
+2026-10-30,TC_oficial_venta,1560.0,argentinadatos.com
+2026-10-31,TC_oficial_venta,1560.0,argentinadatos.com
+2026-11-01,TC_oficial_venta,1560.0,argentinadatos.com
+2026-11-02,TC_oficial_venta,1560.0,argentinadatos.com
+2026-11-03,TC_oficial_venta,1565.0,argentinadatos.com
+2026-11-04,TC_oficial_venta,1570.0,argentinadatos.com
+2026-11-05,TC_oficial_venta,1570.0,argentinadatos.com
+2026-11-06,TC_oficial_venta,1570.0,argentinadatos.com
+2026-11-07,TC_oficial_venta,1570.0,argentinadatos.com
+2026-11-08,TC_oficial_venta,1570.0,argentinadatos.com
+2026-11-09,TC_oficial_venta,1570.0,argentinadatos.com
+2026-11-10,TC_oficial_venta,1570.0,argentinadatos.com
+2026-11-11,TC_oficial_venta,1570.0,argentinadatos.com
+2026-11-12,TC_oficial_venta,1570.0,argentinadatos.com
+2026-11-13,TC_oficial_venta,1570.0,argentinadatos.com
+2026-11-14,TC_oficial_venta,1570.0,argentinadatos.com
+2026-11-15,TC_oficial_venta,1570.0,argentinadatos.com
+2026-11-16,TC_oficial_venta,1570.0,argentinadatos.com
